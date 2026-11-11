@@ -1,0 +1,132 @@
+export const financeStats = {
+  totalBookings: '1,286',
+  bookingsGrowth: '+12.4%',
+  totalRideAmount: '₹ 5,14,320',
+  rideAmountGrowth: '+18.6%',
+  commissionEarned: '₹ 51,432',
+  commissionGrowth: '+18.2%',
+  onlineCollections: '₹ 3,42,980',
+  onlineGrowth: '+22.1%',
+  cashCollections: '₹ 1,71,340',
+  cashGrowth: '+11.3%',
+};
+
+export const paymentDistribution = {
+  totalAmount: '₹ 5,14,320',
+  onlinePayments: '₹ 3,42,980',
+  onlinePercentage: '66.7%',
+  cashPayments: '₹ 1,71,340',
+  cashPercentage: '33.3%',
+};
+
+export const walletSettlementStats = {
+  platformWalletBalance: '₹ 2,35,680',
+  cashCommissionDue: '₹ 18,760',
+  cashCommissionSub: '(From Drivers)',
+  withdrawalRequests: '₹ 45,000',
+  withdrawalRequestsSub: '(Pending)',
+  lastSettlement: '₹ 1,98,320',
+  lastSettlementDate: '04 Nov 2026',
+};
+
+export const earningsChartData = [
+  { day: '01 Nov', rideAmount: 70000, commission: 24000 },
+  { day: '02 Nov', rideAmount: 85000, commission: 26000 },
+  { day: '03 Nov', rideAmount: 98000, commission: 27500 },
+  { day: '04 Nov', rideAmount: 115000, commission: 29000 },
+  { day: '05 Nov', rideAmount: 125000, commission: 31000 },
+];
+
+export const recentTransactionsList = [
+  {
+    id: 1,
+    txnId: 'TXN458721',
+    type: 'Ride Payment',
+    amount: '₹ 1,260',
+    mode: 'Online',
+    dateTime: '05 Nov 2026, 11:24 AM',
+    status: 'Success',
+  },
+  {
+    id: 2,
+    txnId: 'TXN458720',
+    type: 'Commission',
+    amount: '₹ 126',
+    mode: 'System',
+    dateTime: '05 Nov 2026, 11:24 AM',
+    status: 'Success',
+  },
+  {
+    id: 3,
+    txnId: 'TXN458719',
+    type: 'Ride Payment',
+    amount: '₹ 2,400',
+    mode: 'Cash',
+    dateTime: '05 Nov 2026, 10:10 AM',
+    status: 'Collected',
+  },
+  {
+    id: 4,
+    txnId: 'TXN458718',
+    type: 'Commission',
+    amount: '₹ 240',
+    mode: 'System',
+    dateTime: '05 Nov 2026, 10:10 AM',
+    status: 'Success',
+  },
+  {
+    id: 5,
+    txnId: 'TXN458717',
+    type: 'Withdrawal',
+    amount: '₹ 10,000',
+    mode: 'Bank',
+    dateTime: '04 Nov 2026, 06:30 PM',
+    status: 'Completed',
+  },
+  {
+    id: 6,
+    txnId: 'TXN458716',
+    type: 'Ride Payment',
+    amount: '₹ 1,850',
+    mode: 'Online',
+    dateTime: '04 Nov 2026, 04:15 PM',
+    status: 'Success',
+  },
+  {
+    id: 7,
+    txnId: 'TXN458715',
+    type: 'Commission',
+    amount: '₹ 185',
+    mode: 'System',
+    dateTime: '04 Nov 2026, 04:15 PM',
+    status: 'Success',
+  },
+  {
+    id: 8,
+    txnId: 'TXN458714',
+    type: 'Settlement',
+    amount: '₹ 1,98,320',
+    mode: 'Bank',
+    dateTime: '04 Nov 2026, 02:00 PM',
+    status: 'Completed',
+  },
+  {
+    id: 9,
+    txnId: 'TXN458713',
+    type: 'Ride Payment',
+    amount: '₹ 3,200',
+    mode: 'Cash',
+    dateTime: '04 Nov 2026, 11:45 AM',
+    status: 'Collected',
+  },
+  {
+    id: 10,
+    txnId: 'TXN458712',
+    type: 'Commission',
+    amount: '₹ 320',
+    mode: 'System',
+    dateTime: '04 Nov 2026, 11:45 AM',
+    status: 'Success',
+  },
+];
+

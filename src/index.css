@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand Theme Colors */
+  --color-primary-yellow: #facc15; /* Main Brand Yellow */
+  --color-primary-yellow-hover: #eab308; /* Hover Yellow */
+  --color-primary-yellow-light: #fef08a; /* Light Yellow Badge */
+  --color-primary-yellow-subtle: #fefce8;
+
+  --color-dark: #0f172a; /* Slate 900 */
+  --color-dark-muted: #334155; /* Slate 700 */
+  --color-border: #e2e8f0; /* Slate 200 */
+  --color-border-input: #cbd5e1; /* Slate 300 */
+  --color-bg-page: #f8fafc; /* Slate 50 */
+}
+
+/* Base Body */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-page);
+  color: var(--color-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===================================================
+   REUSABLE UI STYLES (Use in Login & Entire Admin App)
+   =================================================== */
+
+/* Reusable Yellow Button */
+.btn-yellow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  background-color: var(--color-primary-yellow);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 12px 0 rgba(250, 204, 21, 0.3);
+}
+
+.btn-yellow:hover:not(:disabled) {
+  background-color: var(--color-primary-yellow-hover);
+  box-shadow: 0 6px 18px 0 rgba(234, 179, 8, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-yellow:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-yellow:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Reusable Form Input Field */
+.input-field {
+  width: 100%;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 0.9rem;
+  border-radius: 0.875rem;
+  border: 1.5px solid var(--color-border);
+  background-color: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Dedicated padding classes when input has left/right icons */
+.input-with-icon-left {
+  padding-left: 2.85rem !important;
+}
+
+.input-with-icon-right {
+  padding-right: 2.85rem !important;
+}
+
+.input-field:focus {
+  border-color: #eab308;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
+}
+
+/* Reusable Card */
+.auth-card {
+  background-color: #ffffff;
+  border-radius: 2rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.06), 0 20px 25px -10px rgba(0, 0, 0, 0.03);
+}
+
+/* Subtle Warm Page Background */
+.bg-auth-page {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 100% 100%, rgba(254, 240, 138, 0.4) 0%, transparent 35%),
+    radial-gradient(circle at 0% 0%, rgba(254, 240, 138, 0.25) 0%, transparent 30%);
+}
