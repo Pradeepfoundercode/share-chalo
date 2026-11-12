@@ -349,7 +349,8 @@ export default function Rides() {
                   return (
                     <tr
                       key={ride.id}
-                      className="hover:bg-slate-50/70 transition-colors"
+                      onClick={() => navigate(`/rides/${ride.rideId}`)}
+                      className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
                       {/* 1. Index */}
                       <td className="py-2 px-2.5 pl-4 text-center text-slate-900 font-bold">

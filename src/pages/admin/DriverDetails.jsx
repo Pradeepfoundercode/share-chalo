@@ -14,7 +14,8 @@ import {
   Phone,
   Mail,
   Bell,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 
 // Images
@@ -28,12 +29,29 @@ import carInteriorImg from '../../assets/Beige Leather Car Interior.png';
 
 // Bus Specific Images
 import steeringWheelIcon from '../../assets/Bold Black Steering Wheel Icon.png';
-import coachBusCutout from '../../assets/Share Chalo Coach Bus.png';
+import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
 import busHighRes1 from '../../assets/White_Share_Chalo_Bus_on_Tree_Lined_Road.png';
 import busHighRes2 from '../../assets/White_Coach_Bus_on_a_Tree_Lined_Road.png';
 import busHighRes3 from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
 import busPhoto4 from '../../assets/bus_photo_4.png';
 import busPhoto5 from '../../assets/bus_photo_5.png';
+
+import privateCarIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 7.svg';
+import commercialBusIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 16.svg';
+import memberSinceIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 15.svg';
+import vehiclePhotoIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 3.svg';
+import vehicleDocumentIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 8.svg';
+import busConfigIcon from '../../assets/drivers/47121f34-9d5b-4410-83e8-6233fd444112 8.svg';
+import seatLayoutSectionIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 4.svg';
+import passengersIcon from '../../assets/Group (6).svg';
+import personalInfoIcon from '../../assets/drivers/Group-9-f29c03.svg';
+import vehicleYellowIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 1.svg';
+
+// Custom Tab SVG Icons requested by user
+import kycTabIcon from '../../assets/drivers/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 3.svg';
+import vehicleBusTabIcon from '../../assets/drivers/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 4.svg';
+import seatLayoutTabIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 22.svg';
+import rideHistoryTabIcon from '../../assets/dashboard/47121f34-9d5b-4410-83e8-6233fd444112 7.svg';
 
 import { driversList } from '../../data/driversData';
 import { useAuthStore } from '../../store/authStore';
@@ -42,6 +60,7 @@ import VehicleBusDetailsTab from '../../components/driver/VehicleBusDetailsTab';
 import SeatLayoutTab from '../../components/driver/SeatLayoutTab';
 import RideHistoryTab from '../../components/driver/RideHistoryTab';
 import PendingVerificationView from '../../components/driver/PendingVerificationView';
+import { DetailsHeader } from '../../components/common';
 
 export default function DriverDetails() {
   const { id } = useParams();
@@ -83,6 +102,7 @@ export default function DriverDetails() {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState('personal');
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Bus specific interactive states
   const [seatType, setSeatType] = useState('Seater');
@@ -92,121 +112,82 @@ export default function DriverDetails() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-12 select-none">
       {/* =========================================================
-          TOP NAV BAR (Header inside details page matching screenshot)
+          REUSABLE DETAILS HEADER BAR
           ========================================================= */}
-      <div className="flex items-center justify-between pb-4 pt-1">
-        {/* Left: Back Arrow + Page Title + Breadcrumbs */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/drivers')}
-            className="p-1 hover:bg-slate-200/70 rounded-lg transition-colors cursor-pointer text-slate-900"
-            title="Back to Drivers"
-          >
-            <ArrowLeft className="w-5 h-5 text-black stroke-[2.4]" />
-          </button>
-
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-black leading-tight tracking-tight">
-              Driver Details
-            </h1>
-            <p className="text-xs text-slate-500 font-medium">
-              <span
-                onClick={() => navigate('/drivers')}
-                className="hover:underline cursor-pointer"
-              >
-                Drivers
-              </span>{' '}
-              › Driver Details
-            </p>
-          </div>
-        </div>
-
-        {/* Right: Notifications Bell + Admin Profile Pill */}
-        <div className="flex items-center gap-4">
-          <button className="relative p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-          </button>
-
-          <div className="flex items-center gap-2 cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-[#fed011] flex items-center justify-center text-black font-black text-xs shadow-2xs">
-              <User className="w-4 h-4 text-black" />
-            </div>
-            <span className="text-sm font-bold text-slate-900 hidden sm:inline-block">
-              {admin?.username ? admin.username.split('@')[0] : 'Admin'}
-            </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-600" />
-          </div>
-        </div>
-      </div>
+      <DetailsHeader
+        title="Driver Details"
+        breadcrumbs={[
+          { label: 'Drivers', path: '/drivers' },
+          { label: 'Driver Details' },
+        ]}
+      />
 
       {/* =========================================================
           TOP DRIVER PROFILE CARD (White Rounded Box)
           ========================================================= */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-5">
-        {/* Left: Avatar + Basic Info */}
-        <div className="flex items-center gap-4">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#fffdf0] border border-amber-200/80 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs grid grid-cols-1 md:grid-cols-12 items-start md:items-center gap-5 sm:gap-6 mb-5">
+        {/* Left Column (Driver Profile): 5 cols */}
+        <div className="md:col-span-5 flex items-center gap-4 sm:gap-5 shrink-0">
+          <div className="w-22 h-22 sm:w-26 sm:h-26 rounded-2xl overflow-hidden shrink-0 shadow-xs border border-slate-200">
             <img
               src={driver.avatar || driverAvatar}
               alt={driver.name}
-              className="w-full h-full rounded-full object-cover border-2 border-[#fed011] shadow-2xs"
+              className="w-full h-full object-cover"
             />
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-black tracking-tight">
                 {driver.name}
               </h2>
-              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-bold bg-[#15803d] text-white">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#15803d] text-white">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
                 Approved
               </span>
             </div>
 
-            <p className="text-xs sm:text-sm font-bold text-slate-800">
+            <p className="text-xs sm:text-sm font-semibold text-slate-800">
               Driver ID: <span className="font-bold text-black">{driver.id}</span>
             </p>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-slate-700 font-semibold pt-0.5">
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-slate-600 stroke-[2.2]" />
+            <div className="flex flex-col gap-1 text-xs sm:text-sm text-slate-800 font-semibold pt-0.5">
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-slate-700 stroke-[2.2] shrink-0" />
                 <span>{driver.phone || driver.mobile}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-slate-600 stroke-[2.2]" />
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-slate-700 stroke-[2.2] shrink-0" />
                 <span>{driver.email}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Info: Vehicle info, Member Since, Verified & Approved Pill, Menu */}
-        <div className="flex flex-wrap lg:flex-nowrap items-center gap-6 sm:gap-8 w-full lg:w-auto justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-100">
+        {/* Center Column (Vehicle & Member Since): 4 cols with left border */}
+        <div className="md:col-span-4 md:border-l md:border-slate-200 md:pl-8 space-y-2.5">
           {/* Vehicle Type & Reg */}
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-slate-800">
+            <div className="w-9 h-9 flex items-center justify-center shrink-0">
               {isBus ? (
-                <svg className="w-6 h-6 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="15" rx="2" />
-                  <circle cx="7.5" cy="18" r="2" />
-                  <circle cx="16.5" cy="18" r="2" />
-                  <path d="M3 10h18M8 3v4M16 3v4" />
-                </svg>
+                <img
+                  src={commercialBusIcon}
+                  alt="Commercial Bus"
+                  className="w-full h-full object-contain"
+                />
               ) : (
-                <svg className="w-6 h-6 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2" />
-                  <circle cx="7" cy="17" r="2" />
-                  <circle cx="17" cy="17" r="2" />
-                </svg>
+                <img
+                  src={privateCarIcon}
+                  alt="Private Car"
+                  className="w-full h-full object-contain"
+                />
               )}
             </div>
             <div>
               <p className="text-base font-black text-black leading-tight">
                 {driver.vehicleType}
               </p>
-              <p className="text-xs text-slate-600 font-semibold mt-0.5">
+              <p className="text-xs sm:text-[13px] text-slate-600 font-medium mt-0.5">
                 Reg. No.: {driver.regNo || driver.plate}
               </p>
             </div>
@@ -214,34 +195,41 @@ export default function DriverDetails() {
 
           {/* Member Since */}
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-slate-800">
-              <Calendar className="w-5 h-5 text-slate-800 stroke-[2.2]" />
+            <div className="w-9 h-9 flex items-center justify-center shrink-0">
+              <img
+                src={memberSinceIcon}
+                alt="Member Since"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Member Since:</p>
-              <p className="text-xs sm:text-sm font-bold text-black leading-tight">
+            <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-tight">
+              Member Since:{' '}
+              <span className="font-semibold text-slate-900">
                 {driver.memberSince || driver.registeredOn}
-              </p>
-            </div>
+              </span>
+            </p>
           </div>
+        </div>
 
+        {/* Right Column: Verified & Approved Badge + Menu (3 cols) */}
+        <div className="md:col-span-3 flex items-center justify-start md:justify-end gap-3 shrink-0">
           {/* Verified & Approved Badge */}
-          <div className="flex items-center gap-2.5 px-3.5 py-2 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl">
             <div className="w-7 h-7 rounded-full bg-[#16a34a] flex items-center justify-center text-white shrink-0 shadow-2xs">
               <Check className="w-4 h-4 stroke-[3]" />
             </div>
             <div>
-              <p className="text-xs font-black text-slate-900 leading-tight">
+              <p className="text-sm font-black text-slate-900 leading-tight whitespace-nowrap">
                 Verified &amp; Approved
               </p>
-              <p className="text-[11px] text-slate-600 font-medium">
+              <p className="text-xs text-slate-600 font-medium mt-0.5 whitespace-nowrap">
                 On: {driver.approvalDate || '02 Nov 2026'}
               </p>
             </div>
           </div>
 
           {/* More Action */}
-          <button className="p-2 hover:bg-slate-100 rounded-xl border border-slate-200 text-slate-700 transition-colors cursor-pointer">
+          <button className="p-2.5 hover:bg-slate-100 rounded-xl border border-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0">
             <MoreVertical className="w-4 h-4" />
           </button>
         </div>
@@ -253,79 +241,63 @@ export default function DriverDetails() {
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-slate-200 pb-2 mb-5">
         <button
           onClick={() => setActiveTab('personal')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-sm transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'personal'
               ? 'bg-[#fed011] text-black shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/70 font-bold'
+              : 'bg-white text-slate-700 hover:bg-slate-50 font-bold'
           }`}
         >
-          <User className="w-4 h-4 text-black stroke-[2.4]" />
+          <img src={passengersIcon} alt="Personal Details" className="w-5 h-5 object-contain shrink-0" />
           <span>Personal Details</span>
         </button>
 
         <button
           onClick={() => setActiveTab('kyc')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'kyc'
               ? 'bg-[#fed011] text-black font-black shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/70 font-bold'
+              : 'bg-white text-slate-700 hover:bg-slate-50 font-bold'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 text-slate-800 stroke-[2.2]" />
+          <img src={kycTabIcon} alt="KYC & Documents" className="w-6.5 h-6.5 object-contain shrink-0" />
           <span>KYC &amp; Documents</span>
         </button>
 
         <button
           onClick={() => setActiveTab('vehicle')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'vehicle'
               ? 'bg-[#fed011] text-black font-black shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/70 font-bold'
+              : 'bg-white text-slate-700 hover:bg-slate-50 font-bold'
           }`}
         >
-          {isBus ? (
-            <svg className="w-4 h-4 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <rect x="3" y="3" width="18" height="15" rx="2" />
-              <circle cx="7.5" cy="18" r="2" />
-              <circle cx="16.5" cy="18" r="2" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2" />
-              <circle cx="7" cy="17" r="2" />
-              <circle cx="17" cy="17" r="2" />
-            </svg>
-          )}
-          <span>{isBus ? 'Vehicle & Bus Details' : 'Vehicle Details'}</span>
+          <img src={vehicleBusTabIcon} alt="Vehicle & Bus Details" className="w-6 h-6 object-contain shrink-0" />
+          <span>Vehicle &amp; Bus Details</span>
         </button>
 
         {isBus && (
           <button
             onClick={() => setActiveTab('seatLayout')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'seatLayout'
                 ? 'bg-[#fed011] text-black font-black shadow-xs'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/70 font-bold'
+                : 'bg-white text-slate-700 hover:bg-slate-50 font-bold'
             }`}
           >
-            <svg className="w-4 h-4 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
-              <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z" />
-              <path d="M5 18v2M19 18v2" />
-            </svg>
+            <img src={seatLayoutTabIcon} alt="Seat Layout" className="w-6 h-6 object-contain shrink-0" />
             <span>Seat Layout</span>
           </button>
         )}
 
         <button
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'history'
               ? 'bg-[#fed011] text-black font-black shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/70 font-bold'
+              : 'bg-white text-slate-700 hover:bg-slate-50 font-bold'
           }`}
         >
-          <Clock className="w-4 h-4 text-slate-800 stroke-[2.2]" />
+          <img src={rideHistoryTabIcon} alt="Ride History" className="w-6 h-6 object-contain shrink-0" />
           <span>Ride History</span>
         </button>
       </div>
@@ -346,135 +318,131 @@ export default function DriverDetails() {
             COMMERCIAL BUS LAYOUT (Exact Match to Screenshot 1)
            ========================================================= */
         <div className="space-y-5">
-          {/* Top Section: Left Tall Personal Information + Right 2 Rows */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-            {/* 1. Left Column: Personal Information (col-span-3, stretches to match right 2 rows) */}
-            <div className="lg:col-span-3 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          {/* Top Section: Left Personal Information + Right 2 Rows */}
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+            {/* 1. Left Column: Personal Information (balanced width ~29-30%) */}
+            <div className="w-full lg:w-[29.5%] shrink-0 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                  <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                    <User className="w-4 h-4" />
+                  <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                    <img src={personalInfoIcon} alt="Personal Information" className="w-full h-full object-contain" />
                   </div>
-                  <h3 className="text-sm font-black text-black">
+                  <h3 className="text-base font-black text-black">
                     Personal Information
                   </h3>
                 </div>
 
-                <div className="space-y-4 text-xs sm:text-[13px] pt-4">
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5 text-slate-700 font-bold">Full Name</span>
-                    <span className="col-span-1 text-slate-400">:</span>
-                    <span className="col-span-6 text-black font-bold">{driver.name}</span>
+                <div className="space-y-4 text-sm pt-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="w-28 shrink-0 text-slate-700 font-bold">Full Name</span>
+                    <span className="text-slate-400 font-bold">:</span>
+                    <span className="text-black font-bold break-words">{driver.name}</span>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-1 items-start">
-                    <span className="col-span-5 text-slate-700 font-bold">Mobile Number</span>
-                    <span className="col-span-1 text-slate-400">:</span>
-                    <div className="col-span-6 flex flex-wrap items-center gap-1.5">
+                  <div className="flex items-start gap-2">
+                    <span className="w-28 shrink-0 text-slate-700 font-bold">Mobile Number</span>
+                    <span className="text-slate-400 font-bold">:</span>
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-black font-bold">{driver.phone || driver.mobile}</span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
                         <Check className="w-3 h-3 stroke-[3]" />
                         Verified
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5 text-slate-700 font-bold">Email</span>
-                    <span className="col-span-1 text-slate-400">:</span>
-                    <span className="col-span-6 text-black font-bold break-all">{driver.email}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="w-28 shrink-0 text-slate-700 font-bold">Email</span>
+                    <span className="text-slate-400 font-bold">:</span>
+                    <span className="text-black font-bold break-all">{driver.email}</span>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5 text-slate-700 font-bold">Date of Birth</span>
-                    <span className="col-span-1 text-slate-400">:</span>
-                    <span className="col-span-6 text-black font-bold">{driver.dob}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="w-28 shrink-0 text-slate-700 font-bold">Date of Birth</span>
+                    <span className="text-slate-400 font-bold">:</span>
+                    <span className="text-black font-bold">{driver.dob}</span>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5 text-slate-700 font-bold">Gender</span>
-                    <span className="col-span-1 text-slate-400">:</span>
-                    <span className="col-span-6 text-black font-bold">{driver.gender}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="w-28 shrink-0 text-slate-700 font-bold">Gender</span>
+                    <span className="text-slate-400 font-bold">:</span>
+                    <span className="text-black font-bold">{driver.gender}</span>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-1">
-                    <span className="col-span-5 text-slate-700 font-bold">Address</span>
-                    <span className="col-span-1 text-slate-400">:</span>
-                    <span className="col-span-6 text-slate-900 font-medium leading-relaxed">{driver.address}</span>
+                  <div className="flex items-start gap-2">
+                    <span className="w-28 shrink-0 text-slate-700 font-bold">Address</span>
+                    <span className="text-slate-400 font-bold">:</span>
+                    <span className="text-slate-900 font-medium leading-relaxed">{driver.address}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 2. Right Column (col-span-9): Two Rows */}
-            <div className="lg:col-span-9 flex flex-col justify-between gap-4">
-              {/* Row 1: Bus & Vehicle Details (7 cols) + Bus Configuration (5 cols) */}
+            {/* 2. Right Column: Two Rows */}
+            <div className="w-full lg:flex-1 min-w-0 flex flex-col justify-between gap-4">
+              {/* Row 1: Bus & Vehicle Details (8 cols) + Bus Configuration (4 cols) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                {/* Bus & Vehicle Details (col-span-7) */}
-                <div className="lg:col-span-7 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                {/* Bus & Vehicle Details (col-span-8) */}
+                <div className="lg:col-span-8 bg-white rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                      <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <rect x="3" y="3" width="18" height="15" rx="2" />
-                          <circle cx="7.5" cy="18" r="2" />
-                          <circle cx="16.5" cy="18" r="2" />
-                        </svg>
+                    <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                      <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                        <img src={vehicleYellowIcon} alt="Bus & Vehicle Details" className="w-full h-full object-contain" />
                       </div>
                       <h3 className="text-sm font-black text-black">
                         Bus &amp; Vehicle Details
                       </h3>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-1.5">
                       {/* Bus Image Cutout */}
-                      <div className="sm:col-span-5 flex justify-center p-1">
+                      <div className="sm:col-span-5 flex justify-center p-0">
                         <img
                           src={coachBusCutout}
                           alt={driver.model}
-                          className="w-full max-w-[210px] h-auto object-contain drop-shadow-sm select-none"
+                          className="w-full max-h-[125px] object-contain drop-shadow-sm select-none"
                         />
                       </div>
 
                       {/* Specs List */}
-                      <div className="sm:col-span-7 space-y-1.5 text-xs sm:text-[13px]">
-                        <div className="grid grid-cols-12 gap-1">
+                      <div className="sm:col-span-7 space-y-1 text-sm pl-2">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Vehicle Type</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.vehicleType}</span>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-1">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Registration No.</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.regNo || driver.plate}</span>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-1">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Brand</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.brand || 'Tata'}</span>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-1">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Model</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.model || 'Starbus Ultra'}</span>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-1">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Bus Type</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.busType || 'AC'}</span>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-1">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Capacity</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.capacity || '45 Seater (2 × 2)'}</span>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-1">
+                        <div className="grid grid-cols-12 gap-1.5">
                           <span className="col-span-5 text-slate-700 font-bold">Color</span>
                           <span className="col-span-1 text-slate-400">:</span>
                           <span className="col-span-6 text-black font-bold">{driver.color || 'White & Yellow'}</span>
@@ -484,22 +452,19 @@ export default function DriverDetails() {
                   </div>
                 </div>
 
-                {/* Bus Configuration (col-span-5) */}
-                <div className="lg:col-span-5 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                {/* Bus Configuration (col-span-4) */}
+                <div className="lg:col-span-4 bg-white rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                      <div className="p-1 bg-amber-100/70 rounded-xl text-amber-700">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <circle cx="12" cy="12" r="3" />
-                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                        </svg>
+                    <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                      <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                        <img src={busConfigIcon} alt="Bus Configuration" className="w-full h-full object-contain" />
                       </div>
                       <h3 className="text-sm font-black text-black">
                         Bus Configuration
                       </h3>
                     </div>
 
-                    <div className="space-y-3 pt-2 text-xs">
+                    <div className="space-y-2 pt-1.5 text-xs">
                       {/* Bus Type */}
                       <div className="flex items-center justify-between">
                         <span className="text-slate-700 font-bold">Bus Type</span>
@@ -599,12 +564,8 @@ export default function DriverDetails() {
                 <div className="lg:col-span-7 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                      <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <rect x="3" y="3" width="18" height="15" rx="2" />
-                          <circle cx="7.5" cy="18" r="2" />
-                          <circle cx="16.5" cy="18" r="2" />
-                        </svg>
+                      <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                        <img src={vehiclePhotoIcon} alt="Bus Photos" className="w-full h-full object-contain" />
                       </div>
                       <h3 className="text-sm font-black text-black">
                         Bus Photos
@@ -621,13 +582,17 @@ export default function DriverDetails() {
                       ].map((item, idx) => (
                         <div
                           key={idx}
-                          className="group relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-4/3 flex items-center justify-center transition-all shadow-2xs"
+                          onClick={() => setPreviewPhoto(item)}
+                          className="group relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-4/3 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all shadow-2xs"
                         >
                           <img
                             src={item.img}
                             alt={item.label}
-                            className="w-full h-full object-cover transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
+                          <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                            <Eye className="w-5 h-5" />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -638,11 +603,9 @@ export default function DriverDetails() {
                 <div className="lg:col-span-5 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                      <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
-                        <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z" />
-                        <path d="M5 18v2M19 18v2" />
-                      </svg>
+                      <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                        <img src={seatLayoutSectionIcon} alt="Seat Layout" className="w-full h-full object-contain" />
+                      </div>
                       <h3 className="text-sm font-black text-black">
                         Seat Layout (45 Seater)
                       </h3>
@@ -689,17 +652,17 @@ export default function DriverDetails() {
           </div>
 
           {/* Row 3: Vehicle Documents (6 Cards Grid Matching Screenshot 1) */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-              <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                <FileText className="w-4 h-4" />
+          <div className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 shadow-xs space-y-2.5">
+            <div className="flex items-center gap-2.5 pb-1 border-b border-slate-100">
+              <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                <img src={vehicleDocumentIcon} alt="Vehicle Documents" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-sm font-black text-black">
                 Vehicle Documents
               </h3>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-0.5">
               {[
                 { name: 'RC (Registration Certificate)', status: 'Approved' },
                 { name: 'Insurance', status: 'Approved' },
@@ -710,18 +673,18 @@ export default function DriverDetails() {
               ].map((doc, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col justify-between p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/70 hover:border-amber-300 transition-all space-y-3 text-center"
+                  className="flex flex-col justify-between p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/70 hover:border-amber-300 transition-all space-y-2 text-center"
                 >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600">
-                      <FileText className="w-5 h-5" />
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-600">
+                      <FileText className="w-4 h-4" />
                     </div>
                     <span className="text-xs font-bold text-slate-900 leading-tight line-clamp-2">
                       {doc.name}
                     </span>
                   </div>
 
-                  <span className="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 w-fit mx-auto">
+                  <span className="inline-flex items-center justify-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 w-fit mx-auto">
                     <Check className="w-3 h-3 stroke-[3]" />
                     {doc.status}
                   </span>
@@ -737,9 +700,9 @@ export default function DriverDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Left Column: Personal Information (col-span-5) */}
           <div className="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                <User className="w-4 h-4" />
+            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+              <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                <img src={personalInfoIcon} alt="Personal Information" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-base font-black text-black">
                 Personal Information
@@ -786,34 +749,30 @@ export default function DriverDetails() {
           </div>
 
           {/* Right Column: Vehicle Information, Vehicle Photos & Vehicle Documents (col-span-7) */}
-          <div className="lg:col-span-7 space-y-5">
+          <div className="lg:col-span-7 space-y-3.5">
             {/* 1. Vehicle Information Specs with Car Image Cutout */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2" />
-                    <circle cx="7" cy="17" r="2" />
-                    <circle cx="17" cy="17" r="2" />
-                  </svg>
+            <div className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 shadow-xs space-y-2.5">
+              <div className="flex items-center gap-2.5 pb-1.5 border-b border-slate-100">
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <img src={vehicleYellowIcon} alt="Vehicle Information" className="w-full h-full object-contain" />
                 </div>
                 <h3 className="text-base font-black text-black">
                   Vehicle Information
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                 {/* Car Graphic */}
-                <div className="sm:col-span-5 flex justify-center p-2">
+                <div className="sm:col-span-5 flex justify-center p-1 cursor-pointer" onClick={() => setPreviewPhoto({ img: driver.vehicleImg || carCutout, label: `${driver.brand} ${driver.model}` })}>
                   <img
                     src={driver.vehicleImg || carCutout}
                     alt={driver.model}
-                    className="w-full max-w-[220px] h-auto object-contain drop-shadow-sm select-none"
+                    className="w-full max-w-[250px] h-auto object-contain drop-shadow-sm select-none hover:scale-105 transition-transform cursor-pointer"
                   />
                 </div>
 
                 {/* Specs Table */}
-                <div className="sm:col-span-7 space-y-2 text-sm">
+                <div className="sm:col-span-7 space-y-1.5 text-sm">
                   <div className="grid grid-cols-12 gap-1">
                     <span className="col-span-5 text-slate-700 font-bold">Vehicle Type</span>
                     <span className="col-span-1 text-slate-400">:</span>
@@ -854,19 +813,15 @@ export default function DriverDetails() {
             </div>
 
             {/* 2. Vehicle Photos (5 Thumbnails) */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2" />
-                    <circle cx="7" cy="17" r="2" />
-                    <circle cx="17" cy="17" r="2" />
-                  </svg>
+            <div className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 shadow-xs space-y-2">
+              <div className="flex items-center gap-2.5 pb-1 border-b border-slate-100">
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <img src={vehiclePhotoIcon} alt="Vehicle Photos" className="w-full h-full object-contain" />
                 </div>
                 <h3 className="text-base font-black text-black">Vehicle Photos</h3>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-0.5">
                 {[
                   { img: carFrontImg, label: 'Front View' },
                   { img: carRearImg, label: 'Rear View' },
@@ -876,7 +831,8 @@ export default function DriverDetails() {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 aspect-video sm:aspect-square flex items-center justify-center cursor-pointer hover:border-amber-400 transition-all shadow-2xs"
+                    onClick={() => setPreviewPhoto(item)}
+                    className="group relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-video sm:aspect-square flex items-center justify-center cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all shadow-2xs"
                   >
                     <img
                       src={item.img}
@@ -892,49 +848,90 @@ export default function DriverDetails() {
             </div>
 
             {/* 3. Vehicle Documents (3 Horizontal Rows with Eye button - Matching Screenshot 2) */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                  <FileText className="w-4 h-4" />
+            <div className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-200/80 shadow-xs space-y-2">
+              <div className="flex items-center gap-2.5 pb-1 border-b border-slate-100">
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <img src={vehicleDocumentIcon} alt="Vehicle Documents" className="w-full h-full object-contain" />
                 </div>
                 <h3 className="text-base font-black text-black">Vehicle Documents</h3>
               </div>
 
-              <div className="space-y-2.5 pt-1">
-                {[
-                  { name: 'RC (Registration Certificate)', status: 'Approved' },
-                  { name: 'Insurance', status: 'Approved' },
-                  { name: 'PUC (Pollution Under Control)', status: 'Approved' },
-                ].map((doc, idx) => (
+              <div className="space-y-1.5 pt-0.5">
+                {(driver.vehicleType === 'Commercial Car'
+                  ? [
+                      { name: 'RC (Registration Certificate)', status: 'Approved' },
+                      { name: 'Insurance', status: 'Approved' },
+                      { name: 'PUC (Pollution Under Control)', status: 'Approved' },
+                      { name: 'Commercial Permit', status: 'Approved' },
+                      { name: 'Fitness Certificate', status: 'Approved' },
+                    ]
+                  : [
+                      { name: 'RC (Registration Certificate)', status: 'Approved' },
+                      { name: 'Insurance', status: 'Approved' },
+                      { name: 'PUC (Pollution Under Control)', status: 'Approved' },
+                    ]
+                ).map((doc, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-2xl border border-slate-200/80 hover:border-slate-300 bg-slate-50/60 transition-all"
+                    className="flex items-center justify-between py-2 px-3 rounded-xl border border-slate-200/80 hover:border-slate-300 bg-slate-50/60 transition-all"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600">
-                        <FileText className="w-4 h-4" />
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-600">
+                        <FileText className="w-3.5 h-3.5" />
                       </div>
-                      <span className="text-xs sm:text-sm font-bold text-black">
+                      <span className="text-xs sm:text-[13px] font-bold text-black">
                         {doc.name}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                        <Check className="w-3 h-3 stroke-[3]" />
                         {doc.status}
                       </span>
 
                       <button
-                        className="p-1.5 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
+                        className="p-1 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
                         title="View Document"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox / Modal for Photo Viewing */}
+      {previewPhoto && (
+        <div
+          onClick={() => setPreviewPhoto(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative border border-slate-200"
+          >
+            {/* Header with Close Button Only */}
+            <div className="flex items-center justify-end pb-2">
+              <button
+                onClick={() => setPreviewPhoto(null)}
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 hover:text-black transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Large Image Preview Only */}
+            <div className="flex items-center justify-center bg-slate-50/70 rounded-2xl overflow-hidden max-h-[75vh]">
+              <img
+                src={typeof previewPhoto === 'string' ? previewPhoto : previewPhoto.img}
+                alt="Preview"
+                className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl select-none shadow-sm"
+              />
             </div>
           </div>
         </div>

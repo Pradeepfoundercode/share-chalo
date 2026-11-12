@@ -46,7 +46,7 @@ export default function Login() {
         username: data.emailOrUsername,
       });
       setIsLoading(false);
-      toast.success('Login successful! Welcome to Share Chalo Admin.');
+      toast.success('Login successful!');
       navigate('/', { replace: true });
     }, 800);
   };
@@ -56,7 +56,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 xl:p-10  bg-white overflow-hidden font-sans select-none">
+    <div className="h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 xl:p-10 bg-white overflow-hidden font-sans select-none">
       {/* Background SVG stretched to 100% Full-Screen Width & Height */}
       <img
         src={bgPattern}
@@ -65,7 +65,7 @@ export default function Login() {
         className="absolute inset-0 w-full h-full object-fill pointer-events-none z-0"
       />
 
-      {/* Main Container - max-w-5xl ki jagah max-w-6xl kiya gaya hai taaki left ko width mile */}
+      {/* Main Container */}
       <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-6 items-center">
         
         <div className="hidden lg:flex flex-col justify-center px-4 sm:px-6 lg:px-4">
@@ -119,34 +119,35 @@ export default function Login() {
         {/* =========================================================
             RIGHT COLUMN: Admin Login Card (Right aligned & Wider)
             ========================================================= */}
-        <div className="flex justify-center lg:justify-end px-4 sm:px-6 lg:px-1 w-full ml-8">
-          <div className="w-full max-w-[460px] lg:max-w-[510px] xl:max-w-[540px] bg-white rounded-3xl shadow-xl border border-slate-100/90 p-6 sm:p-7 lg:p-8">
+        {/* Fix: Changed ml-8 to lg:ml-8 so it centers properly on mobile but stays right-aligned on desktop */}
+        <div className="flex justify-center lg:justify-end px-4 sm:px-6 lg:px-1 w-full lg:ml-8">
+          <div className="w-full max-w-[460px] lg:max-w-[510px] xl:max-w-[540px] bg-white rounded-3xl shadow-xl border border-slate-100/90 p-5 sm:p-7 lg:p-8">
             {/* Top Admin Badge */}
             <div className="flex flex-col items-center text-center">
               <img
                 src={adminUserBadge}
                 alt="Admin Login"
-                className="w-28 h-28 sm:w-32 sm:h-32 object-contain "
+                className="w-24 h-24 sm:w-32 sm:h-32 object-contain "
               />
 
-              <h2 className="text-2xl sm:text-[45px] font-bold text-slate-950 ">
+              <h2 className="text-[28px] sm:text-[45px] font-bold text-slate-950 ">
                 Admin Login
               </h2>
-              <p className="text-xs sm:text-[20px]  mt-1 font-medium">
+              <p className="text-sm sm:text-[20px] mt-1 font-medium">
                 Sign in to access Share Chalo Admin Panel
               </p>
             </div>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-2 lg:mt-5 space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-4 lg:mt-5 space-y-4">
               {/* Email / Username */}
               <div>
-                <label className="block text-[18px] font-bold  mb-1.5">
+                <label className="block text-base sm:text-[18px] font-bold mb-1.5">
                   Email / Username
                 </label>
                 <div className="relative flex items-center">
                   <span className="absolute left-3.5 text-slate-800 pointer-events-none flex items-center">
-                    <Mail className="w-6 h-6 text-slate-800" strokeWidth={2} />
+                    <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" strokeWidth={2} />
                   </span>
                   <input
                     type="text"
@@ -169,12 +170,12 @@ export default function Login() {
 
               {/* Password */}
               <div>
-                <label className="block text-[18px] font-bold  mb-1.5">
+                <label className="block text-base sm:text-[18px] font-bold mb-1.5">
                   Password
                 </label>
                 <div className="relative flex items-center">
                   <span className="absolute left-3.5 text-slate-800 pointer-events-none flex items-center">
-                    <Lock className="w-6 h-6 text-slate-800" strokeWidth={2}  />
+                    <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" strokeWidth={2}  />
                   </span>
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -215,7 +216,7 @@ export default function Login() {
                     {...register('rememberMe')}
                     className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400 accent-amber-500 cursor-pointer"
                   />
-                  <span className="text-[16px] font-medium text-slate-700">
+                  <span className="text-sm sm:text-[16px] font-medium text-slate-700">
                     Remember me
                   </span>
                 </label>
@@ -223,7 +224,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-[17px] font-bold text-slate-950 hover:text-amber-600 transition-colors cursor-pointer"
+                  className="text-sm sm:text-[17px] font-bold text-slate-950 hover:text-amber-600 transition-colors cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -234,7 +235,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#fed011] hover:bg-amber-400 text-black font-bold text-sm sm:text-[19px] py-3 lg:py-2 px-6 rounded-xl shadow-md shadow-amber-400/20 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full bg-[#fed011] hover:bg-amber-400 text-black font-bold text-base sm:text-[19px] py-3 lg:py-2 px-6 rounded-xl shadow-md shadow-amber-400/20 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center gap-2">

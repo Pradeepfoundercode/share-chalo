@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { vehiclesList } from '../../data/vehiclesData';
 import { useAuthStore } from '../../store/authStore';
+import { DetailsHeader } from '../../components/common';
 
 export default function VehicleDetails() {
   const { id } = useParams();
@@ -33,51 +34,15 @@ export default function VehicleDetails() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-12 select-none">
       {/* =========================================================
-          TOP NAV BAR: Header (Vehicle Details / Vehicles > Vehicle Details)
+          REUSABLE DETAILS HEADER BAR
           ========================================================= */}
-      <div className="flex items-center justify-between pb-4 pt-1">
-        {/* Left: Back Arrow + Page Title + Breadcrumbs */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/vehicles')}
-            className="p-1 hover:bg-slate-200/70 rounded-lg transition-colors cursor-pointer text-slate-900"
-            title="Back to Vehicles"
-          >
-            <ArrowLeft className="w-5 h-5 text-black stroke-[2.4]" />
-          </button>
-
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-black leading-tight tracking-tight">
-              Vehicle Details
-            </h1>
-            <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              Vehicles &nbsp;&gt;&nbsp;{' '}
-              <span className="text-slate-700">Vehicle Details</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Right: Notification Bell + Admin Profile Pill */}
-        <div className="flex items-center gap-3">
-          <button
-            className="relative p-2 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4 text-slate-700" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-white" />
-          </button>
-
-          <div className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-2xs cursor-pointer hover:bg-slate-50 transition-colors">
-            <div className="w-7 h-7 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-xs">
-              {admin?.name ? admin.name[0].toUpperCase() : 'A'}
-            </div>
-            <span className="text-xs font-bold text-slate-900 hidden sm:inline">
-              {admin?.name || 'Admin'}
-            </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-          </div>
-        </div>
-      </div>
+      <DetailsHeader
+        title="Vehicle Details"
+        breadcrumbs={[
+          { label: 'Vehicles', path: '/vehicles' },
+          { label: 'Vehicle Details' },
+        ]}
+      />
 
       <div className="space-y-2.5">
         {/* =========================================================

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Eye, X } from 'lucide-react';
 
-import coachBusCutout from '../../assets/Share Chalo Coach Bus.png';
+import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
 import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
 
 // High-resolution sharp bus images directly requested by the user
@@ -15,9 +16,15 @@ import carRearImg from '../../assets/White Maruti Suzuki Baleno Rear View.png';
 import carSideImg from '../../assets/White Compact Sedan on a Tree-Lined Road.png';
 import carDashImg from '../../assets/Modern Suzuki Cabin Dashboard View.png';
 import carInteriorImg from '../../assets/Beige Leather Car Interior.png';
+import vehiclePhotoIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 3.svg';
+import vehicleYellowIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 1.svg';
+import busConfigIcon from '../../assets/drivers/47121f34-9d5b-4410-83e8-6233fd444112 8.svg';
 
 export default function VehicleBusDetailsTab({ driver }) {
   const isBus = driver.vehicleType === 'Commercial Bus';
+
+  // State for preview photo modal
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Bus configuration states matching screenshot
   const [busType, setBusType] = useState(driver.busType || 'Seater');
@@ -51,39 +58,27 @@ export default function VehicleBusDetailsTab({ driver }) {
           <div>
             {/* Header */}
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                {isBus ? (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <rect x="3" y="3" width="18" height="15" rx="2" />
-                    <circle cx="7.5" cy="18" r="2" />
-                    <circle cx="16.5" cy="18" r="2" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2" />
-                    <circle cx="7" cy="17" r="2" />
-                    <circle cx="17" cy="17" r="2" />
-                  </svg>
-                )}
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <img src={vehicleYellowIcon} alt="Vehicle Details" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-sm sm:text-base font-black text-black">
-                Vehicle Details
+                {isBus ? 'Bus & Vehicle Details' : 'Vehicle Details'}
               </h3>
             </div>
 
             {/* Content: Bus/Car Image + Specs Table */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-3">
               {/* Image Cutout */}
-              <div className="sm:col-span-5 flex justify-center p-1">
+              <div className="sm:col-span-5 flex justify-center p-0">
                 <img
                   src={isBus ? coachBusCutout : (driver.vehicleImg || carCutout)}
                   alt={driver.model}
-                  className="w-full max-w-[220px] h-auto object-contain drop-shadow-sm select-none"
+                  className="w-full max-h-[140px] object-contain drop-shadow-sm select-none"
                 />
               </div>
 
               {/* Specs Table */}
-              <div className="sm:col-span-7 space-y-1.5 text-xs sm:text-[13px]">
+              <div className="sm:col-span-7 space-y-1.5 text-xs sm:text-[13px] pl-2">
                 <div className="grid grid-cols-12 gap-1">
                   <span className="col-span-5 text-slate-700 font-bold">Vehicle Type</span>
                   <span className="col-span-1 text-slate-400">:</span>
@@ -129,11 +124,8 @@ export default function VehicleBusDetailsTab({ driver }) {
           <div>
             {/* Header */}
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <div className="p-1 bg-amber-100/70 rounded-xl text-amber-700">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <img src={busConfigIcon} alt="Configuration" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-sm sm:text-base font-black text-black">
                 {isBus ? 'Bus Configuration' : 'Vehicle Configuration'}
@@ -220,34 +212,66 @@ export default function VehicleBusDetailsTab({ driver }) {
       <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3">
         {/* Header */}
         <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-          <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <rect x="3" y="3" width="18" height="15" rx="2" />
-              <circle cx="7.5" cy="18" r="2" />
-              <circle cx="16.5" cy="18" r="2" />
-            </svg>
+          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+            <img src={vehiclePhotoIcon} alt="Vehicle Photos" className="w-full h-full object-contain" />
           </div>
           <h3 className="text-sm sm:text-base font-black text-black">
             {isBus ? 'Bus Photos' : 'Vehicle Photos'}
           </h3>
         </div>
 
-        {/* 5 Photos Grid (No blur, no eye overlay) */}
+        {/* 5 Photos Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5 pt-1">
           {(isBus ? busPhotos : carPhotos).map((item, idx) => (
             <div
               key={idx}
-              className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 aspect-4/3 flex items-center justify-center transition-all shadow-2xs"
+              onClick={() => setPreviewPhoto(item)}
+              className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 aspect-4/3 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all shadow-2xs"
             >
               <img
                 src={item.img}
                 alt={item.label}
-                className="w-full h-full object-cover transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
+              <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <Eye className="w-5 h-5" />
+              </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Lightbox / Modal for Photo Viewing */}
+      {previewPhoto && (
+        <div
+          onClick={() => setPreviewPhoto(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative border border-slate-200"
+          >
+            {/* Header with Close Button Only */}
+            <div className="flex items-center justify-end pb-2">
+              <button
+                onClick={() => setPreviewPhoto(null)}
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 hover:text-black transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Large Image Preview Only */}
+            <div className="flex items-center justify-center bg-slate-50/70 rounded-2xl overflow-hidden max-h-[75vh]">
+              <img
+                src={typeof previewPhoto === 'string' ? previewPhoto : previewPhoto.img}
+                alt="Preview"
+                className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl select-none shadow-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

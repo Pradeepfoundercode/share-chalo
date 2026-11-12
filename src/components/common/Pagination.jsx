@@ -48,7 +48,7 @@ export default function Pagination({
         key={page}
         onClick={() => onPageChange && onPageChange(page)}
         type="button"
-        className={`min-w-[28px] sm:min-w-[32px] h-8 sm:h-[34px] px-2.5 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold transition-all cursor-pointer shadow-2xs ${
+        className={`shrink-0 min-w-[28px] sm:min-w-[32px] h-8 sm:h-[34px] px-2.5 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-xs font-bold transition-all cursor-pointer shadow-2xs ${
           isActive
             ? 'bg-[#fed011] text-black border-transparent shadow-2xs font-extrabold'
             : 'text-slate-800 hover:bg-slate-100 font-semibold'
@@ -59,11 +59,11 @@ export default function Pagination({
     );
   };
 
-  // Render pagination items (grouping 1-5 or dynamic window)
-  const renderPaginationItems = () => {
-    if (totalPages <= 7) {
+  // 1. MOBILE PAGINATION LOGIC (Shows max 3 items in group)
+  const renderMobilePaginationItems = () => {
+    if (totalPages <= 5) {
       return (
-        <div className="flex items-center h-8 sm:h-[34px] bg-slate-50/80 border border-slate-200 rounded-lg p-0.5 gap-0.5 shadow-2xs">
+        <div className="flex sm:hidden items-center shrink-0 h-8 bg-slate-50/80 border border-slate-200 rounded-lg p-0.5 gap-0.5 shadow-2xs">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) =>
             renderPageBtn(p, true)
           )}
@@ -71,7 +71,53 @@ export default function Pagination({
       );
     }
 
-    // When total pages > 7: Group [ 1 2 3 4 5 ] ... [ totalPages ]
+    let groupPages = [];
+    if (currentPage <= 2) {
+      groupPages = [1, 2, 3];
+    } else if (currentPage >= totalPages - 1) {
+      groupPages = [totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      groupPages = [currentPage - 1, currentPage, currentPage + 1];
+    }
+
+    const showLastSeparated = !groupPages.includes(totalPages);
+    const showFirstSeparated = !groupPages.includes(1);
+
+    return (
+      <div className="flex sm:hidden items-center gap-1 shrink-0">
+        {showFirstSeparated && (
+          <>
+            {renderPageBtn(1, false)}
+            <span className="px-0.5 text-slate-400 font-bold select-none text-xs">...</span>
+          </>
+        )}
+
+        <div className="flex items-center h-8 bg-slate-50/80 border border-slate-200 rounded-lg p-0.5 gap-0.5 shadow-2xs shrink-0">
+          {groupPages.map((p) => renderPageBtn(p, true))}
+        </div>
+
+        {showLastSeparated && (
+          <>
+            <span className="px-0.5 text-slate-400 font-bold select-none text-xs">...</span>
+            {renderPageBtn(totalPages, false)}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // 2. DESKTOP PAGINATION LOGIC (Shows max 5 items in group)
+  const renderDesktopPaginationItems = () => {
+    if (totalPages <= 7) {
+      return (
+        <div className="hidden sm:flex items-center shrink-0 h-[34px] bg-slate-50/80 border border-slate-200 rounded-lg p-0.5 gap-0.5 shadow-2xs">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) =>
+            renderPageBtn(p, true)
+          )}
+        </div>
+      );
+    }
+
     let groupPages = [];
     if (currentPage <= 4) {
       groupPages = [1, 2, 3, 4, 5];
@@ -97,25 +143,21 @@ export default function Pagination({
     const showFirstSeparated = !groupPages.includes(1);
 
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="hidden sm:flex items-center gap-1.5 shrink-0">
         {showFirstSeparated && (
           <>
             {renderPageBtn(1, false)}
-            <span className="px-1 text-slate-400 font-bold select-none text-xs">
-              ...
-            </span>
+            <span className="px-1 text-slate-400 font-bold select-none text-xs">...</span>
           </>
         )}
 
-        <div className="flex items-center h-8 sm:h-[34px] bg-slate-50/80 border border-slate-200 rounded-lg p-0.5 gap-0.5 shadow-2xs">
+        <div className="flex items-center h-[34px] bg-slate-50/80 border border-slate-200 rounded-lg p-0.5 gap-0.5 shadow-2xs shrink-0">
           {groupPages.map((p) => renderPageBtn(p, true))}
         </div>
 
         {showLastSeparated && (
           <>
-            <span className="px-1 text-slate-400 font-bold select-none text-xs">
-              ...
-            </span>
+            <span className="px-1 text-slate-400 font-bold select-none text-xs">...</span>
             {renderPageBtn(totalPages, false)}
           </>
         )}
@@ -125,10 +167,10 @@ export default function Pagination({
 
   return (
     <div
-      className={`p-3.5 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-slate-700 bg-white ${className}`}
+      className={`p-3.5 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-700 bg-white w-full ${className}`}
     >
       {/* Left: Show [ 10 v ] entries */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start">
         <span className="text-xs sm:text-sm font-semibold text-slate-800">Show</span>
         <div className="relative inline-flex items-center h-8 sm:h-[34px]">
           <select
@@ -151,31 +193,35 @@ export default function Pagination({
       </div>
 
       {/* Right: Showing 1–10 of 1,250 + Page Navigation */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4 select-none">
-        <span className="text-xs sm:text-sm font-semibold text-slate-800 whitespace-nowrap">
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 select-none w-full sm:w-auto">
+        
+        {/* ADDED hidden sm:block TO HIDE ON SMALL DEVICES */}
+        <span className="hidden sm:block text-xs sm:text-sm font-semibold text-slate-800 whitespace-nowrap text-center sm:text-left">
           Showing {startItem}–{endItem} of {totalItems.toLocaleString()}
         </span>
 
-        <div className="flex items-center gap-1.5">
+        {/* Mobile horizontal scroll wrapper for pagination numbers */}
+        <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 justify-center sm:justify-center scrollbar-hide">
           {/* Previous Button */}
           <button
             onClick={() => onPageChange && onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage <= 1}
-            className="w-8 h-8 sm:w-[34px] sm:h-[34px] flex items-center justify-center rounded-lg border border-slate-200/90 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs"
+            className="shrink-0 w-8 h-8 sm:w-[34px] sm:h-[34px] flex items-center justify-center rounded-lg border border-slate-200/90 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs"
             title="Previous Page"
             type="button"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          {/* Grouped Page Numbers */}
-          {renderPaginationItems()}
+          {/* Grouped Page Numbers - Mobile (3 pages) & Desktop (5 pages) */}
+          {renderMobilePaginationItems()}
+          {renderDesktopPaginationItems()}
 
           {/* Next Button */}
           <button
             onClick={() => onPageChange && onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage >= totalPages}
-            className="w-8 h-8 sm:w-[34px] sm:h-[34px] flex items-center justify-center rounded-lg border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs"
+            className="shrink-0 w-8 h-8 sm:w-[34px] sm:h-[34px] flex items-center justify-center rounded-lg border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs"
             title="Next Page"
             type="button"
           >

@@ -699,7 +699,8 @@ export default function ReportsAnalytics() {
                   {recentRidesAnalytics.map((ride) => (
                     <tr
                       key={ride.id}
-                      className="hover:bg-slate-50/60 transition-colors"
+                      onClick={() => navigate(`/rides/${ride.rideId}`)}
+                      className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
                       <td className="py-2.5 px-3 whitespace-nowrap">
                         <span className="font-mono font-bold text-[11px] text-slate-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/80">

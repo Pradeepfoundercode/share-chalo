@@ -1,5 +1,14 @@
 import React from 'react';
 import steeringWheelIcon from '../../assets/Bold Black Steering Wheel Icon.png';
+import busConfigIcon from '../../assets/drivers/47121f34-9d5b-4410-83e8-6233fd444112 8.svg';
+import seatLayoutSectionIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 4.svg';
+
+// Custom Row Icons requested by user
+import busTypeIcon from '../../assets/drivers/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 4.svg';
+import acTypeIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 21.svg';
+import seatArrangementIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 22.svg';
+import totalRowsIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 25.svg';
+import totalSeatsIcon from '../../assets/drivers/df691cdf-c14f-44b5-82c2-80d3acdfdc18 2.svg';
 
 export default function SeatLayoutTab({ driver }) {
   // 11 rows: 1 to 11
@@ -44,11 +53,8 @@ export default function SeatLayoutTab({ driver }) {
           <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <div className="p-1.5 bg-amber-100/70 rounded-xl text-amber-700">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <img src={busConfigIcon} alt="Bus Seat Configuration" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-base font-black text-black">
                 Bus Seat Configuration
@@ -56,58 +62,52 @@ export default function SeatLayoutTab({ driver }) {
             </div>
 
             {/* List of configuration rows */}
-            <div className="space-y-4 text-xs sm:text-[13px] pt-1">
+            <div className="space-y-4 text-sm sm:text-base pt-1">
               {/* Bus Type */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-slate-700 font-bold">
-                  <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <rect x="3" y="3" width="18" height="15" rx="2" />
-                    <circle cx="7.5" cy="18" r="2" />
-                    <circle cx="16.5" cy="18" r="2" />
-                  </svg>
+                <div className="flex items-center gap-3 text-slate-700 font-bold">
+                  <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                    <img src={busTypeIcon} alt="Bus Type" className="w-full h-full object-contain" />
+                  </div>
                   <span>Bus Type</span>
                 </div>
-                <span className="px-4 py-1 rounded-lg font-bold text-xs bg-[#fed011] text-black shadow-2xs">
+                <span className="px-4 py-1 rounded-lg font-bold text-xs sm:text-sm bg-[#fed011] text-black shadow-2xs">
                   {driver.seatType || 'Seater'}
                 </span>
               </div>
 
               {/* AC Type */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-slate-700 font-bold">
-                  <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="M12 3v18M3 12h18M6.5 6.5l11 11M6.5 17.5l11-11" />
-                  </svg>
+                <div className="flex items-center gap-3 text-slate-700 font-bold">
+                  <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                    <img src={acTypeIcon} alt="AC Type" className="w-full h-full object-contain" />
+                  </div>
                   <span>AC Type</span>
                 </div>
-                <span className="px-5 py-1 rounded-lg font-bold text-xs bg-[#fed011] text-black shadow-2xs">
+                <span className="px-5 py-1 rounded-lg font-bold text-xs sm:text-sm bg-[#fed011] text-black shadow-2xs">
                   {driver.acType || 'AC'}
                 </span>
               </div>
 
               {/* Seat Arrangement */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-slate-700 font-bold">
-                  <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
-                    <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z" />
-                    <path d="M5 18v2M19 18v2" />
-                  </svg>
+                <div className="flex items-center gap-3 text-slate-700 font-bold">
+                  <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                    <img src={seatArrangementIcon} alt="Seat Arrangement" className="w-full h-full object-contain" />
+                  </div>
                   <span>Seat Arrangement</span>
                 </div>
-                <span className="px-4 py-1 rounded-lg font-bold text-xs bg-[#fed011] text-black shadow-2xs">
+                <span className="px-4 py-1 rounded-lg font-bold text-xs sm:text-sm bg-[#fed011] text-black shadow-2xs">
                   {driver.seatArrangement || '2 × 2'}
                 </span>
               </div>
 
               {/* Total Rows */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-slate-700 font-bold">
-                  <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="m12 2 10 5-10 5L2 7l10-5Z" />
-                    <path d="m2 17 10 5 10-5" />
-                    <path d="m2 12 10 5 10-5" />
-                  </svg>
+                <div className="flex items-center gap-3 text-slate-700 font-bold">
+                  <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                    <img src={totalRowsIcon} alt="Total Rows" className="w-full h-full object-contain" />
+                  </div>
                   <span>Total Rows</span>
                 </div>
                 <span className="text-black font-bold pr-2">
@@ -117,11 +117,10 @@ export default function SeatLayoutTab({ driver }) {
 
               {/* Seats per Row */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-slate-700 font-bold">
-                  <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
-                    <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z" />
-                  </svg>
+                <div className="flex items-center gap-3 text-slate-700 font-bold">
+                  <div className="w-5.5 h-5.5 flex items-center justify-center shrink-0">
+                    <img src={seatArrangementIcon} alt="Seats per Row" className="w-full h-full object-contain" />
+                  </div>
                   <span>Seats per Row</span>
                 </div>
                 <span className="text-black font-bold pr-2">
@@ -129,18 +128,15 @@ export default function SeatLayoutTab({ driver }) {
                 </span>
               </div>
 
-              {/* Total Seats Banner */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-100/60 border border-amber-200/70 mt-3">
-                <div className="flex items-center gap-2 font-black text-black">
-                  <svg className="w-4 h-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
+              {/* Total Seats */}
+              <div className="-mx-2.5 px-2.5 py-2 rounded-2xl bg-[#fef5d8] flex items-center justify-between">
+                <div className="flex items-center gap-3 text-black font-bold">
+                  <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                    <img src={totalSeatsIcon} alt="Total Seats" className="w-full h-full object-contain" />
+                  </div>
                   <span>Total Seats</span>
                 </div>
-                <span className="text-base font-black text-black pr-1">
+                <span className="text-black font-bold pr-2">
                   {driver.totalSeats || 45}
                 </span>
               </div>
@@ -151,102 +147,102 @@ export default function SeatLayoutTab({ driver }) {
         {/* =========================================================
             RIGHT COLUMN: Seat Layout (45 Seats) (col-span-8)
             ========================================================= */}
-        <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between max-sm:overflow-hidden">
           <div>
-            {/* Header with Title + Legend Tags */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            {/* Header with Title + Legend Tags (Fixed for Mobile to stay in one row) */}
+            <div className="flex flex-wrap max-sm:flex-col max-sm:items-start items-center justify-between gap-3 max-sm:gap-2.5 pb-3 border-b border-slate-100">
               {/* Title */}
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
-                  <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z" />
-                  <path d="M5 18v2M19 18v2" />
-                </svg>
+                <div className="w-8 h-8 max-sm:w-7 max-sm:h-7 flex items-center justify-center shrink-0">
+                  <img src={seatLayoutSectionIcon} alt="Seat Layout" className="w-full h-full object-contain" />
+                </div>
                 <h3 className="text-base font-black text-black">
                   Seat Layout ({driver.totalSeats || 45} Seats)
                 </h3>
               </div>
 
               {/* Legends: Available (45), Blocked (0), Reserved (0) */}
-              <div className="flex items-center gap-2 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-2.5 h-2.5 rounded-[3px] bg-[#bbf7d0] border border-[#22c55e]" />
+              <div className="flex items-center gap-2 text-xs font-bold max-sm:flex-nowrap max-sm:w-full max-sm:justify-between">
+                <span className="inline-flex items-center gap-1.5 max-sm:gap-1.5 px-2.5 py-1 max-sm:px-1.5 max-sm:py-0.5 rounded-lg max-sm:rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap max-sm:text-[10px]">
+                  <span className="w-2.5 h-2.5 max-sm:w-2 max-sm:h-2 rounded-[3px] bg-[#bbf7d0] border border-[#22c55e]" />
                   Available (45)
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
-                  <span className="w-2.5 h-2.5 rounded-[3px] bg-slate-300 border border-slate-400" />
+                <span className="inline-flex items-center gap-1.5 max-sm:gap-1.5 px-2.5 py-1 max-sm:px-1.5 max-sm:py-0.5 rounded-lg max-sm:rounded-md bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap max-sm:text-[10px]">
+                  <span className="w-2.5 h-2.5 max-sm:w-2 max-sm:h-2 rounded-[3px] bg-slate-300 border border-slate-400" />
                   Blocked (0)
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
-                  <span className="w-2.5 h-2.5 rounded-[3px] bg-rose-300 border border-rose-400" />
+                <span className="inline-flex items-center gap-1.5 max-sm:gap-1.5 px-2.5 py-1 max-sm:px-1.5 max-sm:py-0.5 rounded-lg max-sm:rounded-md bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap max-sm:text-[10px]">
+                  <span className="w-2.5 h-2.5 max-sm:w-2 max-sm:h-2 rounded-[3px] bg-rose-300 border border-rose-400" />
                   Reserved (0)
                 </span>
               </div>
             </div>
 
-            {/* Custom SVG/CSS Coach Bus Outer Blueprint (No Scroll, Bigger Height, Clean Borders) */}
+            {/* Custom SVG/CSS Coach Bus Outer Blueprint */}
             <div className="mt-5 w-full flex items-center justify-center py-2">
-              <div className="w-full bg-white border-2 border-black rounded-r-[28px] rounded-l-[40px] p-3 sm:p-4 flex items-stretch shadow-xs relative">
+              <div className="w-full bg-white border-2 max-sm:border-2 border-black rounded-r-[28px] max-sm:rounded-r-[20px] rounded-l-[40px] max-sm:rounded-l-[28px] p-3 sm:p-4 max-sm:p-2 flex items-stretch shadow-xs relative">
+                
                 {/* Left Bus Front Cabin */}
-                <div className="w-14 sm:w-16 shrink-0 flex flex-col justify-between items-center pr-2 border-r border-slate-200 py-1 relative">
+                <div className="w-14 sm:w-16 max-sm:w-10 shrink-0 flex flex-col justify-between items-center pr-2 max-sm:pr-1.5 border-r border-slate-200 max-sm:border-r-[1px] py-1 max-sm:py-1 relative">
                   {/* Front Curved Windshield Line */}
-                  <div className="absolute -left-1 top-4 bottom-4 w-1.5 bg-slate-200/80 rounded-full" />
+                  <div className="absolute -left-1 max-sm:-left-0.5 top-4 max-sm:top-3 bottom-4 max-sm:bottom-3 w-1.5 max-sm:w-1 bg-slate-200/80 rounded-full" />
 
                   {/* Steering Wheel + Driver Label */}
-                  <div className="flex flex-col items-center gap-1 mt-1">
+                  <div className="flex flex-col items-center gap-1 max-sm:gap-0.5 mt-1 max-sm:mt-0.5">
                     <img
                       src={steeringWheelIcon}
                       alt="Steering Wheel"
-                      className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+                      className="w-7 h-7 sm:w-8 sm:h-8 max-sm:w-5 max-sm:h-5 object-contain"
                     />
-                    <span className="text-[10px] sm:text-[11px] font-black text-black">
+                    <span className="text-[10px] sm:text-[11px] max-sm:text-[8px] font-black text-black">
                       Driver
                     </span>
                   </div>
 
                   {/* Entry Step / Stairs */}
-                  <div className="w-8 h-8 rounded-md border border-amber-400 bg-amber-50/80 flex flex-col justify-evenly p-1 shadow-2xs">
-                    <div className="h-0.5 bg-amber-400 rounded-full" />
-                    <div className="h-0.5 bg-amber-400 rounded-full" />
-                    <div className="h-0.5 bg-amber-400 rounded-full" />
+                  <div className="w-8 h-8 max-sm:w-5 max-sm:h-5 rounded-md max-sm:rounded-sm border border-amber-400 max-sm:border-[1px] bg-amber-50/80 flex flex-col justify-evenly p-1 max-sm:p-0.5 shadow-2xs">
+                    <div className="h-0.5 max-sm:h-[1px] bg-amber-400 rounded-full" />
+                    <div className="h-0.5 max-sm:h-[1px] bg-amber-400 rounded-full" />
+                    <div className="h-0.5 max-sm:h-[1px] bg-amber-400 rounded-full" />
                   </div>
                 </div>
 
                 {/* Main Passenger Deck (Inner Border Frame) */}
-                <div className="flex-1 ml-2 sm:ml-3 border border-slate-300 rounded-2xl p-2 sm:p-3 flex flex-col justify-between gap-6 sm:gap-8 bg-[#fafbfc]/50">
+                <div className="flex-1 ml-2 sm:ml-3 max-sm:ml-2 border border-slate-300 max-sm:border-[1px] rounded-2xl max-sm:rounded-xl p-2 sm:p-3 max-sm:p-1.5 flex flex-col justify-between gap-6 sm:gap-8 max-sm:gap-3 bg-[#fafbfc]/50">
+                  
                   {/* Top Row: A & B Seats */}
-                  <div className="grid grid-cols-11 gap-1 sm:gap-1.5 w-full">
+                  <div className="grid grid-cols-11 gap-1 sm:gap-1.5 max-sm:gap-0.5 w-full">
                     {topRows.map((col) => (
-                      <div key={`col-top-${col.num}`} className="flex gap-0.5 sm:gap-1">
+                      <div key={`col-top-${col.num}`} className="flex gap-0.5 sm:gap-1 max-sm:gap-0.5">
                         {col.seats.map((seat) => (
                           <div
                             key={seat}
-                            className="flex-1 h-9 sm:h-12 rounded-lg bg-[#bbf7d0] border border-[#22c55e] text-slate-900 font-black text-[9px] sm:text-[11px] flex items-center justify-center shadow-2xs hover:scale-105 transition-transform cursor-pointer"
+                            className="flex-1 h-9 sm:h-12 max-sm:h-7 rounded-lg max-sm:rounded-[3px] bg-[#bbf7d0] border border-[#22c55e] text-slate-900 font-black text-[9px] sm:text-[11px] max-sm:text-[8px] max-sm:px-0 flex items-center justify-center shadow-2xs hover:scale-105 transition-transform cursor-pointer"
                           >
                             {seat}
                           </div>
                         ))}
                         {col.seats.length === 1 && (
-                          <div className="flex-1 h-9 sm:h-12" />
+                          <div className="flex-1 h-9 sm:h-12 max-sm:h-7" />
                         )}
                       </div>
                     ))}
                   </div>
 
                   {/* Bottom Row: C & D Seats */}
-                  <div className="grid grid-cols-11 gap-1 sm:gap-1.5 w-full">
+                  <div className="grid grid-cols-11 gap-1 sm:gap-1.5 max-sm:gap-0.5 w-full">
                     {bottomRows.map((col) => (
-                      <div key={`col-bot-${col.num}`} className="flex gap-0.5 sm:gap-1">
+                      <div key={`col-bot-${col.num}`} className="flex gap-0.5 sm:gap-1 max-sm:gap-0.5">
                         {col.seats.map((seat) => (
                           <div
                             key={seat}
-                            className="flex-1 h-9 sm:h-12 rounded-lg bg-[#bbf7d0] border border-[#22c55e] text-slate-900 font-black text-[9px] sm:text-[11px] flex items-center justify-center shadow-2xs hover:scale-105 transition-transform cursor-pointer"
+                            className="flex-1 h-9 sm:h-12 max-sm:h-7 rounded-lg max-sm:rounded-[3px] bg-[#bbf7d0] border border-[#22c55e] text-slate-900 font-black text-[9px] sm:text-[11px] max-sm:text-[8px] max-sm:px-0 flex items-center justify-center shadow-2xs hover:scale-105 transition-transform cursor-pointer"
                           >
                             {seat}
                           </div>
                         ))}
                         {col.seats.length === 1 && (
-                          <div className="flex-1 h-9 sm:h-12" />
+                          <div className="flex-1 h-9 sm:h-12 max-sm:h-7" />
                         )}
                       </div>
                     ))}

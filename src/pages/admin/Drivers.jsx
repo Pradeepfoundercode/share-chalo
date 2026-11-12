@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users,
   CheckCircle2,
   Clock,
-  XCircle,
   AlertCircle,
   Ban,
   Search,
@@ -25,8 +23,65 @@ import {
 } from 'lucide-react';
 import driversIcon from '../../assets/Group (1).svg';
 import Pagination from '../../components/common/Pagination';
+import StatsCards from '../../components/common/StatsCards';
 
 import { driversList } from '../../data/driversData';
+
+const driverStats = [
+  {
+    id: "total-drivers",
+    label: "Total Drivers",
+    value: "1,250",
+    image: driversIcon,
+    cardColor: "bg-[#fffbeb] border-amber-200/80",
+    iconBg: "bg-amber-200/80",
+  },
+  {
+    id: "approved",
+    label: "Approved",
+    value: "1,080",
+    icon: CheckCircle2,
+    cardColor: "bg-[#f0fdf4] border-emerald-200/80",
+    iconBg: "bg-emerald-100",
+    iconColor: "text-[#16a34a]",
+  },
+  {
+    id: "pending",
+    label: "Pending",
+    value: "68",
+    icon: Clock,
+    cardColor: "bg-[#fefce8] border-yellow-200/80",
+    iconBg: "bg-yellow-100",
+    iconColor: "text-[#ca8a04]",
+  },
+  {
+    id: "rejected",
+    label: "Rejected",
+    value: "32",
+    icon: X,
+    cardColor: "bg-[#fef2f2] border-rose-200/80",
+    iconBg: "bg-rose-100",
+    iconColor: "text-[#dc2626]",
+  },
+  {
+    id: "action-required",
+    label: "Action Required",
+    value: "70",
+    icon: AlertCircle,
+    cardColor: "bg-[#fff7ed] border-orange-200/80",
+    iconBg: "bg-orange-100",
+    iconColor: "text-[#ea580c]",
+  },
+  {
+    id: "blocked",
+    label: "Blocked",
+    value: "20",
+    icon: Ban,
+    cardColor: "bg-[#faf5ff] border-purple-200/80",
+    iconBg: "bg-purple-100",
+    iconColor: "text-purple-600",
+  },
+];
 
 export default function Drivers() {
   const navigate = useNavigate();
@@ -210,76 +265,8 @@ export default function Drivers() {
 
   return (
     <div className="space-y-5 pb-10">
-      {/* =========================================================
-          1. STATS METRIC CARDS ROW (6 Cards)
-          ========================================================= */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-        {/* Total Drivers */}
-        <div className="bg-[#fffbeb] rounded-xl p-2.5 sm:p-3 border border-amber-200/80 shadow-2xs flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-xl bg-amber-200/80 flex items-center justify-center p-2.5 shrink-0 shadow-2xs">
-            <img src={driversIcon} alt="Total Drivers" className="w-full h-full object-contain" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">1,250</h3>
-            <p className="text-[11px] text-slate-600 font-semibold mt-0.5 truncate">Total Drivers</p>
-          </div>
-        </div>
-
-        {/* Approved */}
-        <div className="bg-[#f0fdf4] rounded-xl p-2.5 sm:p-3 border border-emerald-200/80 shadow-2xs flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-[#16a34a] flex items-center justify-center shrink-0 shadow-2xs">
-            <CheckCircle2 className="w-6.5 h-6.5 stroke-[2.4]" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">1,080</h3>
-            <p className="text-[11px] text-slate-600 font-semibold mt-0.5 truncate">Approved</p>
-          </div>
-        </div>
-
-        {/* Pending */}
-        <div className="bg-[#fefce8] rounded-xl p-2.5 sm:p-3 border border-yellow-200/80 shadow-2xs flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-xl bg-yellow-100 text-[#ca8a04] flex items-center justify-center shrink-0 shadow-2xs">
-            <Clock className="w-6.5 h-6.5 stroke-[2.3]" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">68</h3>
-            <p className="text-[11px] text-slate-600 font-semibold mt-0.5 truncate">Pending</p>
-          </div>
-        </div>
-
-        {/* Rejected */}
-        <div className="bg-[#fef2f2] rounded-xl p-2.5 sm:p-3 border border-rose-200/80 shadow-2xs flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-xl bg-rose-100 text-[#dc2626] flex items-center justify-center shrink-0 shadow-2xs">
-            <X className="w-6.5 h-6.5 stroke-[2.6]" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">32</h3>
-            <p className="text-[11px] text-slate-600 font-semibold mt-0.5 truncate">Rejected</p>
-          </div>
-        </div>
-
-        {/* Action Required */}
-        <div className="bg-[#fff7ed] rounded-xl p-2.5 sm:p-3 border border-orange-200/80 shadow-2xs flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-xl bg-orange-100 text-[#ea580c] flex items-center justify-center shrink-0 shadow-2xs">
-            <AlertCircle className="w-6.5 h-6.5 stroke-[2.3]" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">70</h3>
-            <p className="text-[11px] text-slate-600 font-semibold mt-0.5 truncate">Action Required</p>
-          </div>
-        </div>
-
-        {/* Blocked */}
-        <div className="bg-[#faf5ff] rounded-xl p-2.5 sm:p-3 border border-purple-200/80 shadow-2xs flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 shadow-2xs">
-            <Ban className="w-6.5 h-6.5 stroke-[2.3]" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">20</h3>
-            <p className="text-[11px] text-slate-600 font-semibold mt-0.5 truncate">Blocked</p>
-          </div>
-        </div>
-      </div>
+      {/* 1. REUSABLE STATS CARDS */}
+      <StatsCards items={driverStats} />
 
       {/* =========================================================
           2. FILTER STATUS TABS ROW
@@ -308,7 +295,7 @@ export default function Drivers() {
           ========================================================= */}
       <div className="bg-white p-3 sm:p-3.5 rounded-2xl border border-gray-100 shadow-2xs flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-2.5">
         {/* Search by Name, Mobile, Driver ID */}
-        <div className="relative flex-1 min-w-[240px] max-w-md">
+        <div className="relative flex-1 min-w-[240px] max-w-md max-sm:max-w-full">
           <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
             type="text"
@@ -320,10 +307,10 @@ export default function Drivers() {
         </div>
 
         {/* Dropdowns Group */}
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="flex flex-wrap max-sm:flex-col items-end max-sm:items-stretch gap-2">
           {/* Verification Status */}
-          <div className="flex-1 sm:flex-initial relative">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+          <div className="flex-1 sm:flex-initial relative max-sm:w-full">
+            <label className="block text-xs font-bold text-slate-700 mb-1 max-sm:mt-2">
               Verification Status
             </label>
             <button
@@ -345,7 +332,7 @@ export default function Drivers() {
 
             {/* Custom Dropdown Menu */}
             {statusDropdownOpen && (
-              <div className="absolute left-0 mt-1.5 w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
+              <div className="absolute left-0 max-sm:right-0 mt-1.5 sm:w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
                 {[
                   'All Statuses',
                   'Approved',
@@ -378,8 +365,8 @@ export default function Drivers() {
           </div>
 
           {/* Vehicle Type */}
-          <div className="flex-1 sm:flex-initial relative">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+          <div className="flex-1 sm:flex-initial relative max-sm:w-full">
+            <label className="block text-xs font-bold text-slate-700 mb-1 max-sm:mt-1">
               Vehicle Type
             </label>
             <button
@@ -401,7 +388,7 @@ export default function Drivers() {
 
             {/* Custom Dropdown Menu */}
             {vehicleDropdownOpen && (
-              <div className="absolute left-0 mt-1.5 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
+              <div className="absolute left-0 max-sm:right-0 mt-1.5 sm:w-48 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
                 {[
                   'All Vehicles',
                   'Private Car',
@@ -433,8 +420,8 @@ export default function Drivers() {
           </div>
 
           {/* Registration Date Dropdown & Picker */}
-          <div className="flex-1 sm:flex-initial relative">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+          <div className="flex-1 sm:flex-initial relative max-sm:w-full">
+            <label className="block text-xs font-bold text-slate-700 mb-1 max-sm:mt-1">
               Registration Date
             </label>
             <button
@@ -465,7 +452,7 @@ export default function Drivers() {
 
             {/* Date Range Picker Popover with Custom Calendar View */}
             {datePickerOpen && (
-              <div className="absolute right-0 sm:left-0 mt-1.5 w-68 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 z-40 space-y-2.5 animate-in fade-in zoom-in-95">
+              <div className="absolute right-0 max-sm:left-0 mt-1.5 sm:w-68 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 z-40 space-y-2.5 animate-in fade-in zoom-in-95">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <div className="flex items-center gap-1.5">
@@ -555,7 +542,7 @@ export default function Drivers() {
                       // Empty slots for start padding
                       for (let i = 0; i < firstDayIndex; i++) {
                         days.push(
-                          <div key={`empty-${i}`} className="w-7 h-6.5" />
+                          <div key={`empty-${i}`} className="w-7 h-6.5 max-sm:mx-auto" />
                         );
                       }
 
@@ -589,11 +576,11 @@ export default function Drivers() {
                                 }
                               }
                             }}
-                            className={`w-7 h-6.5 text-[11px] font-medium rounded-md flex items-center justify-center transition-all cursor-pointer ${
+                            className={`w-7 h-6.5 max-sm:mx-auto text-[11px] font-medium rounded-md flex items-center justify-center transition-all cursor-pointer ${
                               isStart || isEnd
                                 ? 'bg-[#fed011] text-black font-bold shadow-2xs'
                                 : inRange
-                                ? 'bg-amber-100 text-amber-900 rounded-none'
+                                ? 'bg-amber-100 text-amber-900 rounded-none max-sm:w-full'
                                 : 'text-slate-700 hover:bg-white hover:text-slate-900'
                             }`}
                           >
@@ -639,14 +626,14 @@ export default function Drivers() {
           {/* Reset Button */}
           <button
             onClick={handleReset}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-gray-200 rounded-xl transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-gray-200 rounded-xl transition-all cursor-pointer max-sm:w-full max-sm:mt-1"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
           </button>
 
           {/* Apply Button */}
-          <button className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer">
+          <button className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer max-sm:w-full">
             <Filter className="w-4 h-4 fill-black" />
             Apply
           </button>
@@ -683,7 +670,8 @@ export default function Drivers() {
                   return (
                     <tr
                       key={driver.id}
-                      className="hover:bg-amber-50/30 transition-colors"
+                      onClick={() => navigate(`/drivers/${driver.id}`)}
+                      className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
                       {/* Driver Avatar & Name */}
                       <td className="py-2.5 px-4">
@@ -784,7 +772,7 @@ export default function Drivers() {
           ========================================================= */}
       {selectedDriverDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 relative">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-sm:w-[95%] p-6 max-sm:p-4 shadow-2xl border border-gray-100 relative max-sm:max-h-[90vh] max-sm:overflow-y-auto">
             <button
               onClick={() => setSelectedDriverDetail(null)}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 rounded-full hover:bg-slate-100 transition-colors"
@@ -793,7 +781,7 @@ export default function Drivers() {
             </button>
 
             {/* Profile Header */}
-            <div className="flex items-center gap-4 border-b border-gray-100 pb-5">
+            <div className="flex items-center gap-4 max-sm:flex-col max-sm:text-center border-b border-gray-100 pb-5">
               <img
                 src={selectedDriverDetail.avatar}
                 alt={selectedDriverDetail.name}
@@ -806,7 +794,7 @@ export default function Drivers() {
                 <p className="text-xs text-slate-500 font-semibold mt-0.5">
                   ID: <span className="text-slate-800">{selectedDriverDetail.id}</span> • Registered: {selectedDriverDetail.registeredOn}
                 </p>
-                <div className="mt-2 flex items-center gap-2">
+                <div className="mt-2 flex items-center max-sm:justify-center gap-2">
                   {renderKycBadge(selectedDriverDetail.kycStatus)}
                   {renderAccountBadge(selectedDriverDetail.accountStatus)}
                 </div>
@@ -815,7 +803,7 @@ export default function Drivers() {
 
             {/* Details List */}
             <div className="py-4 space-y-3 text-xs sm:text-sm">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="flex items-center gap-2 text-slate-600 font-medium">
                   <Phone className="w-4 h-4 text-slate-400" /> Mobile
                 </span>
@@ -824,7 +812,7 @@ export default function Drivers() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="flex items-center gap-2 text-slate-600 font-medium">
                   <Mail className="w-4 h-4 text-slate-400" /> Email
                 </span>
@@ -833,7 +821,7 @@ export default function Drivers() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="flex items-center gap-2 text-slate-600 font-medium">
                   <Car className="w-4 h-4 text-slate-400" /> Vehicle
                 </span>
@@ -849,7 +837,7 @@ export default function Drivers() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="flex items-center gap-2 text-slate-600 font-medium">
                   <FileText className="w-4 h-4 text-slate-400" /> Documents
                 </span>
@@ -860,7 +848,7 @@ export default function Drivers() {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-3 border-t border-gray-100 flex items-center justify-end gap-2.5">
+            <div className="pt-3 border-t border-gray-100 flex items-center justify-end max-sm:justify-center gap-2.5">
               <button
                 onClick={() => setSelectedDriverDetail(null)}
                 className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"

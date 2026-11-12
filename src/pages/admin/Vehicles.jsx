@@ -15,7 +15,7 @@ import {
   Activity
 } from 'lucide-react';
 import { vehiclesStats, vehiclesList } from '../../data/vehiclesData';
-import Pagination from '../../components/common/Pagination';
+import { Pagination, StatsCards } from '../../components/common';
 
 export default function Vehicles() {
   const navigate = useNavigate();
@@ -49,64 +49,55 @@ export default function Vehicles() {
     return matchesSearch && matchesVehicleType && matchesUsageType && matchesStatus;
   });
 
+  // Reusable StatsCards configuration
+  const vehicleStatsItems = [
+    {
+      id: 1,
+      label: 'Total Vehicles',
+      value: vehiclesStats.totalVehicles,
+      icon: <Car className="w-6.5 h-6.5 stroke-[2.3]" />,
+      cardColor: 'bg-[#fffbeb] border-amber-200/80',
+      iconBg: 'bg-amber-200/80',
+      iconColor: 'text-amber-900',
+    },
+    {
+      id: 2,
+      label: 'Active Vehicles',
+      value: vehiclesStats.activeVehicles,
+      icon: <CheckCircle2 className="w-6.5 h-6.5 stroke-[2.3]" />,
+      cardColor: 'bg-[#f0fdf4] border-emerald-200/80',
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-[#16a34a]',
+    },
+    {
+      id: 3,
+      label: 'Blocked Vehicles',
+      value: vehiclesStats.blockedVehicles,
+      icon: <Ban className="w-6.5 h-6.5 stroke-[2.3]" />,
+      cardColor: 'bg-[#fef2f2] border-rose-200/80',
+      iconBg: 'bg-rose-100',
+      iconColor: 'text-[#dc2626]',
+    },
+    {
+      id: 4,
+      label: 'Inactive Vehicles',
+      value: vehiclesStats.inactiveVehicles,
+      icon: <Clock className="w-6.5 h-6.5 stroke-[2.3]" />,
+      cardColor: 'bg-[#faf5ff] border-purple-200/80',
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+    },
+  ];
+
   return (
     <div className="space-y-4 select-none pb-8">
       {/* =========================================================
-          STATS CARDS (4 Columns)
+          STATS CARDS (Reusable StatsCards - 4 Columns)
           ========================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Vehicles - Soft Amber/Yellow tinted background */}
-        <div className="bg-[#fffdf2] rounded-2xl p-4.5 border border-amber-200/70 shadow-2xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-amber-100/90 text-amber-500 flex items-center justify-center shrink-0">
-            <Car className="w-7 h-7 stroke-[2.3]" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-800">Total Vehicles</p>
-            <h3 className="text-2xl sm:text-[28px] font-bold text-black leading-tight mt-0.5">
-              {vehiclesStats.totalVehicles}
-            </h3>
-          </div>
-        </div>
-
-        {/* Card 2: Active Vehicles - Soft Green tinted background */}
-        <div className="bg-[#f2fdf5] rounded-2xl p-4.5 border border-emerald-200/70 shadow-2xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-emerald-100/90 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-7 h-7 stroke-[2.3]" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-800">Active Vehicles</p>
-            <h3 className="text-2xl sm:text-[28px] font-bold text-black leading-tight mt-0.5">
-              {vehiclesStats.activeVehicles}
-            </h3>
-          </div>
-        </div>
-
-        {/* Card 3: Blocked Vehicles - Soft Rose/Red tinted background */}
-        <div className="bg-[#fff4f5] rounded-2xl p-4.5 border border-rose-200/70 shadow-2xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-rose-100/90 text-rose-600 flex items-center justify-center shrink-0">
-            <Ban className="w-7 h-7 stroke-[2.3]" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-800">Blocked Vehicles</p>
-            <h3 className="text-2xl sm:text-[28px] font-bold text-black leading-tight mt-0.5">
-              {vehiclesStats.blockedVehicles}
-            </h3>
-          </div>
-        </div>
-
-        {/* Card 4: Inactive Vehicles - Soft Purple/Lavender tinted background */}
-        <div className="bg-[#fbf7ff] rounded-2xl p-4.5 border border-purple-200/70 shadow-2xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-purple-100/90 text-purple-600 flex items-center justify-center shrink-0">
-            <Clock className="w-7 h-7 stroke-[2.3]" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-800">Inactive Vehicles</p>
-            <h3 className="text-2xl sm:text-[28px] font-bold text-black leading-tight mt-0.5">
-              {vehiclesStats.inactiveVehicles}
-            </h3>
-          </div>
-        </div>
-      </div>
+      <StatsCards
+        items={vehicleStatsItems}
+        columns="lg:grid-cols-4"
+      />
 
       {/* =========================================================
           FILTER BAR (Search input + 3 Dropdown Filters)
@@ -267,7 +258,8 @@ export default function Vehicles() {
                   return (
                     <tr
                       key={vehicle.id}
-                      className="hover:bg-slate-50/70 transition-colors"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                      className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
                       {/* 1. Row Index */}
                       <td className="py-3 px-3.5 pl-5 text-center text-slate-900 font-bold text-sm">

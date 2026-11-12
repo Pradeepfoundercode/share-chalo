@@ -316,7 +316,8 @@ export default function SupportComplaints() {
               {displayedItems.map((item, index) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-slate-50/70 transition-colors group"
+                  onClick={() => navigate(`/support/${item.id || item.ticketId.replace('#', '')}`)}
+                  className="hover:bg-amber-50/40 transition-colors group cursor-pointer"
                 >
                   {/* # */}
                   <td className="py-3.5 px-3 text-center font-bold text-slate-700">
@@ -379,9 +380,8 @@ export default function SupportComplaints() {
                   {/* Subject */}
                   <td className="py-3.5 px-3">
                     <span
-                      className="font-medium text-slate-800 truncate max-w-[200px] block cursor-pointer hover:text-amber-800 hover:underline"
+                      className="font-medium text-slate-800 truncate max-w-[200px] block"
                       title={item.fullSubject}
-                      onClick={() => setSelectedTicket(item)}
                     >
                       {item.subject}
                     </span>

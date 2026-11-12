@@ -372,7 +372,8 @@ export default function Notifications() {
               {filteredNotifications.map((item, index) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-slate-50/70 transition-colors group"
+                  onClick={() => navigate(`/notifications/${item.id || item.numericId}`)}
+                  className="hover:bg-amber-50/40 transition-colors group cursor-pointer"
                 >
                   {/* # */}
                   <td className="py-3.5 px-3 text-center font-bold text-slate-600">
@@ -394,9 +395,8 @@ export default function Notifications() {
                   {/* Message (Preview) */}
                   <td className="py-3.5 px-3">
                     <span
-                      className="font-medium text-slate-700 truncate max-w-[280px] block cursor-pointer hover:text-amber-800 hover:underline"
+                      className="font-medium text-slate-700 truncate max-w-[280px] block"
                       title={item.fullMessage}
-                      onClick={() => setSelectedNotification(item)}
                     >
                       {item.message}
                     </span>

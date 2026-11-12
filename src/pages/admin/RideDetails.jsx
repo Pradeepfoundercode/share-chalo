@@ -26,7 +26,7 @@ import {
 import { rideDetailsData } from '../../data/ridesData';
 import busHeroBanner from '../../assets/bus_hero_banner.png';
 import { useAuthStore } from '../../store/authStore';
-import Pagination from '../../components/common/Pagination';
+import { Pagination, DetailsHeader } from '../../components/common';
 
 export default function RideDetails() {
   const navigate = useNavigate();
@@ -40,53 +40,15 @@ export default function RideDetails() {
   return (
     <div className="space-y-4 select-none pb-12">
       {/* =========================================================
-          TOP BREADCRUMB & HEADER BAR
+          REUSABLE DETAILS HEADER BAR
           ========================================================= */}
-      <div className="flex items-center justify-between bg-white px-5 py-3 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-center gap-3.5">
-          <button
-            onClick={() => navigate('/rides')}
-            className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-800 transition-colors cursor-pointer"
-            title="Back to Rides"
-          >
-            <ArrowLeft className="w-5 h-5 stroke-[2.4]" />
-          </button>
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
-              Ride Details
-            </h1>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mt-0.5">
-              <span
-                onClick={() => navigate('/rides')}
-                className="hover:text-amber-600 cursor-pointer"
-              >
-                Rides
-              </span>
-              <span>›</span>
-              <span className="text-slate-800 font-bold">Ride Details</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Header Admin Profile & Notifications */}
-        <div className="flex items-center gap-3">
-          <button className="relative p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors">
-            <Bell className="w-5 h-5 text-slate-700 stroke-[2.2]" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-          </button>
-
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <div className="w-9 h-9 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-sm shadow-xs">
-              <User className="w-5 h-5" />
-            </div>
-            <div className="hidden sm:block text-left">
-              <span className="text-sm font-bold text-slate-900">
-                {admin?.name || 'Admin'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DetailsHeader
+        title="Ride Details"
+        breadcrumbs={[
+          { label: 'Rides', path: '/rides' },
+          { label: 'Ride Details' },
+        ]}
+      />
 
       {/* =========================================================
           HERO BANNER CARD (Ride ID, Status, Date/Time, Vehicle Type)
