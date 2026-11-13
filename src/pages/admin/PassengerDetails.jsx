@@ -24,10 +24,10 @@ import { passengersList, passengerBookingHistory } from '../../data/passengersDa
 import { Pagination, DetailsHeader } from '../../components/common';
 
 // Assets
-import totalBookingIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 2.svg';
-import completedRidesIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 4.svg';
-import cancelledRidesIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 5.svg';
-import totalAmountIcon from '../../assets/drivers/1987e5d4-d1bf-4753-850f-dd9340c9bc6c 19.svg';
+import totalBookingIcon from '../../assets/dashboard/calender-yellow.svg';
+import completedRidesIcon from '../../assets/dashboard/completed-rides.svg';
+import cancelledRidesIcon from '../../assets/drivers/blocked-cancelled.svg';
+import totalAmountIcon from '../../assets/drivers/total-amount.svg';
 
 export default function PassengerDetails() {
   const { id } = useParams();

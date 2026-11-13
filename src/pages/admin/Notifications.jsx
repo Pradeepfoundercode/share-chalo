@@ -6,7 +6,6 @@ import {
   Calendar,
   XCircle,
   Plus,
-  Send,
   Search,
   Users,
   Eye,
@@ -23,6 +22,14 @@ import {
 } from 'lucide-react';
 import { notificationsSummary, notificationsList } from '../../data/notificationsData';
 import Pagination from '../../components/common/Pagination';
+
+// SVG Icons requested by user
+import totalNotificationsIcon from '../../assets/icons/notification-transparent.svg';
+import sentNotificationsIcon from '../../assets/icons/b526c866-7ce7-4c15-848e-ed8378b03085 32 (1).svg';
+import scheduledNotificationsIcon from '../../assets/icons/calendar-blue.svg';
+import failedNotificationsIcon from '../../assets/drivers/blocked-cancelled.svg';
+import notificationListIcon from '../../assets/dashboard/finance-list.svg';
+import sendPlaneIcon from '../../assets/drivers/send-plane-icon.svg';
 
 export default function Notifications() {
   const navigate = useNavigate();
@@ -54,21 +61,21 @@ export default function Notifications() {
   const renderNotificationIcon = (iconType) => {
     switch (iconType) {
       case 'megaphone':
-        return <Megaphone className="w-4 h-4 text-emerald-600" />;
+        return <Megaphone className="w-5 h-5 text-emerald-600" />;
       case 'gift':
-        return <Gift className="w-4 h-4 text-rose-500" />;
+        return <Gift className="w-5 h-5 text-rose-500" />;
       case 'car':
-        return <Car className="w-4 h-4 text-amber-600" />;
+        return <Car className="w-5 h-5 text-amber-600" />;
       case 'info':
-        return <Info className="w-4 h-4 text-sky-500" />;
+        return <Info className="w-5 h-5 text-sky-500" />;
       case 'percent':
-        return <Percent className="w-4 h-4 text-rose-500" />;
+        return <Percent className="w-5 h-5 text-rose-500" />;
       case 'shield':
-        return <ShieldCheck className="w-4 h-4 text-emerald-600" />;
+        return <ShieldCheck className="w-5 h-5 text-emerald-600" />;
       case 'alert':
-        return <AlertTriangle className="w-4 h-4 text-rose-500" />;
+        return <AlertTriangle className="w-5 h-5 text-rose-500" />;
       default:
-        return <Bell className="w-4 h-4 text-slate-600" />;
+        return <Bell className="w-5 h-5 text-slate-600" />;
     }
   };
 
@@ -77,28 +84,28 @@ export default function Notifications() {
     switch (status) {
       case 'Sent':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
             Sent
           </span>
         );
       case 'Scheduled':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold text-blue-700 bg-blue-50 border border-blue-200">
+            <span className="w-2 h-2 rounded-full bg-blue-600"></span>
             Scheduled
           </span>
         );
       case 'Failed':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200">
+            <span className="w-2 h-2 rounded-full bg-rose-600"></span>
             Failed
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 bg-slate-100">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold text-slate-700 bg-slate-100">
             {status}
           </span>
         );
@@ -109,16 +116,16 @@ export default function Notifications() {
   const renderRecipientBadge = (recipient) => {
     if (recipient === 'Passengers') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200">
-          <Users className="w-3.5 h-3.5 text-sky-600" />
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-sky-800 bg-sky-50 border border-sky-200">
+          <Users className="w-4 h-4 text-sky-600" />
           Passengers
         </span>
       );
     }
     if (recipient === 'Drivers') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
-          <span className="w-3.5 h-3.5 rounded-full border border-emerald-600 flex items-center justify-center text-[9px] font-black">
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
+          <span className="w-4 h-4 rounded-full border border-emerald-600 flex items-center justify-center text-[10px] font-black">
             ✓
           </span>
           Drivers
@@ -126,8 +133,8 @@ export default function Notifications() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200">
-        <Users className="w-3.5 h-3.5 text-amber-700" />
+      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-amber-900 bg-amber-50 border border-amber-200">
+        <Users className="w-4 h-4 text-amber-700" />
         All Users
       </span>
     );
@@ -177,30 +184,30 @@ export default function Notifications() {
           ========================================================= */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Left 2 Tabs */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => setActiveTab('Notifications List')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-2xs ${
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all cursor-pointer shadow-2xs ${
               activeTab === 'Notifications List'
                 ? 'bg-[#fed011] text-black shadow-xs font-black'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
-            <span className="text-sm">📑</span>
+            <img src={notificationListIcon} alt="Notifications List" className="w-5 h-5 object-contain shrink-0" />
             <span>Notifications List</span>
           </button>
 
           <button
             type="button"
             onClick={() => navigate('/notifications/create')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-2xs ${
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all cursor-pointer shadow-2xs ${
               activeTab === 'Create Notification'
                 ? 'bg-[#fed011] text-black shadow-xs font-black'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
-            <Send className="w-4 h-4 shrink-0" />
+            <img src={sendPlaneIcon} alt="Create Notification" className="w-5 h-5 object-contain shrink-0" />
             <span>Create Notification</span>
           </button>
         </div>
@@ -209,9 +216,9 @@ export default function Notifications() {
         <button
           type="button"
           onClick={() => navigate('/notifications/create')}
-          className="h-10 px-5 bg-[#fed011] hover:bg-amber-400 text-black rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors self-end sm:self-auto"
+          className="h-11 px-6 bg-[#fed011] hover:bg-amber-400 text-black rounded-xl text-sm sm:text-base font-black flex items-center justify-center gap-2.5 cursor-pointer shadow-xs transition-colors self-end sm:self-auto"
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
+          <img src={sendPlaneIcon} alt="Create Notification" className="w-5 h-5 object-contain shrink-0" />
           <span>Create Notification</span>
         </button>
       </div>
@@ -221,56 +228,56 @@ export default function Notifications() {
           ========================================================= */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         {/* Total Notifications */}
-        <div className="bg-amber-50/50 border border-amber-200/70 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-amber-100/70 border border-amber-200/50 flex items-center justify-center shrink-0 text-slate-900">
-            <Bell className="w-5 h-5" />
+        <div className="bg-amber-50/50 border border-amber-200/70 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100/70 border border-amber-200/50 flex items-center justify-center shrink-0">
+            <img src={totalNotificationsIcon} alt="Total Notifications" className="w-8 h-8 object-contain" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none mb-1">
               {notificationsSummary.totalNotifications}
             </div>
-            <div className="text-xs font-semibold text-slate-700">
+            <div className="text-xs sm:text-sm font-bold text-slate-800">
               Total Notifications
             </div>
           </div>
         </div>
 
         {/* Sent */}
-        <div className="bg-emerald-50/40 border border-emerald-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-emerald-100/70 border border-emerald-200/50 flex items-center justify-center shrink-0 text-emerald-600">
-            <CheckCircle2 className="w-5 h-5" />
+        <div className="bg-emerald-50/40 border border-emerald-200/60 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-100/70 border border-emerald-200/50 flex items-center justify-center shrink-0">
+            <img src={sentNotificationsIcon} alt="Sent" className="w-8 h-8 object-contain" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none mb-1">
               {notificationsSummary.sent}
             </div>
-            <div className="text-xs font-semibold text-slate-700">Sent</div>
+            <div className="text-xs sm:text-sm font-bold text-slate-800">Sent</div>
           </div>
         </div>
 
         {/* Scheduled */}
-        <div className="bg-sky-50/40 border border-sky-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-sky-100/70 border border-sky-200/50 flex items-center justify-center shrink-0 text-sky-600">
-            <Calendar className="w-5 h-5" />
+        <div className="bg-sky-50/40 border border-sky-200/60 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+          <div className="w-14 h-14 rounded-2xl bg-sky-100/70 border border-sky-200/50 flex items-center justify-center shrink-0">
+            <img src={scheduledNotificationsIcon} alt="Scheduled" className="w-8 h-8 object-contain" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none mb-1">
               {notificationsSummary.scheduled}
             </div>
-            <div className="text-xs font-semibold text-slate-700">Scheduled</div>
+            <div className="text-xs sm:text-sm font-bold text-slate-800">Scheduled</div>
           </div>
         </div>
 
         {/* Failed */}
-        <div className="bg-rose-50/40 border border-rose-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-rose-100/70 border border-rose-200/50 flex items-center justify-center shrink-0 text-rose-600">
-            <XCircle className="w-5 h-5" />
+        <div className="bg-rose-50/40 border border-rose-200/60 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+          <div className="w-14 h-14 rounded-2xl bg-rose-100/70 border border-rose-200/50 flex items-center justify-center shrink-0">
+            <img src={failedNotificationsIcon} alt="Failed" className="w-8 h-8 object-contain" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none mb-1">
               {notificationsSummary.failed}
             </div>
-            <div className="text-xs font-semibold text-slate-700">Failed</div>
+            <div className="text-xs sm:text-sm font-bold text-slate-800">Failed</div>
           </div>
         </div>
       </div>
@@ -281,27 +288,27 @@ export default function Notifications() {
       <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
         {/* Filter Controls Row */}
         <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/20">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5">
             {/* Search Input */}
             <div className="lg:col-span-5 relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title or message..."
-                className="w-full h-10 pl-10 pr-3.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-300/20 shadow-2xs transition-all"
+                className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-300/20 shadow-2xs transition-all"
               />
             </div>
 
             {/* All Users Dropdown */}
             <div className="lg:col-span-2.5 relative">
               <div className="relative">
-                <Users className="w-4 h-4 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Users className="w-5 h-5 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <select
                   value={selectedRecipient}
                   onChange={(e) => setSelectedRecipient(e.target.value)}
-                  className="w-full h-10 pl-9 pr-8 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 appearance-none focus:outline-none focus:border-amber-400 cursor-pointer shadow-2xs"
+                  className="w-full h-11 pl-10 pr-8 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 appearance-none focus:outline-none focus:border-amber-400 cursor-pointer shadow-2xs"
                 >
                   <option value="All">All Users</option>
                   <option value="Passengers">Passengers</option>
@@ -316,13 +323,13 @@ export default function Notifications() {
             {/* All Status Dropdown */}
             <div className="lg:col-span-2.5 relative">
               <div className="relative">
-                <div className="w-4 h-4 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
-                  <span className="w-2.5 h-2.5 border-2 border-slate-700 rounded-xs rotate-45"></span>
+                <div className="w-5 h-5 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+                  <span className="w-3 h-3 border-2 border-slate-700 rounded-xs rotate-45"></span>
                 </div>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full h-10 pl-9 pr-8 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-800 appearance-none focus:outline-none focus:border-amber-400 cursor-pointer shadow-2xs"
+                  className="w-full h-11 pl-10 pr-8 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 appearance-none focus:outline-none focus:border-amber-400 cursor-pointer shadow-2xs"
                 >
                   <option value="All">All Status</option>
                   <option value="Sent">Sent</option>
@@ -338,13 +345,13 @@ export default function Notifications() {
             {/* Select Date Range */}
             <div className="lg:col-span-2 relative">
               <div className="relative">
-                <Calendar className="w-4 h-4 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Calendar className="w-5 h-5 text-slate-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Select Date Range"
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full h-10 pl-9 pr-7 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 placeholder:text-slate-600 focus:outline-none focus:border-amber-400 cursor-pointer shadow-2xs"
+                  className="w-full h-11 pl-10 pr-8 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 placeholder:text-slate-600 focus:outline-none focus:border-amber-400 cursor-pointer shadow-2xs"
                 />
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600 text-[10px]">
                   ▼
@@ -358,14 +365,14 @@ export default function Notifications() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="bg-[#feea98]/50 border-b border-amber-200/70 text-slate-900 text-xs sm:text-[13px] font-black uppercase tracking-wider">
-                <th className="py-3 px-3 text-center w-12">#</th>
-                <th className="py-3 px-3">Title</th>
-                <th className="py-3 px-3">Message (Preview)</th>
-                <th className="py-3 px-3">Recipient</th>
-                <th className="py-3 px-3">Sent / Scheduled On</th>
-                <th className="py-3 px-3 text-center">Status</th>
-                <th className="py-3 px-3 text-center">Action</th>
+              <tr className="bg-[#feea98]/50 border-b border-amber-200/70 text-slate-900 text-xs sm:text-sm font-black uppercase tracking-wider">
+                <th className="py-3.5 px-3.5 text-center w-12">#</th>
+                <th className="py-3.5 px-3.5">Title</th>
+                <th className="py-3.5 px-3.5">Message (Preview)</th>
+                <th className="py-3.5 px-3.5">Recipient</th>
+                <th className="py-3.5 px-3.5">Sent / Scheduled On</th>
+                <th className="py-3.5 px-3.5 text-center">Status</th>
+                <th className="py-3.5 px-3.5 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs sm:text-sm font-medium text-slate-800">
@@ -376,26 +383,26 @@ export default function Notifications() {
                   className="hover:bg-amber-50/40 transition-colors group cursor-pointer"
                 >
                   {/* # */}
-                  <td className="py-3.5 px-3 text-center font-bold text-slate-600">
+                  <td className="py-4 px-3.5 text-center font-extrabold text-slate-700 text-sm">
                     {index + 1}
                   </td>
 
                   {/* Title */}
-                  <td className="py-3.5 px-3">
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                      <div className="w-6 h-6 rounded-md bg-amber-50 border border-amber-200/60 flex items-center justify-center shrink-0">
+                  <td className="py-4 px-3.5">
+                    <div className="flex items-center gap-2.5 whitespace-nowrap">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center shrink-0">
                         {renderNotificationIcon(item.iconType)}
                       </div>
-                      <span className="font-extrabold text-slate-900">
+                      <span className="font-extrabold text-sm sm:text-base text-slate-900">
                         {item.title}
                       </span>
                     </div>
                   </td>
 
                   {/* Message (Preview) */}
-                  <td className="py-3.5 px-3">
+                  <td className="py-4 px-3.5">
                     <span
-                      className="font-medium text-slate-700 truncate max-w-[280px] block"
+                      className="font-medium text-xs sm:text-sm text-slate-700 truncate max-w-[320px] block"
                       title={item.fullMessage}
                     >
                       {item.message}
@@ -403,28 +410,28 @@ export default function Notifications() {
                   </td>
 
                   {/* Recipient */}
-                  <td className="py-3.5 px-3 whitespace-nowrap">
+                  <td className="py-4 px-3.5 whitespace-nowrap">
                     {renderRecipientBadge(item.recipient)}
                   </td>
 
                   {/* Sent / Scheduled On */}
-                  <td className="py-3.5 px-3 whitespace-nowrap font-bold text-slate-900 text-xs">
+                  <td className="py-4 px-3.5 whitespace-nowrap font-bold text-slate-900 text-xs sm:text-sm">
                     {item.sentOn}
                   </td>
 
                   {/* Status */}
-                  <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                  <td className="py-4 px-3.5 text-center whitespace-nowrap">
                     {renderStatusBadge(item.status)}
                   </td>
 
                   {/* Action */}
-                  <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                  <td className="py-4 px-3.5 text-center whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => navigate(`/notifications/${item.id || item.numericId}`)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 text-slate-800 hover:text-amber-900 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-slate-800 hover:text-amber-900 text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-2xs"
                     >
-                      <Eye className="w-3.5 h-3.5" />
+                      <Eye className="w-4 h-4" />
                       View
                     </button>
                   </td>
@@ -526,7 +533,7 @@ export default function Notifications() {
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#fffdf0]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#fed011] text-slate-950 flex items-center justify-center font-bold">
-                  <Send className="w-5 h-5" />
+                  <img src={sendPlaneIcon} alt="Send" className="w-5 h-5 object-contain shrink-0" />
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black text-slate-900">
@@ -625,7 +632,7 @@ export default function Notifications() {
                   type="submit"
                   className="px-6 py-2.5 rounded-xl bg-[#fed011] hover:bg-amber-400 text-black text-xs sm:text-sm font-black flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
                 >
-                  <Send className="w-4 h-4" />
+                  <img src={sendPlaneIcon} alt="Send Notification" className="w-4 h-4 object-contain shrink-0" />
                   <span>Send Notification</span>
                 </button>
               </div>

@@ -1,5 +1,5 @@
 import carCutout from '../assets/White Compact Hatchback Car Cutout.png';
-import busCutout from '../assets/commercial_bus.png';
+import busCutout from '../assets/Share_Chalo_Modern_Coach_Bus.png';
 import arjunAvatar from '../assets/arjun_singh_avatar.png';
 import amitAvatar from '../assets/amit_kumar_photo.png';
 

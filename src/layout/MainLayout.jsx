@@ -26,7 +26,8 @@ export default function MainLayout() {
     location.pathname.startsWith('/drivers/') ||
     location.pathname.startsWith('/passengers/') ||
     location.pathname.startsWith('/rides/') ||
-    (location.pathname.startsWith('/vehicles/') && location.pathname !== '/vehicles/master');
+    (location.pathname.startsWith('/vehicles/') && location.pathname !== '/vehicles/master') ||
+    (location.pathname.startsWith('/support/') && location.pathname !== '/support');
 
   return (
     <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans">
@@ -61,8 +62,8 @@ export default function MainLayout() {
           />
         )}
 
-        <main className={`flex-1 overflow-y-auto ${isDetailsPage ? 'p-3 sm:p-4 lg:p-5' : 'p-4 sm:p-5 lg:p-6'}`}>
-          <div className={`${isDetailsPage ? 'w-full' : 'max-w-[1400px] mx-auto'}`}>
+        <main className={`flex-1 overflow-y-auto ${isDetailsPage ? 'p-3 sm:p-4 lg:p-5' : 'p-3 sm:p-4 lg:p-5'}`}>
+          <div className="w-full">
             <Outlet />
           </div>
         </main>

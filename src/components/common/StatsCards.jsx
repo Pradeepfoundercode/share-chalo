@@ -94,15 +94,15 @@ const StatsCards = ({
             {/* Content Text */}
             <div className="min-w-0">
               <p
-                className={`text-[11px] font-semibold mt-0.5 truncate ${
-                  item.labelClassName || "text-slate-600"
+                className={`text-xs font-bold leading-tight truncate ${
+                  item.labelClassName || "text-black"
                 }`}
               >
                 {item.label}
               </p>
 
               <h3
-                className={`text-lg sm:text-xl font-bold text-slate-900 leading-tight ${
+                className={`text-lg sm:text-xl font-black text-black leading-tight mt-0.5 ${
                   item.valueClassName || ""
                 }`}
               >

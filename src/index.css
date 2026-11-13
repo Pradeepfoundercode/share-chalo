@@ -87,6 +87,18 @@ body {
   padding-right: 2.85rem !important;
 }
 
+/* Hide number input spinners / up-down arrows across all browsers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
 .input-field:focus {
   border-color: #eab308;
   box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);

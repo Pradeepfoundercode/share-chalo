@@ -9,10 +9,10 @@ import {
   Check
 } from 'lucide-react';
 
-import totalRidesIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 8.svg';
-import totalPassengersIcon from '../../assets/drivers/df691cdf-f29c03.svg';
+import totalRidesIcon from '../../assets/drivers/vehicle-document.svg';
+import totalPassengersIcon from '../../assets/drivers/passengers-orange.svg';
 import totalEarningsIcon from '../../assets/drivers/rupee-symbol-transparent.svg';
-import lastRideIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 2.svg';
+import lastRideIcon from '../../assets/dashboard/calender-yellow.svg';
 
 import { rideHistoryStats, rideHistoryList } from '../../data/rideHistoryData';
 import Pagination from '../common/Pagination';

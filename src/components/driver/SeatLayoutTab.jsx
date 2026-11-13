@@ -1,14 +1,14 @@
 import React from 'react';
 import steeringWheelIcon from '../../assets/Bold Black Steering Wheel Icon.png';
-import busConfigIcon from '../../assets/drivers/47121f34-9d5b-4410-83e8-6233fd444112 8.svg';
-import seatLayoutSectionIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 4.svg';
+import busConfigIcon from '../../assets/drivers/bus-config.svg';
+import seatLayoutSectionIcon from '../../assets/drivers/seat-layout-section.svg';
 
 // Custom Row Icons requested by user
-import busTypeIcon from '../../assets/drivers/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 4.svg';
-import acTypeIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 21.svg';
-import seatArrangementIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 22.svg';
-import totalRowsIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 25.svg';
-import totalSeatsIcon from '../../assets/drivers/df691cdf-c14f-44b5-82c2-80d3acdfdc18 2.svg';
+import busTypeIcon from '../../assets/drivers/bus-vehicle.svg';
+import acTypeIcon from '../../assets/drivers/ac-type.svg';
+import seatArrangementIcon from '../../assets/drivers/seat-arrangement.svg';
+import totalRowsIcon from '../../assets/drivers/total-rows.svg';
+import totalSeatsIcon from '../../assets/drivers/total-seats.svg';
 
 export default function SeatLayoutTab({ driver }) {
   // 11 rows: 1 to 11

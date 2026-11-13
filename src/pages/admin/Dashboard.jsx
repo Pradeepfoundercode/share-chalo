@@ -9,19 +9,19 @@ import totalFareIcon from '../../assets/57894e43-7aab-443c-a728-2b0743773904 2.s
 import platformCommissionIcon from '../../assets/c5ce90bc-54d9-45f0-928a-8549a8e6ba69 1.svg';
 import onlineCollectionIcon from '../../assets/57894e43-7aab-443c-a728-2b0743773904 3.svg';
 import cashCollectionIcon from '../../assets/c5ce90bc-54d9-45f0-928a-8549a8e6ba69 2.svg';
-import cashCommissionDueIcon from '../../assets/dashboard/0313445f-78e1-4eeb-bf60-53a335edd1f2 1.svg';
-import withdrawalRequestsIcon from '../../assets/dashboard/860183fb-6017-407f-b273-ce4a3629bb42 5.svg';
-import pendingSettlementsIcon from '../../assets/dashboard/0313445f-78e1-4eeb-bf60-53a335edd1f2 3.svg';
-import rideAnalyticsHeaderIcon from '../../assets/dashboard/47121f34-9d5b-4410-83e8-6233fd444112 7.svg';
-import publishedRidesIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 1.svg';
-import upcomingRidesIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 2.svg';
-import activeRidesIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 3.svg';
-import completedRidesIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 4.svg';
-import pendingApprovalsHeaderIcon from '../../assets/dashboard/860183fb-6017-407f-b273-ce4a3629bb42 1.svg';
-import driverKycApprovalIcon from '../../assets/dashboard/860183fb-6017-407f-b273-ce4a3629bb42 2.svg';
-import vehicleDocsApprovalIcon from '../../assets/dashboard/860183fb-6017-407f-b273-ce4a3629bb42 3.svg';
-import withdrawalApprovalIcon from '../../assets/dashboard/860183fb-6017-407f-b273-ce4a3629bb42 5.svg';
-import cashCommissionApprovalIcon from '../../assets/dashboard/860183fb-6017-407f-b273-ce4a3629bb42 4.svg';
+import cashCommissionDueIcon from '../../assets/dashboard/commission-due.svg';
+import withdrawalRequestsIcon from '../../assets/dashboard/wallets.svg';
+import pendingSettlementsIcon from '../../assets/dashboard/refresh.svg';
+import rideAnalyticsHeaderIcon from '../../assets/dashboard/ride-analytics.svg';
+import publishedRidesIcon from '../../assets/dashboard/car-yellow.svg';
+import upcomingRidesIcon from '../../assets/dashboard/calender-yellow.svg';
+import activeRidesIcon from '../../assets/dashboard/play-button-green.svg';
+import completedRidesIcon from '../../assets/dashboard/completed-rides.svg';
+import pendingApprovalsHeaderIcon from '../../assets/dashboard/pending-approvals.svg';
+import driverKycApprovalIcon from '../../assets/dashboard/driver-kyc-approval.svg';
+import vehicleDocsApprovalIcon from '../../assets/dashboard/vehicle-docs-approval.svg';
+import withdrawalApprovalIcon from '../../assets/dashboard/wallets.svg';
+import cashCommissionApprovalIcon from '../../assets/dashboard/cash-commission-approval.svg';
 import {
   Users,
   User,

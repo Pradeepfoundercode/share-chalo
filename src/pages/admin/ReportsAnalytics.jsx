@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart2,
-  Car,
   Layers,
   Users,
   Calendar,
@@ -15,7 +14,6 @@ import {
   TrendingUp,
   ArrowUpRight,
   ShieldAlert,
-  MapPin,
   CheckCircle2,
   Clock,
   XCircle,
@@ -31,6 +29,25 @@ import {
   recentRidesAnalytics
 } from '../../data/analyticsData';
 
+import overviewBarIcon from '../../assets/Group (3).svg';
+import rideReportsCarIcon from '../../assets/drivers/private-car.svg';
+import financialReportsCoinsIcon from '../../assets/fa-solid_coins.svg';
+import userReportsDriverIcon from '../../assets/drivers/assigned-driver.svg';
+import carGreenIcon from '../../assets/icons/car-green.svg';
+import teamBlueIcon from '../../assets/icons/team-blue.svg';
+import assignedDriverIcon from '../../assets/drivers/assigned-driver.svg';
+import moneyBagIcon from '../../assets/icons/money-bag-icon.svg';
+import rupeeCircleIcon from '../../assets/icons/rupee-circle-icon.svg';
+import passengersGreenIcon from '../../assets/icons/passengers-green.svg';
+import stackedCoinsIcon from '../../assets/icons/stacked-coins-icon.svg';
+import stackedLayersBlueIcon from '../../assets/icons/stacked-layers-blue-icon.svg';
+import paymentCardIcon from '../../assets/icons/payment-card-icon.svg';
+import cashBanknoteIcon from '../../assets/icons/cash-banknote-icon.svg';
+import steeringWheelIcon from '../../assets/icons/steering-wheel-icon.svg';
+import teamMembersPurpleIcon from '../../assets/icons/team-members-purple-icon.svg';
+import blockedCancelledIcon from '../../assets/drivers/blocked-cancelled.svg';
+import topRoutesIcon from '../../assets/dashboard/b526c866-7ce7-4c15-848e-ed8378b03085 38.svg';
+
 export default function ReportsAnalytics() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Overview');
@@ -39,10 +56,10 @@ export default function ReportsAnalytics() {
 
   // Tabs across the top
   const tabs = [
-    { id: 'Overview', label: 'Overview', icon: BarChart2 },
-    { id: 'Ride Reports', label: 'Ride Reports', icon: Car },
-    { id: 'Financial Reports', label: 'Financial Reports', icon: Banknote },
-    { id: 'User Reports', label: 'User Reports', icon: Users }
+    { id: 'Overview', label: 'Overview', iconSrc: overviewBarIcon },
+    { id: 'Ride Reports', label: 'Ride Reports', iconSrc: rideReportsCarIcon },
+    { id: 'Financial Reports', label: 'Financial Reports', iconSrc: financialReportsCoinsIcon },
+    { id: 'User Reports', label: 'User Reports', iconSrc: userReportsDriverIcon }
   ];
 
   // Status badge helper for recent rides
@@ -84,7 +101,6 @@ export default function ReportsAnalytics() {
         {/* Left 4 Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {tabs.map((tab) => {
-            const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
@@ -97,7 +113,15 @@ export default function ReportsAnalytics() {
                     : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <img
+                  src={tab.iconSrc}
+                  alt={tab.label}
+                  className={`w-4 h-4 object-contain shrink-0 ${
+                    isActive && (tab.id === 'Overview' || tab.id === 'Financial Reports')
+                      ? 'brightness-0 invert'
+                      : ''
+                  }`}
+                />
                 <span>{tab.label}</span>
               </button>
             );
@@ -164,8 +188,8 @@ export default function ReportsAnalytics() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {/* Total Rides */}
         <div className="bg-emerald-50/40 border border-emerald-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-emerald-100/70 border border-emerald-200/50 flex items-center justify-center shrink-0 text-emerald-700">
-            <Car className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-full bg-emerald-100/70 border border-emerald-200/50 flex items-center justify-center shrink-0">
+            <img src={carGreenIcon} alt="Total Rides" className="w-6 h-6 object-contain" />
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
@@ -180,8 +204,8 @@ export default function ReportsAnalytics() {
 
         {/* Total Bookings */}
         <div className="bg-sky-50/40 border border-sky-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-sky-100/70 border border-sky-200/50 flex items-center justify-center shrink-0 text-sky-700">
-            <Layers className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-full bg-sky-100/70 border border-sky-200/50 flex items-center justify-center shrink-0">
+            <img src={teamBlueIcon} alt="Total Bookings" className="w-6 h-6 object-contain" />
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
@@ -196,8 +220,8 @@ export default function ReportsAnalytics() {
 
         {/* Total Passengers */}
         <div className="bg-amber-50/50 border border-amber-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-amber-100/70 border border-amber-200/50 flex items-center justify-center shrink-0 text-amber-900">
-            <Users className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-full bg-amber-100/70 border border-amber-200/50 flex items-center justify-center shrink-0">
+            <img src={assignedDriverIcon} alt="Total Passengers" className="w-6 h-6 object-contain" />
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
@@ -212,8 +236,8 @@ export default function ReportsAnalytics() {
 
         {/* Total Drivers */}
         <div className="bg-purple-50/40 border border-purple-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs">
-          <div className="w-12 h-12 rounded-full bg-purple-100/70 border border-purple-200/50 flex items-center justify-center shrink-0 text-purple-700">
-            <Car className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-full bg-purple-100/70 border border-purple-200/50 flex items-center justify-center shrink-0">
+            <img src={assignedDriverIcon} alt="Total Drivers" className="w-6 h-6 object-contain" />
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
@@ -228,8 +252,8 @@ export default function ReportsAnalytics() {
 
         {/* Total Revenue */}
         <div className="bg-emerald-50/40 border border-emerald-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-2xs col-span-2 sm:col-span-1">
-          <div className="w-12 h-12 rounded-full bg-emerald-100/70 border border-emerald-200/50 flex items-center justify-center shrink-0 text-emerald-700">
-            <Banknote className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-full bg-emerald-100/70 border border-emerald-200/50 flex items-center justify-center shrink-0">
+            <img src={moneyBagIcon} alt="Total Revenue" className="w-6 h-6 object-contain" />
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
@@ -251,14 +275,12 @@ export default function ReportsAnalytics() {
         <div className="lg:col-span-8 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-800 font-bold">
-                <BarChart2 className="w-4 h-4" />
-              </div>
+              <img src={overviewBarIcon} alt="Ride Trend" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
               <div>
-                <h3 className="text-sm font-black text-slate-900 tracking-tight">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                   Ride Trend
                 </h3>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 font-medium">
                   Number of rides over time.
                 </p>
               </div>
@@ -386,20 +408,21 @@ export default function ReportsAnalytics() {
 
         {/* Ride Status Donut Chart (col-span-4) */}
         <div className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center gap-2.5 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-800 font-bold">
-              <Banknote className="w-4 h-4" />
-            </div>
+          <div className="flex items-center gap-2.5 mb-2 pb-2 border-b border-slate-100">
+            <img src={moneyBagIcon} alt="Ride Status" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
             <div>
-              <h3 className="text-sm font-black text-slate-900 tracking-tight">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                 Ride Status
               </h3>
+              <p className="text-xs text-slate-500 font-medium">
+                Distribution by ride outcome.
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row lg:flex-row items-center gap-4 my-auto">
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center gap-4 sm:gap-5 my-auto pt-1">
             {/* Donut graphic */}
-            <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
+            <div className="relative w-32 h-32 sm:w-34 sm:h-34 shrink-0 flex items-center justify-center">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 {/* Total circumference: 2 * PI * 38 ≈ 238.76 */}
                 {/* Completed: 77.5% -> 185 */}
@@ -409,7 +432,7 @@ export default function ReportsAnalytics() {
                   r="38"
                   fill="transparent"
                   stroke="#16a34a"
-                  strokeWidth="14"
+                  strokeWidth="11"
                   strokeDasharray="185 239"
                   strokeDashoffset="0"
                 />
@@ -420,7 +443,7 @@ export default function ReportsAnalytics() {
                   r="38"
                   fill="transparent"
                   stroke="#0284c7"
-                  strokeWidth="14"
+                  strokeWidth="11"
                   strokeDasharray="19.3 239"
                   strokeDashoffset="-185"
                 />
@@ -431,7 +454,7 @@ export default function ReportsAnalytics() {
                   r="38"
                   fill="transparent"
                   stroke="#dc2626"
-                  strokeWidth="14"
+                  strokeWidth="11"
                   strokeDasharray="17.6 239"
                   strokeDashoffset="-204.3"
                 />
@@ -442,39 +465,39 @@ export default function ReportsAnalytics() {
                   r="38"
                   fill="transparent"
                   stroke="#fed011"
-                  strokeWidth="14"
+                  strokeWidth="11"
                   strokeDasharray="16.7 239"
                   strokeDashoffset="-221.9"
                 />
               </svg>
               {/* Inner Center Label */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-sm font-black text-slate-900 leading-none">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none">
+                <span className="text-base sm:text-lg font-black text-slate-900 leading-none">
                   3,842
                 </span>
-                <span className="text-[10px] font-semibold text-slate-500 mt-0.5">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 mt-1 uppercase tracking-wider leading-none">
                   Total Rides
                 </span>
               </div>
             </div>
 
             {/* Legends & Counts List */}
-            <div className="flex-1 w-full space-y-2 text-xs">
+            <div className="flex-1 w-full space-y-2 sm:space-y-2.5">
               {rideStatusData.map((item) => (
                 <div
                   key={item.label}
-                  className="flex items-center justify-between text-slate-700"
+                  className="flex items-center justify-between text-slate-700 py-0.5"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 whitespace-nowrap shrink-0">
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      className="w-3 h-3 rounded-full shrink-0 shadow-2xs"
                       style={{ backgroundColor: item.color }}
                     ></span>
-                    <span className="font-bold text-slate-800">{item.label}</span>
+                    <span className="font-bold text-slate-800 text-xs sm:text-[13px]">{item.label}</span>
                   </div>
-                  <div className="font-extrabold text-slate-900">
+                  <div className="font-black text-slate-900 text-xs sm:text-[13px] whitespace-nowrap shrink-0 text-right pl-2">
                     {item.count}{' '}
-                    <span className="text-slate-400 font-semibold text-[11px]">
+                    <span className="text-slate-500 font-bold text-[11px] sm:text-xs">
                       ({item.percentage})
                     </span>
                   </div>
@@ -490,14 +513,12 @@ export default function ReportsAnalytics() {
           ========================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Revenue Overview (col-span-6) */}
-        <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center gap-2 text-slate-900 pb-2 border-b border-slate-100">
-            <span className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
-              ₹
-            </span>
+        <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
+          <div className="flex items-center gap-2.5 text-slate-900 pb-2.5 border-b border-slate-100">
+            <img src={rupeeCircleIcon} alt="Revenue Overview" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
             <div>
-              <h3 className="text-sm font-black text-slate-900">Revenue Overview</h3>
-              <p className="text-[11px] text-slate-500 font-medium">
+              <h3 className="text-base sm:text-lg font-black text-slate-900">Revenue Overview</h3>
+              <p className="text-xs text-slate-500 font-medium">
                 Earnings and collections summary for selected period.
               </p>
             </div>
@@ -505,56 +526,64 @@ export default function ReportsAnalytics() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
             {/* Total Fare */}
-            <div className="p-3 rounded-xl bg-emerald-50/40 border border-emerald-200/60">
-              <span className="text-base block mb-1">🪙</span>
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {revenueOverviewData.totalFare}
+            <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-50/40 border border-emerald-200/60 flex flex-col items-center text-center justify-between">
+              <img src={stackedCoinsIcon} alt="Total Fare" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {revenueOverviewData.totalFare}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">Total Fare</div>
               </div>
-              <div className="text-[11px] font-semibold text-slate-600">Total Fare</div>
             </div>
 
             {/* Platform Commission */}
-            <div className="p-3 rounded-xl bg-sky-50/40 border border-sky-200/60">
-              <span className="text-base block mb-1">🏦</span>
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {revenueOverviewData.platformCommission}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">
-                Platform Commission <span className="text-sky-700 font-bold">{revenueOverviewData.commissionRate}</span>
+            <div className="p-3 sm:p-3.5 rounded-xl bg-sky-50/40 border border-sky-200/60 flex flex-col items-center text-center justify-between">
+              <img src={stackedLayersBlueIcon} alt="Platform Commission" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {revenueOverviewData.platformCommission}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">
+                  Platform Comm. <span className="text-sky-700 font-black block sm:inline">({revenueOverviewData.commissionRate})</span>
+                </div>
               </div>
             </div>
 
             {/* Online Collection */}
-            <div className="p-3 rounded-xl bg-purple-50/40 border border-purple-200/60">
-              <span className="text-base block mb-1">💳</span>
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {revenueOverviewData.onlineCollection}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">
-                Online Collection
+            <div className="p-3 sm:p-3.5 rounded-xl bg-purple-50/40 border border-purple-200/60 flex flex-col items-center text-center justify-between">
+              <img src={paymentCardIcon} alt="Online Collection" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {revenueOverviewData.onlineCollection}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">
+                  Online Collection
+                </div>
               </div>
             </div>
 
             {/* Cash Collection */}
-            <div className="p-3 rounded-xl bg-amber-50/40 border border-amber-200/60">
-              <span className="text-base block mb-1">💵</span>
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {revenueOverviewData.cashCollection}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">
-                Cash Collection
+            <div className="p-3 sm:p-3.5 rounded-xl bg-amber-50/40 border border-amber-200/60 flex flex-col items-center text-center justify-between">
+              <img src={cashBanknoteIcon} alt="Cash Collection" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {revenueOverviewData.cashCollection}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">
+                  Cash Collection
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* User Overview (col-span-6) */}
-        <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center gap-2 text-slate-900 pb-2 border-b border-slate-100">
-            <Users className="w-5 h-5 text-emerald-700" />
+        <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
+          <div className="flex items-center gap-2.5 text-slate-900 pb-2.5 border-b border-slate-100">
+            <img src={passengersGreenIcon} alt="User Overview" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
             <div>
-              <h3 className="text-sm font-black text-slate-900">User Overview</h3>
-              <p className="text-[11px] text-slate-500 font-medium">
+              <h3 className="text-base sm:text-lg font-black text-slate-900">User Overview</h3>
+              <p className="text-xs text-slate-500 font-medium">
                 Passengers and drivers on the platform.
               </p>
             </div>
@@ -562,48 +591,56 @@ export default function ReportsAnalytics() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
             {/* Passengers */}
-            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
-              <Users className="w-4 h-4 text-emerald-600 mb-1" />
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {userOverviewData.passengers}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">Passengers</div>
-              <div className="text-[10px] font-extrabold text-emerald-600">
-                ↑ {userOverviewData.passengersGrowth}
+            <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex flex-col items-center text-center justify-between">
+              <img src={passengersGreenIcon} alt="Passengers" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {userOverviewData.passengers}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">Passengers</div>
+                <div className="text-xs font-black text-emerald-600 mt-0.5">
+                  ↑ {userOverviewData.passengersGrowth}
+                </div>
               </div>
             </div>
 
             {/* Drivers */}
-            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
-              <Car className="w-4 h-4 text-sky-600 mb-1" />
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {userOverviewData.drivers}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">Drivers</div>
-              <div className="text-[10px] font-extrabold text-emerald-600">
-                ↑ {userOverviewData.driversGrowth}
+            <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 flex flex-col items-center text-center justify-between">
+              <img src={steeringWheelIcon} alt="Drivers" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {userOverviewData.drivers}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">Drivers</div>
+                <div className="text-xs font-black text-emerald-600 mt-0.5">
+                  ↑ {userOverviewData.driversGrowth}
+                </div>
               </div>
             </div>
 
             {/* Active Users */}
-            <div className="p-3 rounded-xl bg-purple-50/40 border border-purple-200/60">
-              <span className="text-base block mb-1">👥</span>
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {userOverviewData.activeUsers}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">
-                Active Users
+            <div className="p-3 sm:p-3.5 rounded-xl bg-purple-50/40 border border-purple-200/60 flex flex-col items-center text-center justify-between">
+              <img src={teamMembersPurpleIcon} alt="Active Users" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {userOverviewData.activeUsers}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">
+                  Active Users
+                </div>
               </div>
             </div>
 
             {/* Blocked Users */}
-            <div className="p-3 rounded-xl bg-rose-50/40 border border-rose-200/60">
-              <ShieldAlert className="w-4 h-4 text-rose-600 mb-1" />
-              <div className="text-xs sm:text-sm font-black text-slate-900">
-                {userOverviewData.blockedUsers}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-600">
-                Blocked Users
+            <div className="p-3 sm:p-3.5 rounded-xl bg-rose-50/40 border border-rose-200/60 flex flex-col items-center text-center justify-between">
+              <img src={blockedCancelledIcon} alt="Blocked Users" className="w-10 h-10 sm:w-11 sm:h-11 object-contain mx-auto mb-2" />
+              <div className="w-full">
+                <div className="text-sm sm:text-base lg:text-[17px] font-black text-slate-900 leading-tight">
+                  {userOverviewData.blockedUsers}
+                </div>
+                <div className="text-xs sm:text-[13px] font-bold text-slate-700 mt-1">
+                  Blocked Users
+                </div>
               </div>
             </div>
           </div>
@@ -617,39 +654,39 @@ export default function ReportsAnalytics() {
         {/* Top Routes (col-span-5) */}
         <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden flex flex-col justify-between">
           <div>
-            <div className="p-4 sm:p-5 pb-3 border-b border-slate-100 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-emerald-700" />
+            <div className="p-4 sm:p-5 pb-3.5 border-b border-slate-100 flex items-center gap-3">
+              <img src={topRoutesIcon} alt="Top Routes" className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0" />
               <div>
-                <h3 className="text-sm font-black text-slate-900">Top Routes</h3>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <h3 className="text-base sm:text-lg font-black text-slate-900">Top Routes</h3>
+                <p className="text-xs sm:text-[13px] text-slate-500 font-medium">
                   Most traveled routes by ride count.
                 </p>
               </div>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs">
+              <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-600 font-bold uppercase text-[10px]">
-                    <th className="py-2.5 px-3 w-8 text-center">#</th>
-                    <th className="py-2.5 px-3">Route</th>
-                    <th className="py-2.5 px-3 text-center">Total Rides</th>
-                    <th className="py-2.5 px-3 text-right">Revenue</th>
+                  <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-700 font-black uppercase text-[11px] sm:text-xs">
+                    <th className="py-3 px-3.5 w-9 text-center">#</th>
+                    <th className="py-3 px-3.5">Route</th>
+                    <th className="py-3 px-3.5 text-center">Total Rides</th>
+                    <th className="py-3 px-3.5 text-right">Revenue</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                   {topRoutesData.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-2.5 px-3 text-center font-bold text-slate-500">
+                      <td className="py-3 px-3.5 text-center font-bold text-slate-500 text-xs sm:text-sm">
                         {item.id}
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">
+                      <td className="py-3 px-3.5 font-bold text-slate-900 whitespace-nowrap text-xs sm:text-sm">
                         {item.route}
                       </td>
-                      <td className="py-2.5 px-3 text-center font-semibold text-slate-700">
+                      <td className="py-3 px-3.5 text-center font-bold text-slate-800 text-xs sm:text-sm">
                         {item.totalRides}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-black text-slate-900">
+                      <td className="py-3 px-3.5 text-right font-black text-slate-900 text-xs sm:text-sm">
                         {item.revenue}
                       </td>
                     </tr>
@@ -663,12 +700,12 @@ export default function ReportsAnalytics() {
         {/* Recent Rides (col-span-7) */}
         <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden flex flex-col justify-between">
           <div>
-            <div className="p-4 sm:p-5 pb-3 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Car className="w-4 h-4 text-emerald-700" />
+            <div className="p-4 sm:p-5 pb-3.5 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={carGreenIcon} alt="Recent Rides" className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0" />
                 <div>
-                  <h3 className="text-sm font-black text-slate-900">Recent Rides</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">Recent Rides</h3>
+                  <p className="text-xs sm:text-[13px] text-slate-500 font-medium">
                     Latest ride activities on the platform.
                   </p>
                 </div>
@@ -676,23 +713,23 @@ export default function ReportsAnalytics() {
               <button
                 type="button"
                 onClick={() => navigate('/rides')}
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1 cursor-pointer"
               >
                 View All →
               </button>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs">
+              <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-600 font-bold uppercase text-[10px]">
-                    <th className="py-2.5 px-3">Ride ID</th>
-                    <th className="py-2.5 px-3">Passenger</th>
-                    <th className="py-2.5 px-3">Driver</th>
-                    <th className="py-2.5 px-3">Route</th>
-                    <th className="py-2.5 px-3">Fare</th>
-                    <th className="py-2.5 px-3 text-center">Status</th>
-                    <th className="py-2.5 px-3 text-right">Date & Time</th>
+                  <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-700 font-black uppercase text-[11px] sm:text-xs">
+                    <th className="py-3 px-3.5">Ride ID</th>
+                    <th className="py-3 px-3.5">Passenger</th>
+                    <th className="py-3 px-3.5">Driver</th>
+                    <th className="py-3 px-3.5">Route</th>
+                    <th className="py-3 px-3.5">Fare</th>
+                    <th className="py-3 px-3.5 text-center">Status</th>
+                    <th className="py-3 px-3.5 text-right">Date & Time</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -702,57 +739,57 @@ export default function ReportsAnalytics() {
                       onClick={() => navigate(`/rides/${ride.rideId}`)}
                       className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
-                      <td className="py-2.5 px-3 whitespace-nowrap">
-                        <span className="font-mono font-bold text-[11px] text-slate-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/80">
+                      <td className="py-3 px-3.5 whitespace-nowrap">
+                        <span className="font-mono font-bold text-xs text-slate-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80">
                           {ride.rideId}
                         </span>
                       </td>
 
                       {/* Passenger */}
-                      <td className="py-2.5 px-3 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
+                      <td className="py-3 px-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
                           <img
                             src={ride.passenger.avatar}
                             alt={ride.passenger.name}
-                            className="w-5 h-5 rounded-full object-cover border border-amber-300"
+                            className="w-6 h-6 rounded-full object-cover border border-amber-300 shadow-2xs"
                           />
-                          <span className="font-semibold text-slate-900 text-xs">
+                          <span className="font-bold text-slate-900 text-xs sm:text-[13px]">
                             {ride.passenger.name}
                           </span>
                         </div>
                       </td>
 
                       {/* Driver */}
-                      <td className="py-2.5 px-3 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
+                      <td className="py-3 px-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
                           <img
                             src={ride.driver.avatar}
                             alt={ride.driver.name}
-                            className="w-5 h-5 rounded-full object-cover border border-amber-300"
+                            className="w-6 h-6 rounded-full object-cover border border-amber-300 shadow-2xs"
                           />
-                          <span className="font-semibold text-slate-900 text-xs">
+                          <span className="font-bold text-slate-900 text-xs sm:text-[13px]">
                             {ride.driver.name}
                           </span>
                         </div>
                       </td>
 
                       {/* Route */}
-                      <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-700">
+                      <td className="py-3 px-3.5 whitespace-nowrap font-bold text-slate-800 text-xs sm:text-[13px]">
                         {ride.route}
                       </td>
 
                       {/* Fare */}
-                      <td className="py-2.5 px-3 whitespace-nowrap font-black text-slate-900">
+                      <td className="py-3 px-3.5 whitespace-nowrap font-black text-slate-900 text-xs sm:text-sm">
                         {ride.fare}
                       </td>
 
                       {/* Status */}
-                      <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                      <td className="py-3 px-3.5 text-center whitespace-nowrap">
                         {renderRideStatusBadge(ride.status)}
                       </td>
 
                       {/* Date & Time */}
-                      <td className="py-2.5 px-3 text-right whitespace-nowrap text-[11px] text-slate-500 font-medium">
+                      <td className="py-3 px-3.5 text-right whitespace-nowrap text-xs text-slate-500 font-medium">
                         {ride.dateTime}
                       </td>
                     </tr>

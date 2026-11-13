@@ -36,22 +36,22 @@ import busHighRes3 from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
 import busPhoto4 from '../../assets/bus_photo_4.png';
 import busPhoto5 from '../../assets/bus_photo_5.png';
 
-import privateCarIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 7.svg';
-import commercialBusIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 16.svg';
-import memberSinceIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 15.svg';
-import vehiclePhotoIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 3.svg';
-import vehicleDocumentIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 8.svg';
-import busConfigIcon from '../../assets/drivers/47121f34-9d5b-4410-83e8-6233fd444112 8.svg';
-import seatLayoutSectionIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 4.svg';
+import privateCarIcon from '../../assets/drivers/private-car.svg';
+import commercialBusIcon from '../../assets/drivers/commercial-bus.svg';
+import memberSinceIcon from '../../assets/drivers/member-since.svg';
+import vehiclePhotoIcon from '../../assets/drivers/vehicle-photo-tag.svg';
+import vehicleDocumentIcon from '../../assets/drivers/vehicle-document.svg';
+import busConfigIcon from '../../assets/drivers/bus-config.svg';
+import seatLayoutSectionIcon from '../../assets/drivers/seat-layout-section.svg';
 import passengersIcon from '../../assets/Group (6).svg';
 import personalInfoIcon from '../../assets/drivers/Group-9-f29c03.svg';
-import vehicleYellowIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 1.svg';
+import vehicleYellowIcon from '../../assets/dashboard/car-yellow.svg';
 
 // Custom Tab SVG Icons requested by user
-import kycTabIcon from '../../assets/drivers/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 3.svg';
-import vehicleBusTabIcon from '../../assets/drivers/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 4.svg';
-import seatLayoutTabIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 22.svg';
-import rideHistoryTabIcon from '../../assets/dashboard/47121f34-9d5b-4410-83e8-6233fd444112 7.svg';
+import kycTabIcon from '../../assets/drivers/kyc-tab.svg';
+import vehicleBusTabIcon from '../../assets/drivers/bus-vehicle.svg';
+import seatLayoutTabIcon from '../../assets/drivers/seat-arrangement.svg';
+import rideHistoryTabIcon from '../../assets/dashboard/ride-analytics.svg';
 
 import { driversList } from '../../data/driversData';
 import { useAuthStore } from '../../store/authStore';

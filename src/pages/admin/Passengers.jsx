@@ -15,10 +15,10 @@ import { useNavigate } from 'react-router-dom';
 import { Pagination, StatsCards } from '../../components/common';
 
 // Assets
-import totalPassengersIcon from '../../assets/drivers/df691cdf-f29c03.svg';
+import totalPassengersIcon from '../../assets/drivers/passengers-orange.svg';
 import activePassengersIcon from '../../assets/drivers/Group-9-1e8a06.svg';
-import blockedPassengersIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 5.svg';
-import newThisMonthIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 2.svg';
+import blockedPassengersIcon from '../../assets/drivers/blocked-cancelled.svg';
+import newThisMonthIcon from '../../assets/dashboard/calender-yellow.svg';
 
 export default function Passengers() {
   const navigate = useNavigate();
@@ -109,8 +109,8 @@ export default function Passengers() {
       iconBg: 'bg-[#fef3c7]',
       iconBoxSize: 'w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl',
       iconSize: 'w-7 h-7 sm:w-11 sm:h-11',
-      labelClassName: 'text-[11px] sm:text-xs font-bold text-slate-500 sm:text-black',
-      valueClassName: 'text-lg sm:text-2xl font-black text-black',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
     {
       id: 2,
@@ -121,8 +121,8 @@ export default function Passengers() {
       iconBg: 'bg-[#dcfce7]',
       iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
       iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
-      labelClassName: 'text-[11px] sm:text-xs font-bold text-slate-500 sm:text-black',
-      valueClassName: 'text-lg sm:text-2xl font-black text-black',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
     {
       id: 3,
@@ -133,8 +133,8 @@ export default function Passengers() {
       iconBg: 'bg-[#ffe4e6]',
       iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
       iconSize: 'w-5 h-5 sm:w-7 sm:h-7',
-      labelClassName: 'text-[11px] sm:text-xs font-bold text-slate-500 sm:text-black',
-      valueClassName: 'text-lg sm:text-2xl font-black text-black',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
     {
       id: 4,
@@ -145,8 +145,8 @@ export default function Passengers() {
       iconBg: 'bg-[#fef3c7]',
       iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
       iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
-      labelClassName: 'text-[11px] sm:text-xs font-bold text-slate-500 sm:text-black',
-      valueClassName: 'text-lg sm:text-2xl font-black text-black',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
   ];
 

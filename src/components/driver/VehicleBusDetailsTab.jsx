@@ -16,9 +16,9 @@ import carRearImg from '../../assets/White Maruti Suzuki Baleno Rear View.png';
 import carSideImg from '../../assets/White Compact Sedan on a Tree-Lined Road.png';
 import carDashImg from '../../assets/Modern Suzuki Cabin Dashboard View.png';
 import carInteriorImg from '../../assets/Beige Leather Car Interior.png';
-import vehiclePhotoIcon from '../../assets/drivers/f5a5f448-ccdf-4eed-ac86-f5f78f3ddfd3 3.svg';
-import vehicleYellowIcon from '../../assets/dashboard/9d339631-e072-42f8-b0ed-5ff639d869a8 1.svg';
-import busConfigIcon from '../../assets/drivers/47121f34-9d5b-4410-83e8-6233fd444112 8.svg';
+import vehiclePhotoIcon from '../../assets/drivers/vehicle-photo-tag.svg';
+import vehicleYellowIcon from '../../assets/dashboard/car-yellow.svg';
+import busConfigIcon from '../../assets/drivers/bus-config.svg';
 
 export default function VehicleBusDetailsTab({ driver }) {
   const isBus = driver.vehicleType === 'Commercial Bus';
