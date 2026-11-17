@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ChevronDown,
   Search,
@@ -10,8 +10,10 @@ import {
   RotateCcw,
   Filter
 } from 'lucide-react';
-import { passengersStats, passengersList } from '../../data/passengersData';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { passengersStats, passengersList } from '../../data/passengersData';
+import { getUsersApi } from '../../services/user.services';
 import { Pagination, StatsCards } from '../../components/common';
 
 // Assets
@@ -19,6 +21,7 @@ import totalPassengersIcon from '../../assets/drivers/passengers-orange.svg';
 import activePassengersIcon from '../../assets/drivers/Group-9-1e8a06.svg';
 import blockedPassengersIcon from '../../assets/drivers/blocked-cancelled.svg';
 import newThisMonthIcon from '../../assets/dashboard/calender-yellow.svg';
+import defaultAvatar from '../../assets/amit_kumar_photo.png';
 
 export default function Passengers() {
   const navigate = useNavigate();
@@ -32,7 +35,26 @@ export default function Passengers() {
   const [tempStart, setTempStart] = useState('');
   const [tempEnd, setTempEnd] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+
+  // Fetch users/passengers from API
+  const { data: usersResponse, isLoading, isError } = useQuery({
+    queryKey: ['admin-users', currentPage, entriesPerPage],
+    queryFn: () => getUsersApi({ page: currentPage, limit: entriesPerPage }),
+  });
+
+  const apiData = usersResponse?.data;
+  const apiStats = apiData?.stats || usersResponse?.stats;
+  const meta = usersResponse?.meta;
+
+  // Extract users list safely
+  const rawUsers = useMemo(() => {
+    if (!usersResponse) return null;
+    if (Array.isArray(apiData?.users)) return apiData.users;
+    if (Array.isArray(apiData)) return apiData;
+    if (Array.isArray(usersResponse?.users)) return usersResponse.users;
+    return [];
+  }, [usersResponse, apiData]);
 
   // Helper to parse dates like "15 Oct 2026", "01 Nov 2026"
   const parseMemberDate = (dateStr) => {
@@ -54,6 +76,50 @@ export default function Passengers() {
     return isNaN(d.getTime()) ? null : d;
   };
 
+  // Helper to format ISO date string to readable format
+  const formatRegisteredDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Map API users to passenger rows (fallback to mock if offline/not fetched)
+  const passengers = useMemo(() => {
+    if (rawUsers) {
+      return rawUsers.map((u, idx) => ({
+        id: u.userId ?? idx + 1,
+        userId: u.userId,
+        passengerId: u.userId != null ? u.userId : idx + 1,
+        name: u.name || 'User',
+        mobile: u.mobile || '-',
+        email: u.email || '-',
+        avatar: u.imageUrl || defaultAvatar,
+        totalBookings: u.totalBookings ?? 0,
+        completedRides: u.completedRides ?? 0,
+        cancelledRides: u.cancelledRides ?? 0,
+        accountStatus: u.status
+          ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase()
+          : 'Active',
+        registeredOn: u.registeredOn,
+        registeredOnFormatted: formatRegisteredDate(u.registeredOn),
+        memberSince: formatRegisteredDate(u.registeredOn),
+      }));
+    }
+    return passengersList.map((p) => ({
+      ...p,
+      registeredOnFormatted: p.memberSince || '-',
+    }));
+  }, [rawUsers]);
+
   const handleReset = () => {
     setSearchTerm('');
     setAccountStatusFilter('All Statuses');
@@ -65,45 +131,51 @@ export default function Passengers() {
   };
 
   // Filter passengers
-  const filteredPassengers = passengersList.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.passengerId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.mobile.includes(searchTerm) ||
-      p.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredPassengers = useMemo(() => {
+    return passengers.filter((p) => {
+      const pIdStr = String(p.passengerId || p.id || '');
+      const matchesSearch =
+        !searchTerm ||
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pIdStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.mobile.includes(searchTerm) ||
+        p.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      accountStatusFilter === 'All Statuses' ||
-      accountStatusFilter === 'All Status' ||
-      p.accountStatus === accountStatusFilter;
+      const matchesStatus =
+        accountStatusFilter === 'All Statuses' ||
+        accountStatusFilter === 'All Status' ||
+        p.accountStatus.toLowerCase() === accountStatusFilter.toLowerCase();
 
-    // Date range filter
-    let matchesDate = true;
-    if (startDate || endDate) {
-      const pDate = parseMemberDate(p.memberSince);
-      if (pDate) {
-        if (startDate) {
-          const start = new Date(startDate);
-          start.setHours(0, 0, 0, 0);
-          if (pDate < start) matchesDate = false;
-        }
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
-          if (pDate > end) matchesDate = false;
+      // Date range filter
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const pDate = p.registeredOn ? new Date(p.registeredOn) : parseMemberDate(p.memberSince);
+        if (pDate && !isNaN(pDate.getTime())) {
+          if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            if (pDate < start) matchesDate = false;
+          }
+          if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            if (pDate > end) matchesDate = false;
+          }
         }
       }
-    }
 
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [passengers, searchTerm, accountStatusFilter, startDate, endDate]);
 
   // Stats cards configuration for reusable StatsCards
-  const passengerStats = [
+  const passengerStats = useMemo(() => [
     {
       id: 1,
       label: 'Total Passengers',
-      value: passengersStats.totalPassengers,
+      value: apiStats
+        ? (apiStats.totalUsers ?? 0).toLocaleString()
+        : passengersStats.totalPassengers,
       image: totalPassengersIcon,
       cardColor: 'bg-[#fffdf0] border-amber-200/80',
       iconBg: 'bg-[#fef3c7]',
@@ -115,7 +187,9 @@ export default function Passengers() {
     {
       id: 2,
       label: 'Active Passengers',
-      value: passengersStats.activePassengers,
+      value: apiStats
+        ? (apiStats.activeUsers ?? 0).toLocaleString()
+        : passengersStats.activePassengers,
       image: activePassengersIcon,
       cardColor: 'bg-[#f0fdf4] border-emerald-200/80',
       iconBg: 'bg-[#dcfce7]',
@@ -126,20 +200,10 @@ export default function Passengers() {
     },
     {
       id: 3,
-      label: 'Blocked Passengers',
-      value: passengersStats.blockedPassengers,
-      image: blockedPassengersIcon,
-      cardColor: 'bg-[#fff1f2] border-rose-200/80',
-      iconBg: 'bg-[#ffe4e6]',
-      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
-      iconSize: 'w-5 h-5 sm:w-7 sm:h-7',
-      labelClassName: 'text-xs font-bold text-black',
-      valueClassName: 'text-xl sm:text-2xl font-black text-black',
-    },
-    {
-      id: 4,
-      label: 'New This Month',
-      value: passengersStats.newThisMonth,
+      label: 'Inactive Passengers',
+      value: apiStats
+        ? (apiStats.inactiveUsers ?? 0).toLocaleString()
+        : '0',
       image: newThisMonthIcon,
       cardColor: 'bg-[#fffdf0] border-amber-200/80',
       iconBg: 'bg-[#fef3c7]',
@@ -148,7 +212,28 @@ export default function Passengers() {
       labelClassName: 'text-xs font-bold text-black',
       valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
-  ];
+    {
+      id: 4,
+      label: 'Blocked Passengers',
+      value: apiStats
+        ? (apiStats.blockedUsers ?? 0).toLocaleString()
+        : passengersStats.blockedPassengers,
+      image: blockedPassengersIcon,
+      cardColor: 'bg-[#fff1f2] border-rose-200/80',
+      iconBg: 'bg-[#ffe4e6]',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-5 h-5 sm:w-7 sm:h-7',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
+    },
+  ], [apiStats]);
+
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+    (accountStatusFilter && accountStatusFilter !== 'All Statuses') ||
+    startDate ||
+    endDate
+  );
 
   return (
     <div className="space-y-5 sm:space-y-6 select-none pb-10 sm:pb-12">
@@ -172,7 +257,10 @@ export default function Passengers() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search by Name, Mobile or ID..."
             className="w-full pl-10 pr-4 py-2 sm:py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -204,7 +292,7 @@ export default function Passengers() {
             {/* Custom Dropdown Menu */}
             {statusDropdownOpen && (
               <div className="absolute left-0 right-0 sm:right-auto mt-1.5 sm:w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
-                {['All Statuses', 'Active', 'Blocked'].map((status) => {
+                {['All Statuses', 'Active', 'Inactive', 'Blocked'].map((status) => {
                   const isSelected = accountStatusFilter === status;
                   return (
                     <button
@@ -430,6 +518,19 @@ export default function Passengers() {
             )}
           </div>
 
+          {/* Reset Filters Button (if filters active) */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+              title="Reset all filters"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </button>
+          )}
+
           {/* Export Button */}
           <button
             onClick={() => alert('Exporting Passengers data...')}
@@ -455,6 +556,7 @@ export default function Passengers() {
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Passenger ID</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Mobile Number</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Email</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Registered On</th>
                 <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Total Bookings</th>
                 <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Completed Rides</th>
                 <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Cancelled Rides</th>
@@ -465,9 +567,18 @@ export default function Passengers() {
 
             {/* Table Body */}
             <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-              {filteredPassengers.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={10} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
+                  <td colSpan={11} className="py-12 text-center text-slate-500 font-bold">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="w-7 h-7 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs font-semibold text-slate-500">Loading passengers...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredPassengers.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
                     No passengers found matching your criteria.
                   </td>
                 </tr>
@@ -480,7 +591,7 @@ export default function Passengers() {
                   >
                     {/* # */}
                     <td className="py-2 px-3.5 text-center font-bold text-slate-500 text-sm sm:text-base whitespace-nowrap">
-                      {index + 1}
+                      {(currentPage - 1) * entriesPerPage + index + 1}
                     </td>
 
                     {/* Passenger: Avatar + Name */}
@@ -490,6 +601,10 @@ export default function Passengers() {
                           src={p.avatar}
                           alt={p.name}
                           className="w-8.5 h-8.5 rounded-full object-cover shrink-0 border border-amber-300 ring-1 ring-amber-100"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = defaultAvatar;
+                          }}
                         />
                         <span className="font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
                           {p.name}
@@ -514,6 +629,11 @@ export default function Passengers() {
                       {p.email}
                     </td>
 
+                    {/* Registered On */}
+                    <td className="py-2 px-3.5 text-center font-medium text-slate-700 text-xs sm:text-sm whitespace-nowrap">
+                      {p.registeredOnFormatted}
+                    </td>
+
                     {/* Total Bookings */}
                     <td className="py-2 px-3.5 text-center font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
                       {p.totalBookings}
@@ -533,9 +653,11 @@ export default function Passengers() {
                     <td className="py-2 px-3.5 text-center whitespace-nowrap">
                       <span
                         className={`inline-block px-3 py-0.5 rounded-full text-xs font-bold border ${
-                          p.accountStatus === 'Active'
+                          p.accountStatus.toLowerCase() === 'active'
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-100/80'
-                            : 'bg-rose-50 text-rose-600 border-rose-100/80'
+                            : p.accountStatus.toLowerCase() === 'blocked'
+                            ? 'bg-rose-50 text-rose-600 border-rose-100/80'
+                            : 'bg-amber-50 text-amber-700 border-amber-200/80'
                         }`}
                       >
                         {p.accountStatus}
@@ -567,11 +689,14 @@ export default function Passengers() {
             ========================================================= */}
         <Pagination
           currentPage={currentPage}
-          totalItems={12486}
+          totalItems={meta?.total ?? filteredPassengers.length}
           itemsPerPage={entriesPerPage}
           onPageChange={setCurrentPage}
-          onItemsPerPageChange={setEntriesPerPage}
-          pageSizeOptions={[5, 10, 25, 50]}
+          onItemsPerPageChange={(limit) => {
+            setEntriesPerPage(limit);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
           itemLabel="passengers"
         />
       </div>

@@ -43,6 +43,9 @@ export default function PendingVerificationView({ driver }) {
   const [activeStep, setActiveStep] = useState(1);
   const [previewPhoto, setPreviewPhoto] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectRemark, setRejectRemark] = useState('');
+  const [rejecting, setRejecting] = useState(false);
 
   const isProfileApproved = (driver.profileStatus || '').toLowerCase() === 'approved';
   const isKycApproved = (driver.kycStatus || '').toLowerCase() === 'approved';
@@ -123,7 +126,55 @@ export default function PendingVerificationView({ driver }) {
   };
 
   const handleReject = () => {
-    // No action on reject button for now
+    setRejectRemark('');
+    setRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = async (e) => {
+    if (e) e.preventDefault();
+    if (!rejectRemark.trim()) {
+      toast.error('Please enter a rejection reason.');
+      return;
+    }
+
+    try {
+      setRejecting(true);
+      let res;
+      if (activeStep === 1) {
+        res = await reviewDriverProfileApi(driver.id, {
+          action: 'rejected',
+          remark: rejectRemark.trim(),
+        });
+        toast.success(res?.message || 'Profile details rejected.');
+      } else if (activeStep === 2) {
+        res = await reviewDriverKycApi(driver.id, {
+          action: 'rejected',
+          remark: rejectRemark.trim(),
+        });
+        toast.success(res?.message || 'KYC documents rejected.');
+      } else if (activeStep === 3) {
+        res = await reviewDriverVehicleApi(driver.id, {
+          action: 'rejected',
+          remark: rejectRemark.trim(),
+        });
+        toast.success(res?.message || 'Vehicle details rejected.');
+      }
+
+      setRejectModalOpen(false);
+      setRejectRemark('');
+
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-driver-details'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-drivers'],
+      });
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to reject.';
+      toast.error(msg);
+    } finally {
+      setRejecting(false);
+    }
   };
 
   const kycDocs = [
@@ -830,6 +881,91 @@ export default function PendingVerificationView({ driver }) {
           </div>
         </div>
       </div>
+
+      {/* Rejection Remark Modal Popup */}
+      {rejectModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => !rejecting && setRejectModalOpen(false)}
+        >
+          <div
+            className="relative max-w-md w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-5 sm:p-6 flex flex-col border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => !rejecting && setRejectModalOpen(false)}
+              disabled={rejecting}
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-800 cursor-pointer disabled:opacity-50"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-2xl bg-[#fed011]/25 border border-[#fed011]/50 text-black flex items-center justify-center shrink-0">
+                <XCircle className="w-5 h-5 stroke-[2.4] text-black" />
+              </div>
+              <div>
+                <h4 className="text-base font-black text-slate-900 leading-tight">
+                  Reject {currentStepObj.name}
+                </h4>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Provide a clear reason for the driver.
+                </p>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleConfirmReject} className="space-y-4 pt-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Rejection Reason / Remark <span className="text-amber-600">*</span>
+                </label>
+                <textarea
+                  value={rejectRemark}
+                  onChange={(e) => setRejectRemark(e.target.value)}
+                  placeholder="e.g. DL image is blurry, please upload again"
+                  rows={4}
+                  autoFocus
+                  disabled={rejecting}
+                  className="w-full text-xs sm:text-sm p-3 rounded-2xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#fed011] focus:ring-2 focus:ring-[#fed011]/30 text-slate-900 placeholder:text-slate-400 transition-all resize-none font-medium"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => !rejecting && setRejectModalOpen(false)}
+                  disabled={rejecting}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                     
+                <button
+                  type="submit"
+                  disabled={rejecting || !rejectRemark.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-[#fed011] hover:bg-[#e5bc0f] text-black font-black text-xs sm:text-sm transition-all cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                >
+                  {rejecting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      <span>Rejecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4 stroke-[2.4] text-black" />
+                      <span>Confirm Reject</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Full Preview Modal */}
       {previewPhoto && (

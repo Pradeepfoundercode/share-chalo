@@ -783,7 +783,7 @@ export default function CreateNotification() {
               </div>
 
               {/* Users Checkbox List - Compact & Bigger Text */}
-              <div className="divide-y divide-slate-100 border border-slate-150 rounded-xl overflow-hidden bg-slate-50/20">
+              <div className="divide-y divide-slate-100 rounded-xl overflow-hidden">
                 {filteredUsers.length === 0 ? (
                   <div className="p-6 text-center text-slate-400 font-semibold text-xs sm:text-sm">
                     No users found matching your search or filter.

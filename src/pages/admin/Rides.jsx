@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   Calendar,
   Play,
@@ -19,15 +20,52 @@ import {
   Filter
 } from 'lucide-react';
 import { ridesStats, ridesList } from '../../data/ridesData';
+import { getTripsApi } from '../../services/trip.services';
 import Pagination from '../../components/common/Pagination';
 import { StatsCards } from '../../components/common';
 
-// Assets for Stats Cards
+// Assets for Stats Cards & Vehicles
 import totalRidesIcon from '../../assets/dashboard/calender-yellow.svg';
 import upcomingRidesIcon from '../../assets/drivers/upcoming-rides.svg';
 import ongoingRidesIcon from '../../assets/drivers/ongoing-rides.svg';
 import completedRidesIcon from '../../assets/drivers/active-status-check.svg';
 import cancelledRidesIcon from '../../assets/drivers/blocked-cancelled.svg';
+import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
+import busCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
+import amitAvatar from '../../assets/amit_kumar_photo.png';
+
+// Helper to format ISO date time string
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return { date: '-', time: '-' };
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return { date: dateStr, time: '' };
+    const date = d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+    const time = d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+    return { date, time };
+  } catch {
+    return { date: dateStr, time: '' };
+  }
+};
+
+// Helper to format status values cleanly (e.g. in_progress -> In Progress)
+const formatStatusDisplay = (rawStatus) => {
+  if (!rawStatus) return 'Upcoming';
+  const s = String(rawStatus).trim();
+  // Format snake_case to Title Case (e.g., in_progress -> In Progress)
+  return s
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 export default function Rides() {
   const navigate = useNavigate();
@@ -43,14 +81,86 @@ export default function Rides() {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Calendar UI state for interactive date picker
-  const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1)); // Default Nov 2026
+  const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
   const [tempStart, setTempStart] = useState('');
   const [tempEnd, setTempEnd] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
-  // Stats cards configuration matching user requested icons
+  // Fetch Trips using TanStack Query
+  const { data: tripsResponse } = useQuery({
+    queryKey: ['admin-trips', currentPage, entriesPerPage],
+    queryFn: () =>
+      getTripsApi({
+        page: currentPage,
+        limit: entriesPerPage,
+      }),
+  });
+
+  // Extract raw trips array safely
+  const rawTrips = useMemo(() => {
+    if (!tripsResponse) return [];
+    if (Array.isArray(tripsResponse.data)) return tripsResponse.data;
+    if (Array.isArray(tripsResponse.data?.trips)) return tripsResponse.data.trips;
+    if (Array.isArray(tripsResponse.trips)) return tripsResponse.trips;
+    return [];
+  }, [tripsResponse]);
+
+  // Map API trips to UI model
+  const rides = useMemo(() => {
+    if (tripsResponse) {
+      return rawTrips.map((trip, idx) => {
+        const dt = formatDateTime(trip.rideDateTime || trip.createdAt || trip.date);
+        const isBus =
+          (trip.vehicleCategory || trip.vehicleType || '').toLowerCase().includes('bus');
+
+        const usageType =
+          (trip.usageType || trip.vehicleType || '').toLowerCase() === 'private'
+            ? 'Private'
+            : 'Commercial';
+
+        const status = formatStatusDisplay(trip.status || trip.tripStatus);
+
+        const rideIdDisplay = trip.rideId
+          ? String(trip.rideId).startsWith('RD')
+            ? String(trip.rideId)
+            : `RD${trip.rideId}`
+          : `RD${trip.id || idx + 1}`;
+
+        const fareVal =
+          trip.farePerKmPerSeat ??
+          trip.fare ??
+          trip.price ??
+          trip.pricePerSeat ??
+          0;
+
+        return {
+          id: trip.id || trip.rideId || idx + 1,
+          rideId: rideIdDisplay,
+          from: trip.from || '-',
+          to: trip.to || '-',
+          date: dt.date,
+          time: dt.time,
+          rawDateTime: trip.rideDateTime || trip.createdAt,
+          vehicleNumber: trip.vehicleNumber || trip.vehicleRegistrationNumber || trip.regNo || '-',
+          vehicleType: isBus ? 'Bus' : 'Car',
+          vehicleImage: isBus ? busCutout : carCutout,
+          driverName: trip.driverName || trip.driver?.name || 'Driver',
+          driverAvatar: trip.driverImageUrl || trip.driver?.avatar || amitAvatar,
+          usageType: usageType,
+          bookedSeats: trip.bookedSeats ?? trip.seatsBooked ?? 0,
+          totalSeats: trip.totalSeats ?? trip.seatCapacity ?? (isBus ? 36 : 4),
+          fare: fareVal,
+          status: status,
+        };
+      });
+    }
+
+    return [];
+  }, [rawTrips, tripsResponse]);
+
+  // Stats cards configuration (using default image counts as requested since API does not return stats)
   const ridesStatsConfig = [
     {
       id: 1,
@@ -114,57 +224,68 @@ export default function Rides() {
     },
   ];
 
-  // Status pills configuration
+  // Status pills configuration (NO count numbers as requested)
   const statusTabs = [
-    { id: 'All Rides', label: 'All Rides', count: ridesStats.totalRides, icon: Calendar },
-    { id: 'Upcoming', label: 'Upcoming', count: ridesStats.upcoming, icon: Calendar },
-    { id: 'Ongoing', label: 'Ongoing', count: ridesStats.ongoing, icon: Play },
-    { id: 'Completed', label: 'Completed', count: ridesStats.completed, icon: CheckCircle2 },
-    { id: 'Cancelled', label: 'Cancelled', count: ridesStats.cancelled, icon: XCircle },
+    { id: 'All Rides', label: 'All Rides', icon: Calendar },
+    { id: 'Upcoming', label: 'Upcoming', icon: Calendar },
+    { id: 'Ongoing', label: 'Ongoing', icon: Play },
+    { id: 'Completed', label: 'Completed', icon: CheckCircle2 },
+    { id: 'Cancelled', label: 'Cancelled', icon: XCircle },
   ];
 
   // Filtering
-  const filteredRides = ridesList.filter((ride) => {
-    // Tab filter
-    if (activeTab !== 'All Rides' && ride.status !== activeTab) {
-      return false;
-    }
-
-    // Search filter
-    const term = searchTerm.toLowerCase();
-    const matchesSearch =
-      !searchTerm ||
-      ride.rideId.toLowerCase().includes(term) ||
-      ride.driverName.toLowerCase().includes(term) ||
-      ride.vehicleNumber.toLowerCase().includes(term) ||
-      ride.from.toLowerCase().includes(term) ||
-      ride.to.toLowerCase().includes(term);
-
-    // Dropdowns
-    const matchesVehicleType =
-      vehicleTypeFilter === 'All Vehicles' || ride.vehicleType === vehicleTypeFilter;
-    const matchesUsageType =
-      usageTypeFilter === 'All Types' || ride.usageType === usageTypeFilter;
-
-    // Date range filter
-    let matchesDate = true;
-    if (startDate || endDate) {
-      // ride.date is e.g. "05 Nov 2026"
-      const rideDateObj = new Date(ride.date);
-      if (startDate) {
-        const startObj = new Date(startDate);
-        startObj.setHours(0, 0, 0, 0);
-        if (rideDateObj < startObj) matchesDate = false;
+  const filteredRides = useMemo(() => {
+    return rides.filter((ride) => {
+      // Tab filter
+      if (activeTab !== 'All Rides') {
+        const activeLower = activeTab.toLowerCase();
+        const rideStatusLower = (ride.status || '').toLowerCase();
+        if (activeLower === 'ongoing') {
+          if (!rideStatusLower.includes('ongoing') && !rideStatusLower.includes('progress')) {
+            return false;
+          }
+        } else if (!rideStatusLower.includes(activeLower)) {
+          return false;
+        }
       }
-      if (endDate) {
-        const endObj = new Date(endDate);
-        endObj.setHours(23, 59, 59, 999);
-        if (rideDateObj > endObj) matchesDate = false;
-      }
-    }
 
-    return matchesSearch && matchesVehicleType && matchesUsageType && matchesDate;
-  });
+      // Search filter
+      const term = searchTerm.toLowerCase();
+      const matchesSearch =
+        !searchTerm ||
+        ride.rideId.toLowerCase().includes(term) ||
+        ride.driverName.toLowerCase().includes(term) ||
+        ride.vehicleNumber.toLowerCase().includes(term) ||
+        ride.from.toLowerCase().includes(term) ||
+        ride.to.toLowerCase().includes(term);
+
+      // Dropdowns
+      const matchesVehicleType =
+        vehicleTypeFilter === 'All Vehicles' || ride.vehicleType === vehicleTypeFilter;
+      const matchesUsageType =
+        usageTypeFilter === 'All Types' || ride.usageType === usageTypeFilter;
+
+      // Date range filter
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const rideDateObj = new Date(ride.rawDateTime || ride.date);
+        if (!isNaN(rideDateObj.getTime())) {
+          if (startDate) {
+            const startObj = new Date(startDate);
+            startObj.setHours(0, 0, 0, 0);
+            if (rideDateObj < startObj) matchesDate = false;
+          }
+          if (endDate) {
+            const endObj = new Date(endDate);
+            endObj.setHours(23, 59, 59, 999);
+            if (rideDateObj > endObj) matchesDate = false;
+          }
+        }
+      }
+
+      return matchesSearch && matchesVehicleType && matchesUsageType && matchesDate;
+    });
+  }, [rides, activeTab, searchTerm, vehicleTypeFilter, usageTypeFilter, startDate, endDate]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -175,6 +296,7 @@ export default function Rides() {
     setTempStart('');
     setTempEnd('');
     setActiveTab('All Rides');
+    setCurrentPage(1);
   };
 
   return (
@@ -198,16 +320,18 @@ export default function Rides() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center justify-center gap-2 py-2 px-3 sm:px-4 rounded-xl text-xs sm:text-[13.5px] font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${isActive
+              onClick={() => {
+                setActiveTab(tab.id);
+                setCurrentPage(1);
+              }}
+              className={`w-full flex items-center justify-center gap-2 py-2 px-3 sm:px-4 rounded-xl text-xs sm:text-[13.5px] font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${
+                isActive
                   ? 'bg-[#fed011] text-black shadow-amber-300/40'
                   : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-                }`}
+              }`}
             >
               <Icon className="w-4 h-4 stroke-[2.2] shrink-0" />
-              <span className="truncate">
-                {tab.label} ({tab.count})
-              </span>
+              <span className="truncate">{tab.label}</span>
             </button>
           );
         })}
@@ -223,7 +347,10 @@ export default function Rides() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search by Ride ID, Driver, Vehicle Number..."
             className="w-full pl-10.5 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -562,7 +689,8 @@ export default function Rides() {
                 <th className="py-2.5 px-3 whitespace-nowrap">Vehicle</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">Driver</th>
                 <th className="py-2.5 px-3 whitespace-nowrap">Type</th>
-                <th className="py-2.5 px-2.5 text-center whitespace-nowrap">Seats</th>
+                <th className="py-2.5 px-2.5 text-center whitespace-nowrap">Total Seats</th>
+                <th className="py-2.5 px-2.5 text-center whitespace-nowrap">Booked Seats</th>
                 <th className="py-2.5 px-3 text-center whitespace-nowrap">Fare (Seat)</th>
                 <th className="py-2.5 px-3 text-center whitespace-nowrap">Status</th>
                 <th className="py-2.5 px-3 pr-4 text-center whitespace-nowrap">Action</th>
@@ -571,7 +699,7 @@ export default function Rides() {
             <tbody className="divide-y divide-slate-100 text-[13px] font-bold text-slate-700">
               {filteredRides.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-slate-400 font-semibold text-sm">
+                  <td colSpan={12} className="py-12 text-center text-slate-400 font-semibold text-sm">
                     No rides found matching your filters.
                   </td>
                 </tr>
@@ -580,7 +708,7 @@ export default function Rides() {
                   return (
                     <tr
                       key={ride.id}
-                      onClick={() => navigate(`/rides/${ride.rideId}`)}
+                      onClick={() => navigate(`/rides/${ride.id || ride.rideId}`)}
                       className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
                       {/* 1. Index */}
@@ -637,6 +765,10 @@ export default function Rides() {
                             src={ride.driverAvatar}
                             alt={ride.driverName}
                             className="w-7 h-7 rounded-full object-cover border border-amber-300 ring-1 ring-amber-100 shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = amitAvatar;
+                            }}
                           />
                           <span className="font-bold text-slate-900 text-xs">
                             {ride.driverName}
@@ -659,33 +791,42 @@ export default function Rides() {
                         )}
                       </td>
 
-                      {/* 8. Seats */}
+                      {/* 8. Total Seats */}
                       <td className="py-2 px-2.5 text-center font-bold text-slate-900 text-xs whitespace-nowrap">
-                        {ride.bookedSeats} / {ride.totalSeats}
+                        {ride.totalSeats}
                       </td>
 
-                      {/* 9. Fare (Seat) */}
+                      {/* 9. Booked Seats */}
+                      <td className="py-2 px-2.5 text-center font-bold text-slate-900 text-xs whitespace-nowrap">
+                        {ride.bookedSeats}
+                      </td>
+
+                      {/* 10. Fare (Seat) */}
                       <td className="py-2 px-3 text-center font-bold text-slate-900 text-xs sm:text-[13px] whitespace-nowrap">
                         ₹ {ride.fare}
                       </td>
 
-                      {/* 10. Status Badge */}
+                      {/* 11. Status Badge */}
                       <td className="py-2 px-3 text-center whitespace-nowrap">
-                        {ride.status === 'Completed' ? (
+                        {ride.status.toLowerCase() === 'completed' ? (
                           <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
-                            Completed
+                            {ride.status}
                           </span>
-                        ) : ride.status === 'Ongoing' ? (
-                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100">
-                            Ongoing
+                        ) : ride.status.toLowerCase().includes('progress') || ride.status.toLowerCase() === 'ongoing' ? (
+                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200">
+                            {ride.status}
                           </span>
-                        ) : ride.status === 'Upcoming' ? (
-                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-100">
-                            Upcoming
+                        ) : ride.status.toLowerCase() === 'upcoming' ? (
+                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200">
+                            {ride.status}
+                          </span>
+                        ) : ride.status.toLowerCase() === 'cancelled' || ride.status.toLowerCase() === 'canceled' ? (
+                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100">
+                            {ride.status}
                           </span>
                         ) : (
-                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100">
-                            Cancelled
+                          <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200">
+                            {ride.status}
                           </span>
                         )}
                       </td>
@@ -693,7 +834,7 @@ export default function Rides() {
                       {/* 11. Action View Button */}
                       <td className="py-2 px-3 pr-4 text-center">
                         <button
-                          onClick={() => navigate(`/rides/${ride.rideId}`)}
+                          onClick={() => navigate(`/rides/${ride.id || ride.rideId}`)}
                           className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer inline-flex items-center justify-center"
                           title="View Ride Details"
                         >
@@ -713,7 +854,7 @@ export default function Rides() {
             ========================================================= */}
         <Pagination
           currentPage={currentPage}
-          totalItems={1286}
+          totalItems={tripsResponse?.meta?.total ?? filteredRides.length}
           itemsPerPage={entriesPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setEntriesPerPage}
@@ -724,4 +865,3 @@ export default function Rides() {
     </div>
   );
 }
-
