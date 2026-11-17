@@ -7,27 +7,19 @@ import {
   Download
 } from 'lucide-react';
 
-import docDlPreview from '../../assets/doc_dl_preview.png';
-import docAadhaarPreview from '../../assets/doc_aadhaar_preview.png';
-import docSelfiePreview from '../../assets/doc_selfie_preview.png';
-import docRcPreview from '../../assets/Screenshot 2026-11-05 120222.png';
-import docInsurancePreview from '../../assets/Screenshot 2026-11-05 120222.png';
-import docPucPreview from '../../assets/Screenshot 2026-11-05 120222.png';
-import docCommercialPermitPreview from '../../assets/Screenshot 2026-11-05 120222.png';
-import docFitnessPreview from '../../assets/Screenshot 2026-11-05 120222.png';
-import docRoutePermitPreview from '../../assets/Screenshot 2026-11-05 120222.png';
-
 export default function KycDocumentsTab({ driver }) {
-  const isBus = driver.vehicleType === 'Commercial Bus';
+  const isBus =
+    driver.vehicleCategory?.toLowerCase() === 'bus' ||
+    (driver.vehicleType || '').toLowerCase().includes('bus');
 
   const kycDocs = [
     {
       id: 'dl',
       title: 'Driving Licence',
-      number: `DL No.: ${driver.dlNo || 'BR012345678901'}`,
-      validity: `Valid Till: ${driver.dlValidity || '14 Aug 2030'}`,
-      status: 'Approved',
-      previewImg: docDlPreview,
+      number: `DL No.: ${driver.dlNo || '-'}`,
+      validity: `Valid Till: ${driver.dlValidity || '-'}`,
+      status: driver.kycStatus ? (driver.kycStatus.charAt(0).toUpperCase() + driver.kycStatus.slice(1)) : 'Approved',
+      previewImg: driver.dlImageUrl || '',
       hasDownload: true,
       hasView: true,
     },
@@ -36,8 +28,8 @@ export default function KycDocumentsTab({ driver }) {
       title: 'Identity Proof (Aadhaar)',
       number: `Aadhaar No.: ${driver.aadhaarNo || 'XXXX-XXXX-6789'}`,
       validity: null,
-      status: 'Approved',
-      previewImg: docAadhaarPreview,
+      status: driver.kycStatus ? (driver.kycStatus.charAt(0).toUpperCase() + driver.kycStatus.slice(1)) : 'Approved',
+      previewImg: driver.identityProofUrl || '',
       hasDownload: true,
       hasView: true,
     },
@@ -45,8 +37,8 @@ export default function KycDocumentsTab({ driver }) {
       id: 'selfie',
       title: 'Selfie / Live Photo',
       subtitle: 'Verified at the time of registration',
-      status: 'Approved',
-      previewImg: docSelfiePreview,
+      status: driver.profileStatus ? (driver.profileStatus.charAt(0).toUpperCase() + driver.profileStatus.slice(1)) : 'Approved',
+      previewImg: driver.avatar || '',
       hasDownload: false,
       hasView: true,
       isSelfie: true,
@@ -58,9 +50,9 @@ export default function KycDocumentsTab({ driver }) {
         {
           id: 'rc',
           title: 'RC (Registration Certificate)',
-          subtitle: `Reg. No.: ${driver.regNo || driver.plate || 'BR01PC7890'}`,
-          status: 'Approved',
-          previewImg: docRcPreview,
+          subtitle: `Reg. No.: ${driver.regNo || driver.plate || '-'}`,
+          status: driver.vehicleStatus ? (driver.vehicleStatus.charAt(0).toUpperCase() + driver.vehicleStatus.slice(1)) : 'Approved',
+          previewImg: driver.rcUrl || '',
         },
         {
           id: 'insurance',
@@ -68,7 +60,7 @@ export default function KycDocumentsTab({ driver }) {
           detail1: 'Policy No.: ICICI/4567890',
           detail2: 'Valid Till: 20 Sep 2027',
           status: 'Approved',
-          previewImg: docInsurancePreview,
+          previewImg: driver.insuranceUrl || '',
         },
         {
           id: 'puc',
@@ -76,15 +68,15 @@ export default function KycDocumentsTab({ driver }) {
           detail1: 'Certificate No.: PUC/BR/2026/12345',
           detail2: 'Valid Till: 18 Mar 2027',
           status: 'Approved',
-          previewImg: docPucPreview,
+          previewImg: driver.pucCertificateUrl || '',
         },
         {
           id: 'commercial_permit',
           title: 'Commercial Permit',
           detail1: 'Permit No.: CP/BR/2026/6789',
-          detail2: 'Valid Till: 31 Dec 2027',
+          detail2: `Valid Till: ${driver.permitValidity || '-'}`,
           status: 'Approved',
-          previewImg: docCommercialPermitPreview,
+          previewImg: driver.permitUrl || '',
         },
         {
           id: 'fitness',
@@ -92,24 +84,24 @@ export default function KycDocumentsTab({ driver }) {
           detail1: 'Certificate No.: FC/BR/2026/4456',
           detail2: 'Valid Till: 31 Dec 2027',
           status: 'Approved',
-          previewImg: docFitnessPreview,
+          previewImg: driver.fitnessCertificateUrl || '',
         },
         {
           id: 'route_permit',
           title: 'Route Permit',
           detail1: 'Permit No.: RP/BR/2026/7788',
-          detail2: 'Route: Patna - Ranchi - Dhanbad',
+          detail2: 'Route: Intercity Express',
           status: 'Approved',
-          previewImg: docRoutePermitPreview,
+          previewImg: driver.routePermitUrl || '',
         },
       ]
     : [
         {
           id: 'rc',
           title: 'RC (Registration Certificate)',
-          subtitle: `Reg. No.: ${driver.regNo || driver.plate || 'BR01PB4567'}`,
-          status: 'Approved',
-          previewImg: docRcPreview,
+          subtitle: `Reg. No.: ${driver.regNo || driver.plate || '-'}`,
+          status: driver.vehicleStatus ? (driver.vehicleStatus.charAt(0).toUpperCase() + driver.vehicleStatus.slice(1)) : 'Approved',
+          previewImg: driver.rcUrl || '',
         },
         {
           id: 'insurance',
@@ -117,7 +109,7 @@ export default function KycDocumentsTab({ driver }) {
           detail1: 'Policy No.: HDFC/9876543',
           detail2: 'Valid Till: 15 Oct 2027',
           status: 'Approved',
-          previewImg: docInsurancePreview,
+          previewImg: driver.insuranceUrl || '',
         },
         {
           id: 'puc',
@@ -125,7 +117,7 @@ export default function KycDocumentsTab({ driver }) {
           detail1: 'Certificate No.: PUC/BR/2026/8899',
           detail2: 'Valid Till: 05 Jun 2027',
           status: 'Approved',
-          previewImg: docPucPreview,
+          previewImg: driver.pucCertificateUrl || '',
         },
       ];
 

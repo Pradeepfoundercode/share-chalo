@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getDriverByIdApi } from '../../services/driver.services';
 import {
   ArrowLeft,
   Check,
@@ -19,22 +21,11 @@ import {
 } from 'lucide-react';
 
 // Images
-import driverAvatar from '../../assets/harsh_singh_avatar_square.png';
 import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
-import carFrontImg from '../../assets/White Baleno Hatchback on a Tree-Lined Road.png';
-import carRearImg from '../../assets/White Maruti Suzuki Baleno Rear View.png';
-import carSideImg from '../../assets/White Compact Sedan on a Tree-Lined Road.png';
-import carDashImg from '../../assets/Modern Suzuki Cabin Dashboard View.png';
-import carInteriorImg from '../../assets/Beige Leather Car Interior.png';
 
 // Bus Specific Images
 import steeringWheelIcon from '../../assets/Bold Black Steering Wheel Icon.png';
 import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
-import busHighRes1 from '../../assets/White_Share_Chalo_Bus_on_Tree_Lined_Road.png';
-import busHighRes2 from '../../assets/White_Coach_Bus_on_a_Tree_Lined_Road.png';
-import busHighRes3 from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
-import busPhoto4 from '../../assets/bus_photo_4.png';
-import busPhoto5 from '../../assets/bus_photo_5.png';
 
 import privateCarIcon from '../../assets/drivers/private-car.svg';
 import commercialBusIcon from '../../assets/drivers/commercial-bus.svg';
@@ -53,7 +44,6 @@ import vehicleBusTabIcon from '../../assets/drivers/bus-vehicle.svg';
 import seatLayoutTabIcon from '../../assets/drivers/seat-arrangement.svg';
 import rideHistoryTabIcon from '../../assets/dashboard/ride-analytics.svg';
 
-import { driversList } from '../../data/driversData';
 import { useAuthStore } from '../../store/authStore';
 import KycDocumentsTab from '../../components/driver/KycDocumentsTab';
 import VehicleBusDetailsTab from '../../components/driver/VehicleBusDetailsTab';
@@ -67,38 +57,204 @@ export default function DriverDetails() {
   const navigate = useNavigate();
   const admin = useAuthStore((state) => state.admin);
 
-  const matchedDriver = driversList.find((d) => d.id === id);
+  // ========================================
+  // GET DRIVER DETAILS API (React Query)
+  // ========================================
+  const { data: driverResponse, isLoading } = useQuery({
+    queryKey: ['admin-driver-details', id],
+    queryFn: () => getDriverByIdApi(id),
+    enabled: Boolean(id),
+  });
 
-  // Default driver state fallback
-  const driver = matchedDriver || {
-    id: id || 'SC5678',
-    name: 'Harsh Singh',
-    phone: '+91 98765 43210',
-    email: 'harshsingh@gmail.com',
-    dob: '15 Aug 1996',
-    gender: 'Male',
-    address: 'House No. 12, Boring Road, Patna, Bihar - 800001',
-    isPhoneVerified: true,
-    status: 'Approved',
-    approvalDate: '02 Nov 2026',
-    memberSince: '02 Nov 2026',
-    vehicleType: 'Private Car',
-    regNo: 'BR01PB4567',
-    brand: 'Maruti Suzuki',
-    model: 'Swift Dzire',
-    color: 'White',
-    seatingCapacity: '4 + 1',
-    avatar: driverAvatar,
-    vehicleImg: carCutout,
+  useEffect(() => {
+    if (driverResponse) {
+      console.log('Driver details API response (React Query):', driverResponse);
+    }
+  }, [driverResponse]);
+
+  const apiData = driverResponse?.data;
+
+  // Helper to format dates
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
   };
 
-  const isBus = driver.vehicleType === 'Commercial Bus';
-  const isPending = driver.kycStatus === 'Pending';
+  // Map API data (NO fallback/mock avatars or names)
+  const driver = useMemo(() => {
+    if (!apiData) {
+      return {
+        id: id || '-',
+        name: '-',
+        phone: '-',
+        mobile: '-',
+        email: '-',
+        dob: '-',
+        gender: '-',
+        address: '-',
+        city: '',
+        avatar: '',
+        isPhoneVerified: false,
+        status: 'Active',
+        approvalStatus: 'Approved',
+        kycStatus: 'Approved',
+        profileStatus: '',
+        vehicleStatus: '',
+        createdAt: '',
+        memberSince: '-',
+        approvalDate: '-',
+        vehicleCategory: '',
+        vehicleType: '-',
+        regNo: '-',
+        plate: '-',
+        brand: '-',
+        model: '-',
+        color: '-',
+        seatingCapacity: '-',
+        capacity: '-',
+        totalSeats: 0,
+        busType: '-',
+        acType: '-',
+        seatingType: '-',
+        seatType: '-',
+        seatArrangement: '-',
+        totalRows: 0,
+        dlNo: '-',
+        dlValidity: '-',
+        dlImageUrl: '',
+        identityProofUrl: '',
+        rcUrl: '',
+        insuranceUrl: '',
+        permitUrl: '',
+        fitnessCertificateUrl: '',
+        pucCertificateUrl: '',
+        photos: {},
+        vehicleImg: '',
+      };
+    }
 
-  // If driver status is pending, show Driver Verification workflow view matching the screenshot
-  if (isPending) {
-    return <PendingVerificationView driver={driver} />;
-  }
+    const kyc = apiData.kyc || {};
+    const vehicle = apiData.vehicle || {};
+    const vehicleDetails = vehicle.details || {};
+    const vehicleDocs = vehicle.documents || {};
+    const vehiclePhotos = vehicle.photos || {};
+
+    const isBusVehicle =
+      vehicle.vehicleCategory?.toLowerCase() === 'bus' ||
+      (vehicle.vehicleTypeName || '').toLowerCase().includes('bus');
+
+    // Both memberSince and approvalDate show formatted createdAt date
+    const formattedCreatedAt = formatDisplayDate(apiData.createdAt);
+
+    return {
+      raw: apiData,
+      id: apiData.id,
+      name: apiData.name || '-',
+      phone: apiData.phone || '-',
+      mobile: apiData.phone || '-',
+      email: apiData.email || '-',
+      dob: formatDisplayDate(apiData.dateOfBirth),
+      gender: apiData.gender
+        ? apiData.gender.charAt(0).toUpperCase() + apiData.gender.slice(1)
+        : '-',
+      address: [apiData.address, apiData.city].filter(Boolean).join(', ') || '-',
+      city: apiData.city || '',
+      avatar: apiData.profileImage || '',
+      isPhoneVerified: Boolean(apiData.isPhoneVerified),
+      status: apiData.status
+        ? apiData.status.charAt(0).toUpperCase() + apiData.status.slice(1)
+        : 'Active',
+      approvalStatus: apiData.approvalStatus
+        ? apiData.approvalStatus.charAt(0).toUpperCase() + apiData.approvalStatus.slice(1)
+        : 'Approved',
+      kycStatus: apiData.kycStatus
+        ? apiData.kycStatus.charAt(0).toUpperCase() + apiData.kycStatus.slice(1)
+        : 'Approved',
+      profileStatus: apiData.profileStatus,
+      vehicleStatus: apiData.vehicleStatus,
+      createdAt: apiData.createdAt,
+      memberSince: formattedCreatedAt,
+      approvalDate: formattedCreatedAt,
+
+      // Vehicle Info
+      vehicleCategory: vehicle.vehicleCategory,
+      vehicleType: vehicle.vehicleTypeName || (isBusVehicle ? 'Commercial Bus' : 'Private Car'),
+      regNo: vehicle.registrationNumber || '-',
+      plate: vehicle.registrationNumber || '-',
+      brand: vehicle.vehicleBrandName || '-',
+      model: vehicle.vehicleModelName || '-',
+      color: vehicle.vehicleColorName || '-',
+      colorHex: vehicle.vehicleColorHex,
+      seatingCapacity: vehicle.seatCapacity
+        ? `${vehicle.seatCapacity} Seats`
+        : isBusVehicle
+        ? '40 Seats'
+        : '4 + 1',
+      capacity: vehicle.seatCapacity
+        ? `${vehicle.seatCapacity} Seats (${vehicleDetails.seatingLayout || '2x2'})`
+        : isBusVehicle
+        ? '40 Seats (2 × 2)'
+        : '4 + 1',
+      totalSeats:
+        vehicle.seatCapacity ||
+        (vehicleDetails.leftSideSeats && vehicleDetails.rightSideSeats
+          ? vehicleDetails.leftSideSeats + vehicleDetails.rightSideSeats
+          : isBusVehicle
+          ? 40
+          : 5),
+      busType: vehicleDetails.busAcType ? vehicleDetails.busAcType.toUpperCase() : 'AC',
+      acType: vehicleDetails.busAcType ? vehicleDetails.busAcType.toUpperCase() : 'AC',
+      seatingType: vehicleDetails.seatingType
+        ? vehicleDetails.seatingType.charAt(0).toUpperCase() + vehicleDetails.seatingType.slice(1)
+        : 'Seater',
+      seatType: vehicleDetails.seatingType
+        ? vehicleDetails.seatingType.charAt(0).toUpperCase() + vehicleDetails.seatingType.slice(1)
+        : 'Seater',
+      seatArrangement: vehicleDetails.seatingLayout
+        ? vehicleDetails.seatingLayout.replace('x', ' × ')
+        : '2 × 2',
+      totalRows: vehicleDetails.totalRows || (isBusVehicle ? 10 : 2),
+      leftSideSeats: vehicleDetails.leftSideSeats,
+      rightSideSeats: vehicleDetails.rightSideSeats,
+      permitValidity: formatDisplayDate(vehicleDetails.permitValidity),
+
+      // KYC Info
+      dlNo: kyc.dlNumber || apiData.licenseNumber || '-',
+      dlValidity: formatDisplayDate(kyc.dlValidityDate),
+      dlImageUrl: kyc.dlImageUrl,
+      identityProofUrl: kyc.identityProofUrl,
+
+      // Vehicle Documents
+      rcUrl: vehicleDocs.rcUrl,
+      insuranceUrl: vehicleDocs.insuranceUrl,
+      permitUrl: vehicleDocs.permitUrl,
+      fitnessCertificateUrl: vehicleDocs.fitnessCertificateUrl,
+      pucCertificateUrl: vehicleDocs.pucCertificateUrl,
+
+      // Photos
+      photos: vehiclePhotos,
+      frontPhoto: vehiclePhotos.front,
+      rearPhoto: vehiclePhotos.rear,
+      leftPhoto: vehiclePhotos.left,
+      rightPhoto: vehiclePhotos.right,
+      interiorPhoto: vehiclePhotos.interior,
+      vehicleImg: isBusVehicle ? coachBusCutout : carCutout,
+    };
+  }, [apiData, id]);
+
+  const isBus =
+    driver.vehicleCategory?.toLowerCase() === 'bus' ||
+    (driver.vehicleType || '').toLowerCase().includes('bus');
 
   // Active tab state
   const [activeTab, setActiveTab] = useState('personal');
@@ -108,6 +264,28 @@ export default function DriverDetails() {
   const [seatType, setSeatType] = useState('Seater');
   const [acType, setAcType] = useState('AC');
   const [seatArrangement, setSeatArrangement] = useState('2 × 2');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-12 flex items-center justify-center select-none">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-[#fed011] border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-600 font-semibold text-sm">Loading driver details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isPending =
+    (driver.approvalStatus || '').toLowerCase() === 'pending' ||
+    (driver.kycStatus || '').toLowerCase() === 'pending' ||
+    (driver.raw?.approvalStatus || '').toLowerCase() === 'pending' ||
+    (driver.raw?.kycStatus || '').toLowerCase() === 'pending';
+
+  // If driver status is pending, show Driver Verification workflow view
+  if (isPending) {
+    return <PendingVerificationView driver={driver} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-12 select-none">
@@ -128,9 +306,9 @@ export default function DriverDetails() {
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs grid grid-cols-1 md:grid-cols-12 items-start md:items-center gap-5 sm:gap-6 mb-5">
         {/* Left Column (Driver Profile): 5 cols */}
         <div className="md:col-span-5 flex items-center gap-4 sm:gap-5 shrink-0">
-          <div className="w-22 h-22 sm:w-26 sm:h-26 rounded-2xl overflow-hidden shrink-0 shadow-xs border border-slate-200">
+          <div className="w-22 h-22 sm:w-26 sm:h-26 rounded-2xl overflow-hidden shrink-0 shadow-xs border border-slate-200 bg-slate-50 flex items-center justify-center">
             <img
-              src={driver.avatar || driverAvatar}
+              src={driver.avatar}
               alt={driver.name}
               className="w-full h-full object-cover"
             />
@@ -141,9 +319,21 @@ export default function DriverDetails() {
               <h2 className="text-xl sm:text-2xl font-black text-black tracking-tight">
                 {driver.name}
               </h2>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#15803d] text-white">
-                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                Approved
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${
+                (driver.approvalStatus || driver.status || '').toLowerCase() === 'approved' || (driver.approvalStatus || driver.status || '').toLowerCase() === 'active'
+                  ? 'bg-[#15803d] text-white'
+                  : (driver.approvalStatus || driver.status || '').toLowerCase() === 'rejected'
+                  ? 'bg-rose-600 text-white'
+                  : 'bg-amber-500 text-white'
+              }`}>
+                {(driver.approvalStatus || driver.status || '').toLowerCase() === 'approved' || (driver.approvalStatus || driver.status || '').toLowerCase() === 'active' ? (
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                ) : (driver.approvalStatus || driver.status || '').toLowerCase() === 'rejected' ? (
+                  <X className="w-3.5 h-3.5 stroke-[3]" />
+                ) : (
+                  <Clock className="w-3.5 h-3.5 stroke-[3]" />
+                )}
+                {driver.approvalStatus || driver.status || 'Approved'}
               </span>
             </div>
 
@@ -205,7 +395,7 @@ export default function DriverDetails() {
             <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-tight">
               Member Since:{' '}
               <span className="font-semibold text-slate-900">
-                {driver.memberSince || driver.registeredOn}
+                {driver.memberSince || '-'}
               </span>
             </p>
           </div>
@@ -223,7 +413,7 @@ export default function DriverDetails() {
                 Verified &amp; Approved
               </p>
               <p className="text-xs text-slate-600 font-medium mt-0.5 whitespace-nowrap">
-                On: {driver.approvalDate || '02 Nov 2026'}
+                On: {driver.approvalDate || '-'}
               </p>
             </div>
           </div>
@@ -574,11 +764,11 @@ export default function DriverDetails() {
 
                     <div className="grid grid-cols-5 gap-2 pt-2">
                       {[
-                        { img: busHighRes1, label: 'Front View' },
-                        { img: busHighRes2, label: 'Rear / Side View' },
-                        { img: busHighRes3, label: 'Side Profile' },
-                        { img: busPhoto4, label: 'Passenger Seats' },
-                        { img: busPhoto5, label: 'Driver Dashboard' },
+                        { img: driver.photos?.front || '', label: 'Front View' },
+                        { img: driver.photos?.rear || '', label: 'Rear / Side View' },
+                        { img: driver.photos?.left || '', label: 'Side Profile' },
+                        { img: driver.photos?.interior || '', label: 'Passenger Seats' },
+                        { img: driver.photos?.right || '', label: 'Driver Dashboard' },
                       ].map((item, idx) => (
                         <div
                           key={idx}
@@ -823,11 +1013,11 @@ export default function DriverDetails() {
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-0.5">
                 {[
-                  { img: carFrontImg, label: 'Front View' },
-                  { img: carRearImg, label: 'Rear View' },
-                  { img: carSideImg, label: 'Side View' },
-                  { img: carDashImg, label: 'Dashboard' },
-                  { img: carInteriorImg, label: 'Interior Seats' },
+                  { img: driver.photos?.front || '', label: 'Front View' },
+                  { img: driver.photos?.rear || '', label: 'Rear View' },
+                  { img: driver.photos?.left || '', label: 'Side View' },
+                  { img: driver.photos?.interior || '', label: 'Dashboard' },
+                  { img: driver.photos?.right || '', label: 'Interior Seats' },
                 ].map((item, idx) => (
                   <div
                     key={idx}

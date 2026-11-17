@@ -633,14 +633,14 @@ export default function RatingsReviews() {
             {/* Header Row with Yellow/Amber Tint */}
             <thead>
               <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
-                <th className="py-2.5 px-3.5">#</th>
-                <th className="py-2.5 px-3.5">Reviewer</th>
-                <th className="py-2.5 px-3.5">Review For</th>
-                <th className="py-2.5 px-3.5">Rating</th>
-                <th className="py-2.5 px-3.5 min-w-[260px]">Review</th>
-                <th className="py-2.5 px-3.5">Ride ID</th>
-                <th className="py-2.5 px-3.5">Date & Time</th>
-                <th className="py-2.5 px-2.5 text-center"></th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">#</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Reviewer</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Review For</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Rating</th>
+                <th className="py-2.5 px-3.5 min-w-[260px] whitespace-nowrap">Review</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Ride ID</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Date & Time</th>
+                <th className="py-2.5 px-2.5 text-center whitespace-nowrap"></th>
               </tr>
             </thead>
 

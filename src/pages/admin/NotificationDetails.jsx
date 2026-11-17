@@ -24,6 +24,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { notificationsList } from '../../data/notificationsData';
+import { DetailsHeader } from '../../components/common';
 
 export default function NotificationDetails() {
   const { id } = useParams();
@@ -100,44 +101,16 @@ export default function NotificationDetails() {
 
   return (
     <div className="space-y-3.5 pb-10">
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-        <Link
-          to="/"
-          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors"
-        >
-          <Home className="w-3.5 h-3.5" />
-        </Link>
-        <ChevronRight className="w-3 h-3 text-slate-400" />
-        <Link
-          to="/notifications"
-          className="text-slate-600 hover:text-slate-900 transition-colors font-semibold"
-        >
-          Notifications
-        </Link>
-        <ChevronRight className="w-3 h-3 text-slate-400" />
-        <span className="text-slate-900 font-extrabold">Notification Details</span>
-      </div>
-
-      {/* Page Title with Back Arrow Button */}
-      <div className="flex items-center gap-2.5">
-        <button
-          onClick={() => navigate('/notifications')}
-          type="button"
-          className="w-8.5 h-8.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs shrink-0"
-          title="Back to Notifications"
-        >
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div>
-          <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">
-            Notification Details
-          </h1>
-          <p className="text-xs text-slate-600 font-medium leading-none mt-0.5">
-            View complete details, content, recipients and delivery status of this notification.
-          </p>
-        </div>
-      </div>
+      {/* =========================================================
+          REUSABLE DETAILS HEADER BAR (Driver Details Style)
+          ========================================================= */}
+      <DetailsHeader
+        title="Notification Details"
+        breadcrumbs={[
+          { label: 'Notifications', path: '/notifications' },
+          { label: 'Notification Details' },
+        ]}
+      />
 
       {/* Main 2-Column Split: Left 7 cols | Right 5 cols */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">

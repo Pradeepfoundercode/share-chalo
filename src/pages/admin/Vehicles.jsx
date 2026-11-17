@@ -296,28 +296,28 @@ export default function Vehicles() {
       </div>
 
       {/* =========================================================
-          TABLE CONTAINER
+          TABLE CONTAINER (Ratings & Reviews Style)
           ========================================================= */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs sm:text-sm min-w-[900px]">
             <thead>
-              <tr className="bg-[#fef9ec] border-b border-amber-100/60 text-xs sm:text-[13.5px] font-bold text-slate-900 uppercase tracking-wider">
-                <th className="py-2.5 px-3 pl-4 text-center w-12">#</th>
-                <th className="py-2.5 px-3">Vehicle Number</th>
-                <th className="py-2.5 px-1.5"></th>
-                <th className="py-2.5 px-3">Vehicle Type</th>
-                <th className="py-2.5 px-3">Usage Type</th>
-                <th className="py-2.5 px-3">Driver Name</th>
-                <th className="py-2.5 px-3 text-center">Seats</th>
-                <th className="py-2.5 px-3 text-center">Status</th>
-                <th className="py-2.5 px-3 pr-4 text-center">Action</th>
+              <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+                <th className="py-2.5 px-3.5 text-center w-12 whitespace-nowrap">#</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle Number</th>
+                <th className="py-2.5 px-1.5 whitespace-nowrap"></th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle Type</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Usage Type</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Driver Name</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Seats</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Status</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-[14.5px] font-bold text-slate-800">
+            <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
               {filteredVehicles.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400 font-semibold text-base">
+                  <td colSpan={9} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
                     No vehicles found matching your criteria.
                   </td>
                 </tr>
@@ -327,16 +327,16 @@ export default function Vehicles() {
                     <tr
                       key={vehicle.id}
                       onClick={() => navigate(`/vehicles/${vehicle.id}`)}
-                      className="hover:bg-amber-50/40 transition-colors cursor-pointer"
+                      className="hover:bg-amber-50/20 transition-colors cursor-pointer"
                     >
                       {/* 1. Row Index */}
-                      <td className="py-2 px-3 pl-4 text-center text-slate-900 font-bold text-[14.5px]">
+                      <td className="py-2 px-3.5 text-center font-bold text-slate-500 text-sm sm:text-base">
                         {index + 1}
                       </td>
 
                       {/* 2. Vehicle Number Pill */}
-                      <td className="py-2 px-3">
-                        <span className="inline-block px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold tracking-wide text-xs sm:text-[13.5px]">
+                      <td className="py-2 px-3.5">
+                        <span className="inline-block px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold tracking-wide text-xs sm:text-sm shadow-2xs">
                           {vehicle.vehicleNumber}
                         </span>
                       </td>
@@ -353,12 +353,12 @@ export default function Vehicles() {
                       </td>
 
                       {/* 4. Vehicle Type */}
-                      <td className="py-2 px-3 text-slate-900 font-bold text-[15px]">
+                      <td className="py-2 px-3.5 font-bold text-slate-900 text-sm sm:text-base">
                         {vehicle.vehicleType}
                       </td>
 
                       {/* 5. Usage Type Badge */}
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-3.5">
                         {vehicle.usageType === 'Commercial' ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
                             <Briefcase className="w-3.5 h-3.5 text-emerald-600 stroke-[2.2]" />
@@ -373,14 +373,14 @@ export default function Vehicles() {
                       </td>
 
                       {/* 6. Driver Avatar & Name */}
-                      <td className="py-2 px-3">
+                      <td className="py-2 px-3.5">
                         <div className="flex items-center gap-2.5">
                           <img
                             src={vehicle.driverAvatar}
                             alt={vehicle.driverName}
                             className="w-8.5 h-8.5 rounded-full object-cover border border-amber-300 ring-1 ring-amber-100 shrink-0"
                           />
-                          <span className="font-bold text-slate-900 text-[14.5px]">
+                          <span className="font-bold text-slate-900 text-sm sm:text-base">
                             {vehicle.driverName}
                             {vehicle.isTopDriver && (
                               <span className="text-amber-500 ml-1 font-bold text-base">★</span>
@@ -390,12 +390,12 @@ export default function Vehicles() {
                       </td>
 
                       {/* 7. Seats */}
-                      <td className="py-2 px-3 text-center font-bold text-slate-900 text-[15px]">
+                      <td className="py-2 px-3.5 text-center font-bold text-slate-900 text-sm sm:text-base">
                         {vehicle.seats}
                       </td>
 
                       {/* 8. Status Badge */}
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-2 px-3.5 text-center">
                         {vehicle.status === 'Active' ? (
                           <span className="inline-block px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100/80">
                             Active
@@ -412,7 +412,7 @@ export default function Vehicles() {
                       </td>
 
                       {/* 9. Action Button */}
-                      <td className="py-2 px-3 pr-4 text-center">
+                      <td className="py-2 px-3.5 text-center">
                         <button
                           onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                           className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer inline-flex items-center justify-center"

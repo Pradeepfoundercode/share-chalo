@@ -442,113 +442,122 @@ export default function Passengers() {
       </div>
 
       {/* =========================================================
-          PASSENGERS DATA TABLE (Card Container)
+          PASSENGERS DATA TABLE (Ratings & Reviews Style)
           ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-4">
-        <div className="overflow-x-auto no-scrollbar pb-2">
-          {/* Added min-w-[1050px] so the table doesn't squish on mobile */}
-          <table className="w-full min-w-[1050px] text-left text-[13px] sm:text-[15px]">
-            {/* Table Header: Yellow Banner */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs sm:text-sm min-w-[1000px]">
+            {/* Table Header: Ratings & Reviews Amber/Yellow Tint */}
             <thead>
-              <tr className="bg-[#feea98]/60 text-slate-900 font-bold rounded-2xl border-y border-amber-200/60 text-[13px] sm:text-base">
-                <th className="py-2.5 sm:py-3 px-3 rounded-l-xl whitespace-nowrap">#</th>
-                <th className="py-2.5 sm:py-3 px-3 whitespace-nowrap">Passenger</th>
-                <th className="py-2.5 sm:py-3 px-3 whitespace-nowrap">Passenger ID</th>
-                <th className="py-2.5 sm:py-3 px-3 whitespace-nowrap">Mobile Number</th>
-                <th className="py-2.5 sm:py-3 px-3 whitespace-nowrap">Email</th>
-                <th className="py-2.5 sm:py-3 px-3 text-center whitespace-nowrap">Total Bookings</th>
-                <th className="py-2.5 sm:py-3 px-3 text-center whitespace-nowrap">Completed Rides</th>
-                <th className="py-2.5 sm:py-3 px-3 text-center whitespace-nowrap">Cancelled Rides</th>
-                <th className="py-2.5 sm:py-3 px-3 text-center whitespace-nowrap">Account Status</th>
-                <th className="py-2.5 sm:py-3 px-3 rounded-r-xl text-center whitespace-nowrap">Action</th>
+              <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+                <th className="py-2.5 px-3.5 text-center w-12 whitespace-nowrap">#</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Passenger</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Passenger ID</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Mobile Number</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Email</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Total Bookings</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Completed Rides</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Cancelled Rides</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Account Status</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Action</th>
               </tr>
             </thead>
 
             {/* Table Body */}
-            <tbody className="divide-y divide-slate-100">
-              {filteredPassengers.map((p) => (
-                <tr
-                  key={p.id}
-                  onClick={() => navigate(`/passengers/${p.id}`)}
-                  className="hover:bg-amber-50/40 transition-colors text-slate-800 cursor-pointer"
-                >
-                  {/* # */}
-                  <td className="py-2.5 sm:py-3 px-3 font-bold text-slate-500 whitespace-nowrap">
-                    {p.id}
-                  </td>
-
-                  {/* Passenger: Avatar + Name */}
-                  <td className="py-2.5 sm:py-3 px-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2.5">
-                      <img
-                        src={p.avatar}
-                        alt={p.name}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 border border-slate-200"
-                      />
-                      <span className="font-bold text-black whitespace-nowrap">
-                        {p.name}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Passenger ID */}
-                  <td className="py-2.5 sm:py-3 px-3 font-bold text-black whitespace-nowrap">
-                    {p.passengerId}
-                  </td>
-
-                  {/* Mobile Number */}
-                  <td className="py-2.5 sm:py-3 px-3 font-semibold text-black whitespace-nowrap">
-                    {p.mobile}
-                  </td>
-
-                  {/* Email */}
-                  <td className="py-2.5 sm:py-3 px-3 font-semibold text-black whitespace-nowrap">
-                    {p.email}
-                  </td>
-
-                  {/* Total Bookings */}
-                  <td className="py-2.5 sm:py-3 px-3 text-center font-bold text-black whitespace-nowrap">
-                    {p.totalBookings}
-                  </td>
-
-                  {/* Completed Rides */}
-                  <td className="py-2.5 sm:py-3 px-3 text-center font-bold text-black whitespace-nowrap">
-                    {p.completedRides}
-                  </td>
-
-                  {/* Cancelled Rides */}
-                  <td className="py-2.5 sm:py-3 px-3 text-center font-bold text-black whitespace-nowrap">
-                    {p.cancelledRides}
-                  </td>
-
-                  {/* Account Status Badge */}
-                  <td className="py-2.5 sm:py-3 px-3 text-center whitespace-nowrap">
-                    <span
-                      className={`inline-block px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-[13px] font-bold border ${
-                        p.accountStatus === 'Active'
-                          ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                          : 'bg-rose-50 text-rose-600 border-rose-200'
-                      }`}
-                    >
-                      {p.accountStatus}
-                    </span>
-                  </td>
-
-                  {/* Action */}
-                  <td className="py-2.5 sm:py-3 px-3 text-center whitespace-nowrap">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/passengers/${p.id}`);
-                      }}
-                      className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-full text-slate-700 hover:text-black transition-colors cursor-pointer"
-                      title="View Passenger Details"
-                    >
-                      <Eye className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
-                    </button>
+            <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+              {filteredPassengers.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
+                    No passengers found matching your criteria.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredPassengers.map((p, index) => (
+                  <tr
+                    key={p.id}
+                    onClick={() => navigate(`/passengers/${p.id}`)}
+                    className="hover:bg-amber-50/20 transition-colors cursor-pointer"
+                  >
+                    {/* # */}
+                    <td className="py-2 px-3.5 text-center font-bold text-slate-500 text-sm sm:text-base whitespace-nowrap">
+                      {index + 1}
+                    </td>
+
+                    {/* Passenger: Avatar + Name */}
+                    <td className="py-2 px-3.5 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <img
+                          src={p.avatar}
+                          alt={p.name}
+                          className="w-8.5 h-8.5 rounded-full object-cover shrink-0 border border-amber-300 ring-1 ring-amber-100"
+                        />
+                        <span className="font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
+                          {p.name}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Passenger ID */}
+                    <td className="py-2 px-3.5 font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
+                      <span className="inline-block bg-[#fffdf0] border border-amber-200/80 px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-bold text-slate-900 shadow-2xs">
+                        {p.passengerId}
+                      </span>
+                    </td>
+
+                    {/* Mobile Number */}
+                    <td className="py-2 px-3.5 font-medium text-slate-700 text-xs sm:text-sm whitespace-nowrap">
+                      {p.mobile}
+                    </td>
+
+                    {/* Email */}
+                    <td className="py-2 px-3.5 font-medium text-slate-700 text-xs sm:text-sm whitespace-nowrap">
+                      {p.email}
+                    </td>
+
+                    {/* Total Bookings */}
+                    <td className="py-2 px-3.5 text-center font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
+                      {p.totalBookings}
+                    </td>
+
+                    {/* Completed Rides */}
+                    <td className="py-2 px-3.5 text-center font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
+                      {p.completedRides}
+                    </td>
+
+                    {/* Cancelled Rides */}
+                    <td className="py-2 px-3.5 text-center font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
+                      {p.cancelledRides}
+                    </td>
+
+                    {/* Account Status Badge */}
+                    <td className="py-2 px-3.5 text-center whitespace-nowrap">
+                      <span
+                        className={`inline-block px-3 py-0.5 rounded-full text-xs font-bold border ${
+                          p.accountStatus === 'Active'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100/80'
+                            : 'bg-rose-50 text-rose-600 border-rose-100/80'
+                        }`}
+                      >
+                        {p.accountStatus}
+                      </span>
+                    </td>
+
+                    {/* Action */}
+                    <td className="py-2 px-3.5 text-center whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/passengers/${p.id}`);
+                        }}
+                        className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer inline-flex items-center justify-center"
+                        title="View Passenger Details"
+                      >
+                        <Eye className="w-4.5 h-4.5 text-slate-800" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -556,17 +565,15 @@ export default function Passengers() {
         {/* =========================================================
             BOTTOM PAGINATION BAR
             ========================================================= */}
-        <div className="pt-2">
-          <Pagination
-            currentPage={currentPage}
-            totalItems={12486}
-            itemsPerPage={entriesPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setEntriesPerPage}
-            pageSizeOptions={[5, 10, 25, 50]}
-            itemLabel="passengers"
-          />
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={12486}
+          itemsPerPage={entriesPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setEntriesPerPage}
+          pageSizeOptions={[5, 10, 25, 50]}
+          itemLabel="passengers"
+        />
       </div>
     </div>
   );

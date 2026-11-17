@@ -32,6 +32,7 @@ const StatsCards = ({
   cardHeight = "",
   cardWidth = "",
   className = "",
+  valueFirst = false,
 }) => {
   // Auto grid columns if not passed
   const gridLayout =
@@ -93,21 +94,42 @@ const StatsCards = ({
 
             {/* Content Text */}
             <div className="min-w-0">
-              <p
-                className={`text-xs font-bold leading-tight truncate ${
-                  item.labelClassName || "text-black"
-                }`}
-              >
-                {item.label}
-              </p>
+              {item.valueFirst ?? valueFirst ? (
+                <>
+                  <h3
+                    className={`text-lg sm:text-xl font-black text-black leading-tight ${
+                      item.valueClassName || ""
+                    }`}
+                  >
+                    {item.value}
+                  </h3>
+                  <p
+                    className={`text-xs font-bold leading-tight truncate mt-0.5 ${
+                      item.labelClassName || "text-black"
+                    }`}
+                  >
+                    {item.label}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p
+                    className={`text-xs font-bold leading-tight truncate ${
+                      item.labelClassName || "text-black"
+                    }`}
+                  >
+                    {item.label}
+                  </p>
 
-              <h3
-                className={`text-lg sm:text-xl font-black text-black leading-tight mt-0.5 ${
-                  item.valueClassName || ""
-                }`}
-              >
-                {item.value}
-              </h3>
+                  <h3
+                    className={`text-lg sm:text-xl font-black text-black leading-tight mt-0.5 ${
+                      item.valueClassName || ""
+                    }`}
+                  >
+                    {item.value}
+                  </h3>
+                </>
+              )}
             </div>
           </div>
         );

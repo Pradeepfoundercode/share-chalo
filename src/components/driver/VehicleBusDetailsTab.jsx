@@ -3,48 +3,43 @@ import { Eye, X } from 'lucide-react';
 
 import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
 import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
-
-// High-resolution sharp bus images directly requested by the user
-import busHighRes1 from '../../assets/White_Share_Chalo_Bus_on_Tree_Lined_Road.png';
-import busHighRes2 from '../../assets/White_Coach_Bus_on_a_Tree_Lined_Road.png';
-import busHighRes3 from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
-import busPhoto4 from '../../assets/bus_photo_4.png';
-import busPhoto5 from '../../assets/bus_photo_5.png';
-
-import carFrontImg from '../../assets/White Baleno Hatchback on a Tree-Lined Road.png';
-import carRearImg from '../../assets/White Maruti Suzuki Baleno Rear View.png';
-import carSideImg from '../../assets/White Compact Sedan on a Tree-Lined Road.png';
-import carDashImg from '../../assets/Modern Suzuki Cabin Dashboard View.png';
-import carInteriorImg from '../../assets/Beige Leather Car Interior.png';
 import vehiclePhotoIcon from '../../assets/drivers/vehicle-photo-tag.svg';
 import vehicleYellowIcon from '../../assets/dashboard/car-yellow.svg';
 import busConfigIcon from '../../assets/drivers/bus-config.svg';
 
 export default function VehicleBusDetailsTab({ driver }) {
-  const isBus = driver.vehicleType === 'Commercial Bus';
+  const isBus =
+    driver.vehicleCategory?.toLowerCase() === 'bus' ||
+    (driver.vehicleType || '').toLowerCase().includes('bus');
 
   // State for preview photo modal
   const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Bus configuration states matching screenshot
-  const [busType, setBusType] = useState(driver.busType || 'Seater');
+  const [busType, setBusType] = useState(driver.seatingType || driver.busType || 'Seater');
   const [acType, setAcType] = useState(driver.acType || 'AC');
   const [seatArrangement, setSeatArrangement] = useState(driver.seatArrangement || '2 × 2');
 
+  React.useEffect(() => {
+    if (driver.seatingType || driver.busType) setBusType(driver.seatingType || driver.busType);
+    if (driver.acType) setAcType(driver.acType);
+    if (driver.seatArrangement) setSeatArrangement(driver.seatArrangement);
+  }, [driver]);
+
   const busPhotos = [
-    { img: busHighRes1, label: 'Front View' },
-    { img: busHighRes2, label: 'Rear / Side View' },
-    { img: busHighRes3, label: 'Side Profile' },
-    { img: busPhoto4, label: 'Passenger Interior' },
-    { img: busPhoto5, label: 'Driver Cockpit' },
+    { img: driver.photos?.front || '', label: 'Front View' },
+    { img: driver.photos?.rear || '', label: 'Rear / Side View' },
+    { img: driver.photos?.left || '', label: 'Side Profile' },
+    { img: driver.photos?.interior || '', label: 'Passenger Interior' },
+    { img: driver.photos?.right || '', label: 'Driver Cockpit' },
   ];
 
   const carPhotos = [
-    { img: carFrontImg, label: 'Front View' },
-    { img: carRearImg, label: 'Rear View' },
-    { img: carSideImg, label: 'Side View' },
-    { img: carDashImg, label: 'Dashboard' },
-    { img: carInteriorImg, label: 'Interior Seats' },
+    { img: driver.photos?.front || '', label: 'Front View' },
+    { img: driver.photos?.rear || '', label: 'Rear View' },
+    { img: driver.photos?.left || '', label: 'Side View' },
+    { img: driver.photos?.interior || '', label: 'Dashboard' },
+    { img: driver.photos?.right || '', label: 'Interior Seats' },
   ];
 
   return (
@@ -142,11 +137,10 @@ export default function VehicleBusDetailsTab({ driver }) {
                     <button
                       key={type}
                       onClick={() => setBusType(type)}
-                      className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer transition-all ${
-                        busType === type
-                          ? 'bg-[#fed011] text-black shadow-2xs'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
+                      className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer transition-all ${busType === type
+                        ? 'bg-[#fed011] text-black shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
                     >
                       {type}
                     </button>
@@ -162,11 +156,10 @@ export default function VehicleBusDetailsTab({ driver }) {
                     <button
                       key={type}
                       onClick={() => setAcType(type)}
-                      className={`px-4 py-1 rounded-lg font-bold text-xs cursor-pointer transition-all ${
-                        acType === type
-                          ? 'bg-[#fed011] text-black shadow-2xs'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
+                      className={`px-4 py-1 rounded-lg font-bold text-xs cursor-pointer transition-all ${acType === type
+                        ? 'bg-[#fed011] text-black shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
                     >
                       {type}
                     </button>
@@ -182,11 +175,10 @@ export default function VehicleBusDetailsTab({ driver }) {
                     <button
                       key={arr}
                       onClick={() => setSeatArrangement(arr)}
-                      className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer transition-all ${
-                        seatArrangement === arr
-                          ? 'bg-[#fed011] text-black shadow-2xs'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
+                      className={`px-3 py-1 rounded-lg font-bold text-xs cursor-pointer transition-all ${seatArrangement === arr
+                        ? 'bg-[#fed011] text-black shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
                     >
                       {arr}
                     </button>

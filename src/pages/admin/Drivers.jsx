@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   CheckCircle2,
   Clock,
@@ -19,80 +20,22 @@ import {
   FileText,
   Phone,
   Mail,
-  ShieldCheck
+  ShieldCheck,
+  Loader2,
 } from 'lucide-react';
 import driversIcon from '../../assets/Group (1).svg';
 import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
-
-import { driversList } from '../../data/driversData';
-
-const driverStats = [
-  {
-    id: "total-drivers",
-    label: "Total Drivers",
-    value: "1,250",
-    image: driversIcon,
-    cardColor: "bg-[#fffbeb] border-amber-200/80",
-    iconBg: "bg-amber-200/80",
-  },
-  {
-    id: "approved",
-    label: "Approved",
-    value: "1,080",
-    icon: CheckCircle2,
-    cardColor: "bg-[#f0fdf4] border-emerald-200/80",
-    iconBg: "bg-emerald-100",
-    iconColor: "text-[#16a34a]",
-  },
-  {
-    id: "pending",
-    label: "Pending",
-    value: "68",
-    icon: Clock,
-    cardColor: "bg-[#fefce8] border-yellow-200/80",
-    iconBg: "bg-yellow-100",
-    iconColor: "text-[#ca8a04]",
-  },
-  {
-    id: "rejected",
-    label: "Rejected",
-    value: "32",
-    icon: X,
-    cardColor: "bg-[#fef2f2] border-rose-200/80",
-    iconBg: "bg-rose-100",
-    iconColor: "text-[#dc2626]",
-  },
-  {
-    id: "action-required",
-    label: "Action Required",
-    value: "70",
-    icon: AlertCircle,
-    cardColor: "bg-[#fff7ed] border-orange-200/80",
-    iconBg: "bg-orange-100",
-    iconColor: "text-[#ea580c]",
-  },
-  {
-    id: "blocked",
-    label: "Blocked",
-    value: "20",
-    icon: Ban,
-    cardColor: "bg-[#faf5ff] border-purple-200/80",
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-  },
-];
+import { getDriversApi } from '../../services/driver.services';
 
 export default function Drivers() {
   const navigate = useNavigate();
-  const [drivers, setDrivers] = useState(driversList);
   const [selectedTab, setSelectedTab] = useState('All Drivers');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Statuses');
+  const [statusFilter, setStatusFilter] = useState('All Status');
   const [vehicleFilter, setVehicleFilter] = useState('All Vehicles');
-  const [selectedDrivers, setSelectedDrivers] = useState([]);
   const [selectedDriverDetail, setSelectedDriverDetail] = useState(null);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -101,190 +44,242 @@ export default function Drivers() {
   const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
 
   // Calendar UI state for custom interactive picker
-  const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1)); // Default Nov 2026
+  const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
   const [tempStart, setTempStart] = useState('');
   const [tempEnd, setTempEnd] = useState('');
 
-  // Tab Definitions
-  const tabs = [
-    { name: 'All Drivers', count: '1,250' },
-    { name: 'Pending', count: '68' },
-    { name: 'Approved', count: '1,080' },
-    { name: 'Rejected', count: '32' },
-    { name: 'Action Required', count: '70' },
-    { name: 'Blocked', count: '20' },
+  // ========================================
+  // GET DRIVERS API (Page & Limit only)
+  // ========================================
+  const {
+    data: driversResponse,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['drivers', currentPage, entriesPerPage],
+    queryFn: () =>
+      getDriversApi({
+        page: currentPage,
+        limit: entriesPerPage,
+      }),
+  });
+
+  const apiData = driversResponse?.data;
+  const stats = apiData?.stats;
+  const drivers = apiData?.drivers || [];
+  const meta = driversResponse?.meta;
+
+  // Client-side filtering
+  const filteredDrivers = useMemo(() => {
+    return drivers.filter((driver) => {
+      // Tab filter
+      const kycStatus = (driver.status || driver.kycStatus || '').toLowerCase();
+      if (selectedTab === 'Pending' && kycStatus !== 'pending') return false;
+      if (selectedTab === 'Approved' && kycStatus !== 'approved') return false;
+      if (selectedTab === 'Rejected' && kycStatus !== 'rejected') return false;
+
+      // Status dropdown filter
+      if (statusFilter !== 'All Status' && kycStatus !== statusFilter.toLowerCase()) return false;
+
+      // Vehicle dropdown filter
+      if (vehicleFilter !== 'All Vehicles' && driver.vehicleType !== vehicleFilter) return false;
+
+      // Search term
+      if (searchTerm.trim() !== '') {
+        const query = searchTerm.toLowerCase();
+        const matchesName = (driver.name || '').toLowerCase().includes(query);
+        const matchesMobile = (driver.mobile || '').toLowerCase().includes(query);
+        const matchesId = String(driver.driverId ?? driver.id ?? '').toLowerCase().includes(query);
+        if (!matchesName && !matchesMobile && !matchesId) return false;
+      }
+
+      // Registration Date Filter
+      if (startDate || endDate) {
+        if (driver.registeredOn) {
+          const driverDate = new Date(driver.registeredOn);
+          if (!isNaN(driverDate.getTime())) {
+            if (startDate) {
+              const start = new Date(startDate);
+              start.setHours(0, 0, 0, 0);
+              if (driverDate < start) return false;
+            }
+            if (endDate) {
+              const end = new Date(endDate);
+              end.setHours(23, 59, 59, 999);
+              if (driverDate > end) return false;
+            }
+          }
+        }
+      }
+
+      return true;
+    }).sort((a, b) => {
+      const idA = Number(a.driverId ?? a.id ?? 0);
+      const idB = Number(b.driverId ?? b.id ?? 0);
+      return idA - idB;
+    });
+  }, [drivers, selectedTab, statusFilter, vehicleFilter, searchTerm, startDate, endDate]);
+
+  // Driver Statistics Cards (Only 4 Cards as requested)
+  const driverStats = [
+    {
+      id: "total-drivers",
+      label: "Total Drivers",
+      value: stats?.totalDrivers !== undefined ? Number(stats.totalDrivers).toLocaleString() : "0",
+      image: driversIcon,
+      cardColor: "bg-[#fffbeb] border-amber-200/80",
+      iconBg: "bg-amber-200/80",
+    },
+    {
+      id: "approved",
+      label: "Approved",
+      value: stats?.approvedDrivers !== undefined ? Number(stats.approvedDrivers).toLocaleString() : "0",
+      icon: CheckCircle2,
+      cardColor: "bg-[#f0fdf4] border-emerald-200/80",
+      iconBg: "bg-emerald-100",
+      iconColor: "text-[#16a34a]",
+    },
+    {
+      id: "pending",
+      label: "Pending",
+      value: stats?.pendingDrivers !== undefined ? Number(stats.pendingDrivers).toLocaleString() : "0",
+      icon: Clock,
+      cardColor: "bg-[#fefce8] border-yellow-200/80",
+      iconBg: "bg-yellow-100",
+      iconColor: "text-[#ca8a04]",
+    },
+    {
+      id: "rejected",
+      label: "Rejected",
+      value: stats?.rejectedDrivers !== undefined ? Number(stats.rejectedDrivers).toLocaleString() : "0",
+      icon: X,
+      cardColor: "bg-[#fef2f2] border-rose-200/80",
+      iconBg: "bg-rose-100",
+      iconColor: "text-[#dc2626]",
+    },
   ];
 
-  // Select all handler
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedDrivers(drivers.map((d) => d.id));
-    } else {
-      setSelectedDrivers([]);
-    }
-  };
-
-  const handleSelectOne = (id) => {
-    setSelectedDrivers((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  // Tab Definitions (Without count numbers)
+  const tabs = ['All Drivers', 'Pending', 'Approved', 'Rejected'];
 
   // Reset Filters
   const handleReset = () => {
     setSearchTerm('');
-    setStatusFilter('All Statuses');
+    setStatusFilter('All Status');
     setVehicleFilter('All Vehicles');
     setSelectedTab('All Drivers');
     setStartDate('');
     setEndDate('');
     setDatePickerOpen(false);
+    setCurrentPage(1);
   };
 
-  // Helper to parse dates like "02 Nov 2026" or "30 Oct 2026"
-  const parseRegistrationDate = (dateStr) => {
-    if (!dateStr) return null;
-    const parts = dateStr.trim().split(' ');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const monthNames = {
-        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-        Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-      };
-      const month = monthNames[parts[1]];
-      const year = parseInt(parts[2], 10);
-      if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-        return new Date(year, month, day);
-      }
+  // Helper to format date
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
     }
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? null : d;
   };
-
-  // Filtered List
-  const filteredDrivers = useMemo(() => {
-    return drivers.filter((driver) => {
-      // Tab filter
-      if (selectedTab === 'Pending' && driver.kycStatus !== 'Pending') return false;
-      if (selectedTab === 'Approved' && driver.kycStatus !== 'Approved') return false;
-      if (selectedTab === 'Rejected' && driver.kycStatus !== 'Rejected') return false;
-      if (selectedTab === 'Action Required' && driver.kycStatus !== 'Action Required') return false;
-      if (selectedTab === 'Blocked' && driver.accountStatus !== 'Blocked') return false;
-
-      // Status dropdown filter
-      if (statusFilter !== 'All Statuses' && driver.kycStatus !== statusFilter) return false;
-
-      // Vehicle dropdown filter
-      if (vehicleFilter !== 'All Vehicles' && driver.vehicleType !== vehicleFilter) return false;
-
-      // Registration Date Filter
-      if (startDate || endDate) {
-        const driverDate = parseRegistrationDate(driver.registeredOn);
-        if (driverDate) {
-          if (startDate) {
-            const start = new Date(startDate);
-            start.setHours(0, 0, 0, 0);
-            if (driverDate < start) return false;
-          }
-          if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            if (driverDate > end) return false;
-          }
-        }
-      }
-
-      // Search term
-      if (searchTerm.trim() !== '') {
-        const query = searchTerm.toLowerCase();
-        const matchesName = driver.name.toLowerCase().includes(query);
-        const matchesMobile = driver.mobile.toLowerCase().includes(query);
-        const matchesId = driver.id.toLowerCase().includes(query);
-        const matchesPlate = driver.plate.toLowerCase().includes(query);
-        if (!matchesName && !matchesMobile && !matchesId && !matchesPlate) return false;
-      }
-
-      return true;
-    });
-  }, [drivers, selectedTab, statusFilter, vehicleFilter, searchTerm, startDate, endDate]);
 
   // Status Badge Component
   const renderKycBadge = (status) => {
-    switch (status) {
-      case 'Approved':
+    const s = (status || '').toLowerCase();
+    switch (s) {
+      case 'approved':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[13px] font-bold bg-[#eafaf1] text-[#16a34a]">
             <Check className="w-4 h-4 stroke-[2.6]" />
             Approved
           </span>
         );
-      case 'Pending':
+      case 'pending':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[13px] font-bold bg-[#fef9eb] text-[#d97706]">
             <Clock className="w-4 h-4 stroke-[2.2]" />
             Pending
           </span>
         );
-      case 'Action Required':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[13px] font-bold bg-[#fff7ed] text-[#ea580c]">
-            <AlertCircle className="w-4 h-4 stroke-[2.2]" />
-            Action Required
-          </span>
-        );
-      case 'Rejected':
+      case 'rejected':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[13px] font-bold bg-[#fdf2f2] text-[#dc2626]">
             <X className="w-4 h-4 stroke-[2.6]" />
             Rejected
           </span>
         );
+      case 'action required':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[13px] font-bold bg-[#fff7ed] text-[#ea580c]">
+            <AlertCircle className="w-4 h-4 stroke-[2.2]" />
+            Action Required
+          </span>
+        );
       default:
         return (
-          <span className="inline-flex items-center px-3 py-1 rounded-md text-[13px] font-bold bg-gray-100 text-gray-700">
-            {status}
+          <span className="inline-flex items-center px-3 py-1 rounded-md text-[13px] font-bold bg-gray-100 text-gray-700 capitalize">
+            {status || '-'}
           </span>
         );
     }
   };
 
   const renderAccountBadge = (status) => {
-    if (status === 'Active') {
+    const s = (status || '').toLowerCase();
+    if (s === 'active') {
       return (
         <span className="inline-block px-3.5 py-1 rounded-md text-[13px] font-bold bg-[#eefaf4] text-[#16a34a]">
           Active
         </span>
       );
     }
+    if (s === 'inactive') {
+      return (
+        <span className="inline-block px-3.5 py-1 rounded-md text-[13px] font-bold bg-slate-100 text-slate-600">
+          Inactive
+        </span>
+      );
+    }
     return (
-      <span className="inline-block px-3.5 py-1 rounded-md text-[13px] font-bold bg-[#fee2e2]/80 text-[#dc2626]">
-        Blocked
+      <span className="inline-block px-3.5 py-1 rounded-md text-[13px] font-bold bg-[#fee2e2]/80 text-[#dc2626] capitalize">
+        {status || 'Blocked'}
       </span>
     );
   };
 
   return (
     <div className="space-y-5 pb-10">
-      {/* 1. REUSABLE STATS CARDS */}
+      {/* 1. REUSABLE STATS CARDS (4 cards: Total, Approved, Pending, Rejected) */}
       <StatsCards items={driverStats} />
 
       {/* =========================================================
-          2. FILTER STATUS TABS ROW
+          2. FILTER STATUS TABS ROW (Names only, no numbers)
           ========================================================= */}
       <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none py-1">
         {tabs.map((tab) => {
-          const isActive = selectedTab === tab.name;
+          const isActive = selectedTab === tab;
           return (
             <button
-              key={tab.name}
-              onClick={() => setSelectedTab(tab.name)}
+              key={tab}
+              onClick={() => {
+                setSelectedTab(tab);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-[#fed011] text-black shadow-xs'
+                  ? 'bg-[#fed011] text-black shadow-xs font-black'
                   : 'bg-gray-100/90 text-slate-700 hover:bg-gray-200/90'
               }`}
             >
-              {tab.name} ({tab.count})
+              {tab}
             </button>
           );
         })}
@@ -300,7 +295,10 @@ export default function Drivers() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search by Name, Mobile or Driver ID..."
             className="w-full pl-10.5 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -334,11 +332,10 @@ export default function Drivers() {
             {statusDropdownOpen && (
               <div className="absolute left-0 max-sm:right-0 mt-1.5 sm:w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
                 {[
-                  'All Statuses',
+                  'All Status',
                   'Approved',
                   'Pending',
-                  'Action Required',
-                  'Rejected'
+                  'Rejected',
                 ].map((status) => {
                   const isSelected = statusFilter === status;
                   return (
@@ -393,7 +390,7 @@ export default function Drivers() {
                   'All Vehicles',
                   'Private Car',
                   'Commercial Car',
-                  'Commercial Bus'
+                  'Commercial Bus',
                 ].map((type) => {
                   const isSelected = vehicleFilter === type;
                   return (
@@ -539,14 +536,12 @@ export default function Drivers() {
                       const totalDays = new Date(year, month + 1, 0).getDate();
                       const days = [];
 
-                      // Empty slots for start padding
                       for (let i = 0; i < firstDayIndex; i++) {
                         days.push(
                           <div key={`empty-${i}`} className="w-7 h-6.5 max-sm:mx-auto" />
                         );
                       }
 
-                      // Month days
                       for (let day = 1; day <= totalDays; day++) {
                         const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                         const isStart = tempStart === dateString;
@@ -562,12 +557,10 @@ export default function Drivers() {
                             key={dateString}
                             type="button"
                             onClick={() => {
-                              // If no start date or both already selected, start a fresh range
                               if (!tempStart || (tempStart && tempEnd)) {
                                 setTempStart(dateString);
                                 setTempEnd('');
                               } else {
-                                // Already have start, picking end
                                 if (dateString < tempStart) {
                                   setTempStart(dateString);
                                   setTempEnd('');
@@ -631,12 +624,6 @@ export default function Drivers() {
             <RotateCcw className="w-4 h-4" />
             Reset
           </button>
-
-          {/* Apply Button */}
-          <button className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer max-sm:w-full">
-            <Filter className="w-4 h-4 fill-black" />
-            Apply
-          </button>
         </div>
       </div>
 
@@ -651,7 +638,7 @@ export default function Drivers() {
                 <th className="py-2.5 px-4">Driver</th>
                 <th className="py-2.5 px-4">Driver ID</th>
                 <th className="py-2.5 px-4">Mobile</th>
-                <th className="py-2.5 px-4">Vehicle</th>
+                <th className="py-2.5 px-4">Vehicle Type</th>
                 <th className="py-2.5 px-4">KYC Status</th>
                 <th className="py-2.5 px-4">Account Status</th>
                 <th className="py-2.5 px-4">Registered On</th>
@@ -659,7 +646,27 @@ export default function Drivers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredDrivers.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400 font-semibold text-sm">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+                      <span>Loading drivers...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-rose-500">
+                    <div className="flex flex-col items-center justify-center gap-1.5">
+                      <AlertCircle className="w-7 h-7 text-rose-500" />
+                      <p className="font-bold text-sm">
+                        {error?.response?.data?.message || 'Failed to load Drivers.'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredDrivers.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-400 font-medium text-sm">
                     No drivers found matching your filter criteria.
@@ -667,23 +674,38 @@ export default function Drivers() {
                 </tr>
               ) : (
                 filteredDrivers.map((driver) => {
+                  const id = driver.driverId ?? driver.id;
+                  const hasValidImage =
+                    driver.imageUrl &&
+                    !driver.imageUrl.includes('cdn/profile.jpg') &&
+                    (driver.imageUrl.startsWith('http://') || driver.imageUrl.startsWith('https://'));
+
                   return (
                     <tr
-                      key={driver.id}
-                      onClick={() => navigate(`/drivers/${driver.id}`)}
+                      key={id}
+                      onClick={() => navigate(`/drivers/${id}`)}
                       className="hover:bg-amber-50/40 transition-colors cursor-pointer"
                     >
                       {/* Driver Avatar & Name */}
                       <td className="py-2.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl border border-amber-400 bg-amber-50/60 p-0.5 flex items-center justify-center shrink-0">
-                            <img
-                              src={driver.avatar}
-                              alt={driver.name}
-                              className="w-full h-full rounded-full object-cover"
-                            />
+                          <div className="w-10 h-10 rounded-xl border border-amber-400 bg-amber-50/60 p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                            {hasValidImage ? (
+                              <img
+                                src={driver.imageUrl}
+                                alt={driver.name}
+                                className="w-full h-full rounded-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <span className="text-amber-800 font-bold text-sm uppercase">
+                                {driver.name ? driver.name.charAt(0) : 'D'}
+                              </span>
+                            )}
                           </div>
-                          <span className="font-bold text-slate-900 whitespace-nowrap text-sm">
+                          <span className="font-bold text-slate-900 whitespace-nowrap text-sm capitalize">
                             {driver.name}
                           </span>
                         </div>
@@ -691,38 +713,24 @@ export default function Drivers() {
 
                       {/* Driver ID */}
                       <td className="py-2.5 px-4 font-bold text-slate-700 whitespace-nowrap text-sm">
-                        {driver.id}
+                        #{id}
                       </td>
 
                       {/* Mobile */}
                       <td className="py-2.5 px-4 text-slate-800 font-semibold whitespace-nowrap text-sm">
-                        {driver.mobile}
+                        {driver.mobile || '-'}
                       </td>
 
-                      {/* Vehicle Cutout & Plate */}
+                      {/* Vehicle Type */}
                       <td className="py-2.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-11 h-8 flex items-center justify-center shrink-0">
-                            <img
-                              src={driver.vehicleImg}
-                              alt={driver.vehicleType}
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 leading-tight whitespace-nowrap text-sm">
-                              {driver.vehicleType}
-                            </p>
-                            <p className="text-xs text-slate-500 font-semibold mt-0.5 whitespace-nowrap">
-                              {driver.plate}
-                            </p>
-                          </div>
-                        </div>
+                        <span className="font-semibold text-slate-800 whitespace-nowrap text-sm">
+                          {driver.vehicleType ?? '-'}
+                        </span>
                       </td>
 
                       {/* KYC Status */}
                       <td className="py-2.5 px-4 whitespace-nowrap text-xs">
-                        {renderKycBadge(driver.kycStatus)}
+                        {renderKycBadge(driver.status || driver.kycStatus)}
                       </td>
 
                       {/* Account Status */}
@@ -732,13 +740,16 @@ export default function Drivers() {
 
                       {/* Registered On */}
                       <td className="py-2.5 px-4 text-slate-800 font-medium whitespace-nowrap text-sm">
-                        {driver.registeredOn}
+                        {formatDisplayDate(driver.registeredOn)}
                       </td>
 
                       {/* View Button */}
                       <td className="py-2.5 px-4 text-center whitespace-nowrap">
                         <button
-                          onClick={() => navigate(`/drivers/${driver.id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/drivers/${id}`);
+                          }}
                           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-white border border-amber-300 hover:bg-amber-100/60 transition-all cursor-pointer shadow-2xs"
                         >
                           <Eye className="w-4 h-4 text-slate-700" />
@@ -754,15 +765,18 @@ export default function Drivers() {
         </div>
 
         {/* =========================================================
-            5. TABLE PAGINATION FOOTER (Reusable Component)
+            5. TABLE PAGINATION FOOTER
             ========================================================= */}
         <Pagination
-          currentPage={currentPage}
-          totalItems={1250}
+          currentPage={meta?.page ?? currentPage}
+          totalItems={meta?.total ?? drivers.length}
           itemsPerPage={entriesPerPage}
           onPageChange={setCurrentPage}
-          onItemsPerPageChange={setEntriesPerPage}
-          pageSizeOptions={[5, 10, 25, 50]}
+          onItemsPerPageChange={(n) => {
+            setEntriesPerPage(n);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
           itemLabel="drivers"
         />
       </div>
@@ -782,20 +796,18 @@ export default function Drivers() {
 
             {/* Profile Header */}
             <div className="flex items-center gap-4 max-sm:flex-col max-sm:text-center border-b border-gray-100 pb-5">
-              <img
-                src={selectedDriverDetail.avatar}
-                alt={selectedDriverDetail.name}
-                className="w-16 h-16 rounded-full object-cover ring-2 ring-amber-400"
-              />
+              <div className="w-16 h-16 rounded-full ring-2 ring-amber-400 bg-amber-50 flex items-center justify-center font-bold text-xl text-amber-800">
+                {selectedDriverDetail.name ? selectedDriverDetail.name.charAt(0) : 'D'}
+              </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900">
                   {selectedDriverDetail.name}
                 </h3>
                 <p className="text-xs text-slate-500 font-semibold mt-0.5">
-                  ID: <span className="text-slate-800">{selectedDriverDetail.id}</span> • Registered: {selectedDriverDetail.registeredOn}
+                  ID: <span className="text-slate-800">#{selectedDriverDetail.driverId ?? selectedDriverDetail.id}</span> • Registered: {formatDisplayDate(selectedDriverDetail.registeredOn)}
                 </p>
                 <div className="mt-2 flex items-center max-sm:justify-center gap-2">
-                  {renderKycBadge(selectedDriverDetail.kycStatus)}
+                  {renderKycBadge(selectedDriverDetail.status || selectedDriverDetail.kycStatus)}
                   {renderAccountBadge(selectedDriverDetail.accountStatus)}
                 </div>
               </div>
@@ -808,16 +820,7 @@ export default function Drivers() {
                   <Phone className="w-4 h-4 text-slate-400" /> Mobile
                 </span>
                 <span className="font-bold text-slate-900">
-                  {selectedDriverDetail.mobile}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="flex items-center gap-2 text-slate-600 font-medium">
-                  <Mail className="w-4 h-4 text-slate-400" /> Email
-                </span>
-                <span className="font-bold text-slate-900">
-                  {selectedDriverDetail.email}
+                  {selectedDriverDetail.mobile || '-'}
                 </span>
               </div>
 
@@ -825,24 +828,8 @@ export default function Drivers() {
                 <span className="flex items-center gap-2 text-slate-600 font-medium">
                   <Car className="w-4 h-4 text-slate-400" /> Vehicle
                 </span>
-                <div className="flex items-center gap-2">
-                  <img
-                    src={selectedDriverDetail.vehicleImg}
-                    alt={selectedDriverDetail.vehicleType}
-                    className="w-7 h-5 object-contain"
-                  />
-                  <span className="font-bold text-slate-900">
-                    {selectedDriverDetail.vehicleType} ({selectedDriverDetail.plate})
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="flex items-center gap-2 text-slate-600 font-medium">
-                  <FileText className="w-4 h-4 text-slate-400" /> Documents
-                </span>
-                <span className="text-emerald-600 font-bold flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4" /> Aadhaar, DL, RC Verified
+                <span className="font-bold text-slate-900">
+                  {selectedDriverDetail.vehicleType || 'Not Assigned'}
                 </span>
               </div>
             </div>
@@ -854,21 +841,6 @@ export default function Drivers() {
                 className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 Close
-              </button>
-              <button
-                onClick={() => {
-                  setDrivers((prev) =>
-                    prev.map((d) =>
-                      d.id === selectedDriverDetail.id
-                        ? { ...d, kycStatus: 'Approved' }
-                        : d
-                    )
-                  );
-                  setSelectedDriverDetail(null);
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-black bg-[#fed011] hover:bg-amber-200 transition-all cursor-pointer shadow-xs"
-              >
-                Approve Driver
               </button>
             </div>
           </div>

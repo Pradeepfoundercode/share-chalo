@@ -4,6 +4,9 @@ import {
   ArrowLeft,
   Home,
   ChevronRight,
+  ChevronDown,
+  ChevronLeft,
+  Calendar,
   Send,
   Save,
   Users,
@@ -14,6 +17,17 @@ import {
   Search,
   CheckCircle2
 } from 'lucide-react';
+import { DetailsHeader } from '../../components/common';
+
+// Custom SVGs requested by user
+import financeSettlementsIcon from '../../assets/dashboard/finance-settlements.svg';
+import selectUsersIcon from '../../assets/dashboard/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
+import chatMessageIcon from '../../assets/dashboard/chat-message-icon-transparent.svg';
+import totalSeatsIcon from '../../assets/drivers/total-seats.svg';
+import vehiclePhotosIcon from '../../assets/drivers/vehicle-photos.svg';
+import privateCarIcon from '../../assets/drivers/private-car.svg';
+import group10Icon from '../../assets/dashboard/Group (10).svg';
+import diwaliBannerImg from '../../assets/9ff746e1-a841-43b9-87d4-d176938e4a7a.png';
 
 export default function CreateNotification() {
   const navigate = useNavigate();
@@ -31,6 +45,20 @@ export default function CreateNotification() {
   const [scheduleOption, setScheduleOption] = useState('now');
   const [scheduleDate, setScheduleDate] = useState('2026-11-03');
   const [scheduleTime, setScheduleTime] = useState('12:00');
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
+
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return 'Select Date';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    if (!y || !m || !d) return dateStr;
+    const dateObj = new Date(y, m - 1, d);
+    return dateObj.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
 
   // Media preview state
   const [mediaUploaded, setMediaUploaded] = useState(true);
@@ -38,6 +66,7 @@ export default function CreateNotification() {
   // User picker state
   const [userSearch, setUserSearch] = useState('');
   const [userFilter, setUserFilter] = useState('All Users');
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState([1, 2, 3]);
 
   // Toast feedback
@@ -79,6 +108,19 @@ export default function CreateNotification() {
       phone: '+91 99887 66554'
     }
   ];
+
+  const filteredUsers = usersList.filter((user) => {
+    if (userFilter === 'Passenger' && user.type !== 'Passenger') return false;
+    if (userFilter === 'Driver' && user.type !== 'Driver') return false;
+    if (userSearch.trim()) {
+      const q = userSearch.toLowerCase();
+      const matchName = user.name.toLowerCase().includes(q);
+      const matchPhone = user.phone.toLowerCase().includes(q);
+      const matchId = String(user.id).includes(q);
+      if (!matchName && !matchPhone && !matchId) return false;
+    }
+    return true;
+  });
 
   const handleToggleUser = (id) => {
     setSelectedUserIds((prev) =>
@@ -122,48 +164,20 @@ export default function CreateNotification() {
         </div>
       )}
 
-      {/* Breadcrumb Navigation - Compact */}
-      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-        <Link
-          to="/"
-          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors"
-        >
-          <Home className="w-3.5 h-3.5" />
-        </Link>
-        <ChevronRight className="w-3 h-3 text-slate-400" />
-        <Link
-          to="/notifications"
-          className="text-slate-600 hover:text-slate-900 transition-colors font-semibold"
-        >
-          Notifications
-        </Link>
-        <ChevronRight className="w-3 h-3 text-slate-400" />
-        <span className="text-slate-900 font-extrabold">Create Notification</span>
-      </div>
+      {/* =========================================================
+          REUSABLE DETAILS HEADER BAR (Driver Details Style)
+          ========================================================= */}
+      <DetailsHeader
+        title="Create Notification"
+        breadcrumbs={[
+          { label: 'Notifications', path: '/notifications' },
+          { label: 'Create Notification' },
+        ]}
+      />
 
-      {/* Page Title with Back Arrow */}
-      <div className="flex items-center gap-2.5">
-        <button
-          onClick={() => navigate('/notifications')}
-          type="button"
-          className="w-8.5 h-8.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs shrink-0"
-          title="Back to Notifications"
-        >
-          <ArrowLeft className="w-4.5 h-4.5" />
-        </button>
-        <div>
-          <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">
-            Create Notification
-          </h1>
-          <p className="text-xs text-slate-600 font-medium leading-none mt-0.5">
-            Compose a new notification and send it to all users, a specific group, or selected users.
-          </p>
-        </div>
-      </div>
-
-      {/* Main 2-Column Layout - Reduced Gap (gap-3.5) */}
+      {/* Main 2-Column Layout */}
       <form onSubmit={handleSend}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
           {/* =========================================================
               LEFT COLUMN (col-span-7): Title, Message, Media, Schedule
               ========================================================= */}
@@ -171,12 +185,14 @@ export default function CreateNotification() {
             {/* 1. Notification Title Card */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-900">
-                  <span className="text-base">📋</span>
+                <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
+                  <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={financeSettlementsIcon} alt="Notification Title" className="w-5 h-5 object-contain" />
+                  </div>
                   <span>Notification Title</span>
-                  <span className="text-rose-500 font-black">*</span>
+                  <span className="text-rose-500 font-bold">*</span>
                 </label>
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs sm:text-sm font-bold text-slate-400">
                   {title.length} / 80
                 </span>
               </div>
@@ -187,19 +203,21 @@ export default function CreateNotification() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter notification title..."
-                className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-400 shadow-2xs"
+                className="w-full h-10.5 px-3.5 bg-white border border-slate-200 rounded-xl text-sm sm:text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-400 shadow-2xs"
               />
             </div>
 
             {/* 2. Message Card */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-900">
-                  <span className="text-base">💬</span>
+                <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
+                  <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={chatMessageIcon} alt="Message" className="w-5 h-5 object-contain" />
+                  </div>
                   <span>Message</span>
-                  <span className="text-rose-500 font-black">*</span>
+                  <span className="text-rose-500 font-bold">*</span>
                 </label>
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs sm:text-sm font-bold text-slate-400">
                   {message.length} / 300
                 </span>
               </div>
@@ -210,41 +228,36 @@ export default function CreateNotification() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Write your notification message here..."
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-400 shadow-2xs resize-none leading-relaxed"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm sm:text-[15px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-400 shadow-2xs resize-none leading-relaxed"
               ></textarea>
             </div>
 
             {/* 3. Add Media (Optional) */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2">
-              <label className="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-900">
-                <span className="text-base">🖼️</span>
+              <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
+                <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                  <img src={vehiclePhotosIcon} alt="Add Media" className="w-5 h-5 object-contain" />
+                </div>
                 <span>Add Media (Optional)</span>
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 {/* Uploaded Banner Graphic Preview */}
                 {mediaUploaded ? (
-                  <div className="relative rounded-xl border border-amber-300 bg-amber-50/60 p-2 flex items-center justify-between shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      {/* Festive banner visual */}
-                      <div className="w-32 h-16 rounded-lg bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 border border-amber-300 flex flex-col items-center justify-center p-1.5 text-center overflow-hidden">
-                        <span className="text-[11px] font-black text-amber-950 uppercase tracking-tight leading-tight">
-                          Diwali Special Offer
-                        </span>
-                        <span className="text-xs font-black text-rose-600 bg-white px-2 py-0.5 rounded-full mt-0.5 shadow-2xs leading-none">
-                          20% OFF
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-700 mt-0.5 leading-none">
-                          Use Code: DIWALI20
-                        </span>
-                      </div>
+                  <div className="relative rounded-xl border border-amber-300 bg-amber-50/60 p-1.5 w-fit flex items-center shadow-2xs">
+                    <div className="w-36 h-18 sm:w-44 sm:h-22 rounded-lg border border-amber-300/80 overflow-hidden shrink-0 shadow-2xs bg-white">
+                      <img
+                        src={diwaliBannerImg}
+                        alt="Diwali Special Offer Banner"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
 
                     {/* Delete Cross Badge */}
                     <button
                       type="button"
                       onClick={() => setMediaUploaded(false)}
-                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-black flex items-center justify-center cursor-pointer shadow-xs"
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-black flex items-center justify-center cursor-pointer shadow-xs"
                       title="Remove media"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -253,14 +266,14 @@ export default function CreateNotification() {
                 ) : null}
 
                 {/* Upload Image Box */}
-                <label className="rounded-xl border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50/50 hover:bg-amber-50/30 p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-colors min-h-[76px]">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 mb-0.5">
+                <label className="w-36 sm:w-44 h-18 sm:h-22 rounded-xl border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50/50 hover:bg-amber-50/30 p-2 flex flex-col items-center justify-center text-center cursor-pointer transition-colors shrink-0">
+                  <div className="w-6.5 h-6.5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 mb-0.5">
                     <Plus className="w-4 h-4 stroke-[2.5]" />
                   </div>
-                  <span className="text-xs sm:text-sm font-black text-slate-900">
+                  <span className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight">
                     Upload Image
                   </span>
-                  <span className="text-[10px] text-slate-500 font-semibold">
+                  <span className="text-[10px] text-slate-500 font-semibold leading-tight">
                     (JPG, PNG - Max 2 MB)
                   </span>
                   <input
@@ -274,9 +287,11 @@ export default function CreateNotification() {
             </div>
 
             {/* 4. Schedule & Send Card */}
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2.5">
-              <label className="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-900">
-                <span className="text-base">📅</span>
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2">
+              <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
+                <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                  <img src={selectUsersIcon} alt="Schedule & Send" className="w-5 h-5 object-contain" />
+                </div>
                 <span>Schedule & Send</span>
               </label>
 
@@ -284,24 +299,28 @@ export default function CreateNotification() {
                 {/* Send Now Option */}
                 <div
                   onClick={() => setScheduleOption('now')}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-2.5 ${
+                  className={`p-2.5 sm:p-3 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-2.5 ${
                     scheduleOption === 'now'
                       ? 'border-[#fed011] bg-[#fffdf0]'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="scheduleRadio"
-                    checked={scheduleOption === 'now'}
-                    onChange={() => setScheduleOption('now')}
-                    className="mt-0.5 accent-amber-500 w-4 h-4 cursor-pointer"
-                  />
+                  <div
+                    className={`mt-0.5 w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      scheduleOption === 'now'
+                        ? 'border-[#fed011] bg-white'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {scheduleOption === 'now' && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fed011]" />
+                    )}
+                  </div>
                   <div>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 block leading-tight">
-                      Send Now
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-900 block leading-tight">
+                       Send Now
                     </span>
-                    <span className="text-[11px] text-slate-600 font-semibold">
+                    <span className="text-xs text-slate-600 font-semibold">
                       Send the notification immediately
                     </span>
                   </div>
@@ -310,24 +329,28 @@ export default function CreateNotification() {
                 {/* Schedule for Later Option */}
                 <div
                   onClick={() => setScheduleOption('schedule')}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-2.5 ${
+                  className={`p-2.5 sm:p-3 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-2.5 ${
                     scheduleOption === 'schedule'
                       ? 'border-[#fed011] bg-[#fffdf0]'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="scheduleRadio"
-                    checked={scheduleOption === 'schedule'}
-                    onChange={() => setScheduleOption('schedule')}
-                    className="mt-0.5 accent-amber-500 w-4 h-4 cursor-pointer"
-                  />
+                  <div
+                    className={`mt-0.5 w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      scheduleOption === 'schedule'
+                        ? 'border-[#fed011] bg-white'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {scheduleOption === 'schedule' && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fed011]" />
+                    )}
+                  </div>
                   <div>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 block leading-tight">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-900 block leading-tight">
                       Schedule for Later
                     </span>
-                    <span className="text-[11px] text-slate-600 font-semibold">
+                    <span className="text-xs text-slate-600 font-semibold">
                       Choose date and time to send
                     </span>
                   </div>
@@ -337,26 +360,174 @@ export default function CreateNotification() {
               {/* Date & Time Picker if Schedule is selected */}
               {scheduleOption === 'schedule' && (
                 <div className="grid grid-cols-2 gap-2.5 pt-1 animate-in fade-in">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                  {/* Custom Calendar Date Picker */}
+                  <div className="relative">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1">
                       Date
                     </label>
-                    <input
-                      type="date"
-                      value={scheduleDate}
-                      onChange={(e) => setScheduleDate(e.target.value)}
-                      className="w-full h-9.5 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!datePickerOpen && scheduleDate) {
+                          const [y, m, d] = scheduleDate.split('-').map(Number);
+                          if (y && m) setCalendarViewDate(new Date(y, m - 1, d || 1));
+                        }
+                        setDatePickerOpen(!datePickerOpen);
+                      }}
+                      className="w-full h-10 px-3 bg-white border border-slate-200 hover:border-amber-400 rounded-xl text-xs sm:text-sm font-bold text-slate-900 flex items-center justify-between cursor-pointer shadow-2xs transition-colors"
+                    >
+                      <span className="flex items-center gap-2 text-slate-800">
+                        <Calendar className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span>{formatDisplayDate(scheduleDate)}</span>
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-slate-400 transition-transform ${
+                          datePickerOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {/* Backdrop for outside click */}
+                    {datePickerOpen && (
+                      <div
+                        className="fixed inset-0 z-30"
+                        onClick={() => setDatePickerOpen(false)}
+                      />
+                    )}
+
+                    {/* Custom Calendar Popover - Opens Upwards */}
+                    {datePickerOpen && (
+                      <div className="absolute left-0 bottom-full mb-2 w-68 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 z-50 space-y-2.5 animate-in fade-in zoom-in-95">
+                        {/* Month / Year Navigator */}
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-xs sm:text-[13px] font-bold text-slate-900">
+                            {calendarViewDate.toLocaleString('default', {
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCalendarViewDate(
+                                  new Date(
+                                    calendarViewDate.getFullYear(),
+                                    calendarViewDate.getMonth() - 1,
+                                    1
+                                  )
+                                )
+                              }
+                              className="w-6.5 h-6.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCalendarViewDate(
+                                  new Date(
+                                    calendarViewDate.getFullYear(),
+                                    calendarViewDate.getMonth() + 1,
+                                    1
+                                  )
+                                )
+                              }
+                              className="w-6.5 h-6.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Day of week headers */}
+                        <div className="grid grid-cols-7 gap-1 text-center">
+                          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                            <span key={d} className="text-[11px] font-bold text-slate-400">
+                              {d}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Days grid */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {(() => {
+                            const year = calendarViewDate.getFullYear();
+                            const month = calendarViewDate.getMonth();
+                            const firstDayIndex = new Date(year, month, 1).getDay();
+                            const totalDays = new Date(year, month + 1, 0).getDate();
+                            const days = [];
+
+                            // Empty slots for start padding
+                            for (let i = 0; i < firstDayIndex; i++) {
+                              days.push(
+                                <div key={`empty-${i}`} className="w-7 h-7" />
+                              );
+                            }
+
+                            // Month days
+                            for (let day = 1; day <= totalDays; day++) {
+                              const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                              const isSelected = scheduleDate === dateString;
+
+                              days.push(
+                                <button
+                                  key={dateString}
+                                  type="button"
+                                  onClick={() => {
+                                    setScheduleDate(dateString);
+                                    setDatePickerOpen(false);
+                                  }}
+                                  className={`w-7 h-7 text-xs font-bold rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-[#fed011] text-black shadow-xs font-bold'
+                                      : 'text-slate-800 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            }
+                            return days;
+                          })()}
+                        </div>
+
+                        {/* Footer: Today & Done */}
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-2 px-0.5 text-xs font-bold">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const today = new Date();
+                              const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                              setScheduleDate(todayStr);
+                              setCalendarViewDate(today);
+                              setDatePickerOpen(false);
+                            }}
+                            className="text-amber-600 hover:text-amber-700 cursor-pointer"
+                          >
+                            Today
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDatePickerOpen(false)}
+                            className="text-slate-500 hover:text-slate-700 cursor-pointer"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
                   <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1">
                       Time
                     </label>
                     <input
                       type="time"
                       value={scheduleTime}
                       onChange={(e) => setScheduleTime(e.target.value)}
-                      className="w-full h-9.5 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
+                      className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900"
                     />
                   </div>
                 </div>
@@ -367,18 +538,18 @@ export default function CreateNotification() {
             <div className="flex items-center gap-2.5 pt-1">
               <button
                 type="submit"
-                className="h-10 px-6 rounded-xl bg-[#fed011] hover:bg-amber-400 text-black text-xs sm:text-sm font-black flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+                className="h-10.5 px-6 rounded-xl bg-[#fed011] hover:bg-amber-400 text-black text-sm sm:text-base font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-4.5 h-4.5" />
                 <span>Send Notification</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleSaveDraft}
-                className="h-10 px-5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-black flex items-center justify-center gap-2 cursor-pointer shadow-2xs transition-colors"
+                className="h-10.5 px-5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-sm sm:text-base font-bold flex items-center justify-center gap-2 cursor-pointer shadow-2xs transition-colors"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4.5 h-4.5" />
                 <span>Save as Draft</span>
               </button>
             </div>
@@ -390,37 +561,43 @@ export default function CreateNotification() {
           <div className="lg:col-span-5 space-y-3">
             {/* 1. Select Recipients Card */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2">
-              <label className="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-900 pb-0.5">
-                <span className="text-base">👥</span>
+              <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900 pb-0.5">
+                <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                  <img src={totalSeatsIcon} alt="Select Recipients" className="w-5 h-5 object-contain" />
+                </div>
                 <span>Select Recipients</span>
-                <span className="text-rose-500 font-black">*</span>
+                <span className="text-rose-500 font-bold">*</span>
               </label>
 
               <div className="space-y-1.5">
                 {/* Option 1: All Users */}
                 <div
                   onClick={() => setRecipientOption('All Users')}
-                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2.5 ${
+                  className={`p-2.5 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-2.5 ${
                     recipientOption === 'All Users'
                       ? 'border-[#fed011] bg-[#fffdf0]'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="recipientGroup"
-                    checked={recipientOption === 'All Users'}
-                    onChange={() => setRecipientOption('All Users')}
-                    className="accent-amber-500 w-4 h-4 cursor-pointer"
-                  />
-                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-800 shrink-0">
-                    <Users className="w-4 h-4" />
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      recipientOption === 'All Users'
+                        ? 'border-[#fed011] bg-white'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {recipientOption === 'All Users' && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fed011]" />
+                    )}
+                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={totalSeatsIcon} alt="All Users" className="w-5 h-5 object-contain" />
                   </div>
                   <div>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 block leading-tight">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-900 block leading-tight">
                       All Users
                     </span>
-                    <span className="text-[11px] text-slate-500 font-semibold leading-none">
+                    <span className="text-xs text-slate-600 font-semibold leading-none">
                       Send to all passengers and drivers
                     </span>
                   </div>
@@ -429,27 +606,31 @@ export default function CreateNotification() {
                 {/* Option 2: All Passengers */}
                 <div
                   onClick={() => setRecipientOption('All Passengers')}
-                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2.5 ${
+                  className={`p-2.5 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-2.5 ${
                     recipientOption === 'All Passengers'
                       ? 'border-[#fed011] bg-[#fffdf0]'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="recipientGroup"
-                    checked={recipientOption === 'All Passengers'}
-                    onChange={() => setRecipientOption('All Passengers')}
-                    className="accent-amber-500 w-4 h-4 cursor-pointer"
-                  />
-                  <div className="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center text-sky-700 shrink-0">
-                    <User className="w-4 h-4" />
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      recipientOption === 'All Passengers'
+                        ? 'border-[#fed011] bg-white'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {recipientOption === 'All Passengers' && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fed011]" />
+                    )}
+                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={group10Icon} alt="All Passengers" className="w-5 h-5 object-contain" />
                   </div>
                   <div>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 block leading-tight">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-900 block leading-tight">
                       All Passengers
                     </span>
-                    <span className="text-[11px] text-slate-500 font-semibold leading-none">
+                    <span className="text-xs text-slate-600 font-semibold leading-none">
                       Send only to registered passengers
                     </span>
                   </div>
@@ -458,27 +639,31 @@ export default function CreateNotification() {
                 {/* Option 3: All Drivers */}
                 <div
                   onClick={() => setRecipientOption('All Drivers')}
-                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2.5 ${
+                  className={`p-2.5 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-2.5 ${
                     recipientOption === 'All Drivers'
                       ? 'border-[#fed011] bg-[#fffdf0]'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="recipientGroup"
-                    checked={recipientOption === 'All Drivers'}
-                    onChange={() => setRecipientOption('All Drivers')}
-                    className="accent-amber-500 w-4 h-4 cursor-pointer"
-                  />
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700 shrink-0">
-                    <Car className="w-4 h-4" />
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      recipientOption === 'All Drivers'
+                        ? 'border-[#fed011] bg-white'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {recipientOption === 'All Drivers' && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fed011]" />
+                    )}
+                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={privateCarIcon} alt="All Drivers" className="w-5 h-5 object-contain" />
                   </div>
                   <div>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 block leading-tight">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-900 block leading-tight">
                       All Drivers
                     </span>
-                    <span className="text-[11px] text-slate-500 font-semibold leading-none">
+                    <span className="text-xs text-slate-600 font-semibold leading-none">
                       Send only to registered drivers
                     </span>
                   </div>
@@ -493,21 +678,25 @@ export default function CreateNotification() {
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="recipientGroup"
-                    checked={recipientOption === 'Selected Users'}
-                    onChange={() => setRecipientOption('Selected Users')}
-                    className="accent-amber-500 w-4 h-4 cursor-pointer"
-                  />
-                  <div className="w-7 h-7 rounded-lg bg-amber-100/80 flex items-center justify-center text-slate-950 shrink-0">
-                    <Users className="w-4 h-4" />
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      recipientOption === 'Selected Users'
+                        ? 'border-[#fed011] bg-white'
+                        : 'border-slate-300 bg-white'
+                    }`}
+                  >
+                    {recipientOption === 'Selected Users' && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fed011]" />
+                    )}
+                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={totalSeatsIcon} alt="Selected Users" className="w-5 h-5 object-contain" />
                   </div>
                   <div>
-                    <span className="text-xs sm:text-sm font-black text-slate-900 block leading-tight">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-900 block leading-tight">
                       Selected Users
                     </span>
-                    <span className="text-[11px] text-slate-600 font-semibold leading-none">
+                    <span className="text-xs text-slate-600 font-semibold leading-none">
                       Choose specific passengers or drivers
                     </span>
                   </div>
@@ -517,43 +706,90 @@ export default function CreateNotification() {
 
             {/* 2. Select Users Card (When Selected Users is active) */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2.5">
-              <label className="flex items-center gap-2 text-xs sm:text-sm font-black text-slate-900">
-                <span className="text-base">📋</span>
+              <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
+                <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+                  <img src={selectUsersIcon} alt="Select Users" className="w-5 h-5 object-contain" />
+                </div>
                 <span>Select Users</span>
-                <span className="text-rose-500 font-black">*</span>
+                <span className="text-rose-500 font-bold">*</span>
               </label>
 
               {/* Search + All Users Filter */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                 <div className="sm:col-span-8 relative">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4.5 h-4.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                     placeholder="Search by name, mobile number or user ID..."
-                    className="w-full h-9 pl-9 pr-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-400"
+                    className="w-full h-10 pl-9.5 pr-3 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div className="sm:col-span-4 relative">
-                  <select
-                    value={userFilter}
-                    onChange={(e) => setUserFilter(e.target.value)}
-                    className="w-full h-9 pl-2.5 pr-6 bg-white border border-slate-200 rounded-xl text-xs font-black text-slate-800 appearance-none focus:outline-none focus:border-amber-400 cursor-pointer"
+                  <button
+                    type="button"
+                    onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                    className="w-full h-10 flex items-center justify-between px-3 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 cursor-pointer shadow-2xs transition-colors"
                   >
-                    <option value="All Users">All Users</option>
-                    <option value="Passenger">Passengers</option>
-                    <option value="Driver">Drivers</option>
-                  </select>
-                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600 text-xs font-bold">
-                    ▼
-                  </div>
+                    <span className="truncate">
+                      {userFilter === 'Passenger' ? 'Passengers' : userFilter === 'Driver' ? 'Drivers' : 'All Users'}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-500 transition-transform ${
+                        filterDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Backdrop for outside click */}
+                  {filterDropdownOpen && (
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setFilterDropdownOpen(false)}
+                    />
+                  )}
+
+                  {/* Custom Dropdown Menu matching Drivers page */}
+                  {filterDropdownOpen && (
+                    <div className="absolute right-0 left-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
+                      {[
+                        { value: 'All Users', label: 'All Users' },
+                        { value: 'Passenger', label: 'Passengers' },
+                        { value: 'Driver', label: 'Drivers' }
+                      ].map((item) => {
+                        const isSelected = userFilter === item.value;
+                        return (
+                          <button
+                            key={item.value}
+                            type="button"
+                            onClick={() => {
+                              setUserFilter(item.value);
+                              setFilterDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#fed011] text-black shadow-2xs'
+                                : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Users Checkbox List - Compact & Bigger Text */}
               <div className="divide-y divide-slate-100 border border-slate-150 rounded-xl overflow-hidden bg-slate-50/20">
-                {usersList.map((user) => {
+                {filteredUsers.length === 0 ? (
+                  <div className="p-6 text-center text-slate-400 font-semibold text-xs sm:text-sm">
+                    No users found matching your search or filter.
+                  </div>
+                ) : (
+                  filteredUsers.map((user) => {
                   const isChecked = selectedUserIds.includes(user.id);
                   return (
                     <div
@@ -564,24 +800,24 @@ export default function CreateNotification() {
                       <div className="flex items-center gap-2.5 min-w-0">
                         {/* Custom Square Checkbox */}
                         <div
-                          className={`w-4.5 h-4.5 rounded-sm flex items-center justify-center shrink-0 transition-colors ${
+                          className={`w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors ${
                             isChecked
-                              ? 'bg-[#fed011] text-black font-black'
+                              ? 'bg-[#fed011] text-black font-bold'
                               : 'border-2 border-slate-300 bg-white'
                           }`}
                         >
-                          {isChecked && <span className="text-[11px] font-black">✓</span>}
+                          {isChecked && <span className="text-xs font-bold">✓</span>}
                         </div>
 
                         {/* Avatar */}
                         <img
                           src={user.avatar}
                           alt={user.name}
-                          className="w-7.5 h-7.5 rounded-full object-cover border border-amber-300 shrink-0"
+                          className="w-8.5 h-8.5 rounded-full object-cover border border-amber-300 shrink-0"
                         />
 
                         {/* Name */}
-                        <span className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
+                        <span className="text-sm sm:text-[14.5px] font-bold text-slate-900 truncate">
                           {user.name}
                         </span>
                       </div>
@@ -589,13 +825,13 @@ export default function CreateNotification() {
                       <div className="flex items-center gap-2 shrink-0">
                         {/* User Type Badge */}
                         {user.type === 'Passenger' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black text-sky-800 bg-sky-50 border border-sky-200">
-                            <User className="w-3 h-3 text-sky-600" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200">
+                            <User className="w-3.5 h-3.5 text-sky-600" />
                             Passenger
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200">
-                            <span className="w-3 h-3 rounded-full border border-emerald-600 flex items-center justify-center text-[8px] font-black">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                            <span className="w-3.5 h-3.5 rounded-full border border-emerald-600 flex items-center justify-center text-[9px] font-bold">
                               ✓
                             </span>
                             Driver
@@ -603,27 +839,27 @@ export default function CreateNotification() {
                         )}
 
                         {/* Phone */}
-                        <span className="text-xs font-extrabold text-slate-800 whitespace-nowrap">
+                        <span className="text-xs sm:text-sm font-bold text-slate-800 whitespace-nowrap">
                           {user.phone}
                         </span>
                       </div>
                     </div>
                   );
-                })}
+                }))}
               </div>
 
               {/* Bottom Summary Pill: 3 Users Selected (2 Passengers, 1 Driver) | Clear All */}
-              <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between text-xs font-black">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between text-xs sm:text-sm font-bold">
                 <span className="text-slate-900">
                   {selectedCount} Users Selected{' '}
-                  <span className="text-slate-700 font-bold text-[11px]">
+                  <span className="text-slate-700 font-semibold text-xs">
                     ({passengerCount} Passengers, {driverCount} Driver{driverCount !== 1 ? 's' : ''})
                   </span>
                 </span>
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-rose-600 hover:text-rose-800 hover:underline cursor-pointer font-black text-xs"
+                  className="text-rose-600 hover:text-rose-800 hover:underline cursor-pointer font-bold text-xs sm:text-sm"
                 >
                   Clear All
                 </button>

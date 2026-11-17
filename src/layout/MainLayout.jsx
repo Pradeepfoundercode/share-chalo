@@ -27,7 +27,8 @@ export default function MainLayout() {
     location.pathname.startsWith('/passengers/') ||
     location.pathname.startsWith('/rides/') ||
     (location.pathname.startsWith('/vehicles/') && location.pathname !== '/vehicles/master') ||
-    (location.pathname.startsWith('/support/') && location.pathname !== '/support');
+    (location.pathname.startsWith('/support/') && location.pathname !== '/support') ||
+    (location.pathname.startsWith('/notifications/') && location.pathname !== '/notifications');
 
   return (
     <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans">

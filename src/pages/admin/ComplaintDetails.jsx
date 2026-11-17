@@ -53,35 +53,35 @@ export default function ComplaintDetails() {
     switch (status) {
       case 'Open':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold text-rose-600 bg-rose-50 border border-rose-200">
-            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-rose-600 bg-rose-50 border border-rose-200 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
             Open
           </span>
         );
       case 'In Progress':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold text-blue-600 bg-blue-50 border border-blue-200">
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+          <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs sm:text-[13px] font-bold text-blue-600 bg-blue-50 border border-blue-200 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
             In Progress
           </span>
         );
       case 'Resolved':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
             Resolved
           </span>
         );
       case 'Closed':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold text-purple-700 bg-purple-50 border border-purple-200">
-            <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-purple-700 bg-purple-50 border border-purple-200 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-purple-600 shrink-0"></span>
             Closed
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold text-slate-700 bg-slate-100">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-slate-700 bg-slate-100 whitespace-nowrap">
             {status}
           </span>
         );

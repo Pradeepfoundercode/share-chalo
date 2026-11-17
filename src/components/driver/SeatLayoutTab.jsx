@@ -111,7 +111,7 @@ export default function SeatLayoutTab({ driver }) {
                   <span>Total Rows</span>
                 </div>
                 <span className="text-black font-bold pr-2">
-                  11
+                  {driver.totalRows || 10}
                 </span>
               </div>
 
@@ -137,7 +137,7 @@ export default function SeatLayoutTab({ driver }) {
                   <span>Total Seats</span>
                 </div>
                 <span className="text-black font-bold pr-2">
-                  {driver.totalSeats || 45}
+                  {driver.totalSeats || 40}
                 </span>
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function SeatLayoutTab({ driver }) {
             {/* Custom SVG/CSS Coach Bus Outer Blueprint */}
             <div className="mt-5 w-full flex items-center justify-center py-2">
               <div className="w-full bg-white border-2 max-sm:border-2 border-black rounded-r-[28px] max-sm:rounded-r-[20px] rounded-l-[40px] max-sm:rounded-l-[28px] p-3 sm:p-4 max-sm:p-2 flex items-stretch shadow-xs relative">
-                
+
                 {/* Left Bus Front Cabin */}
                 <div className="w-14 sm:w-16 max-sm:w-10 shrink-0 flex flex-col justify-between items-center pr-2 max-sm:pr-1.5 border-r border-slate-200 max-sm:border-r-[1px] py-1 max-sm:py-1 relative">
                   {/* Front Curved Windshield Line */}
@@ -209,7 +209,7 @@ export default function SeatLayoutTab({ driver }) {
 
                 {/* Main Passenger Deck (Inner Border Frame) */}
                 <div className="flex-1 ml-2 sm:ml-3 max-sm:ml-2 border border-slate-300 max-sm:border-[1px] rounded-2xl max-sm:rounded-xl p-2 sm:p-3 max-sm:p-1.5 flex flex-col justify-between gap-6 sm:gap-8 max-sm:gap-3 bg-[#fafbfc]/50">
-                  
+
                   {/* Top Row: A & B Seats */}
                   <div className="grid grid-cols-11 gap-1 sm:gap-1.5 max-sm:gap-0.5 w-full">
                     {topRows.map((col) => (

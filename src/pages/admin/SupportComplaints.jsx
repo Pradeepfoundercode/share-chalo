@@ -104,36 +104,36 @@ export default function SupportComplaints() {
     switch (s) {
       case 'Open':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200">
-            <img src={openAlertCircleIcon} alt="Open" className="w-3.5 h-3.5 object-contain" />
-            Open
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-rose-600 bg-rose-50 border border-rose-200 whitespace-nowrap">
+            <img src={openAlertCircleIcon} alt="Open" className="w-3.5 h-3.5 object-contain shrink-0" />
+            <span>Open</span>
           </span>
         );
       case 'In Progress':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200">
-            <img src={inProgressRefreshIcon} alt="In Progress" className="w-3.5 h-3.5 object-contain" />
-            In Progress
+          <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs sm:text-[13px] font-bold text-blue-600 bg-blue-50 border border-blue-200 whitespace-nowrap">
+            <img src={inProgressRefreshIcon} alt="In Progress" className="w-3.5 h-3.5 object-contain shrink-0" />
+            <span>In Progress</span>
           </span>
         );
       case 'Resolved':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
-            <img src={resolvedCheckIcon} alt="Resolved" className="w-3.5 h-3.5 object-contain" />
-            Resolved
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 whitespace-nowrap">
+            <img src={resolvedCheckIcon} alt="Resolved" className="w-3.5 h-3.5 object-contain shrink-0" />
+            <span>Resolved</span>
           </span>
         );
       case 'Closed':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200">
-            <img src={closedCircleIcon} alt="Closed" className="w-3.5 h-3.5 object-contain" />
-            Closed
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-purple-700 bg-purple-50 border border-purple-200 whitespace-nowrap">
+            <img src={closedCircleIcon} alt="Closed" className="w-3.5 h-3.5 object-contain shrink-0" />
+            <span>Closed</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-slate-600 bg-slate-100">
-            {s}
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-[13px] font-bold text-slate-600 bg-slate-100 whitespace-nowrap">
+            <span>{s}</span>
           </span>
         );
     }
@@ -264,25 +264,9 @@ export default function SupportComplaints() {
         </div>
       </div>
 
-      {/* Main Section: Complaints List */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
-        {/* Title Header */}
-        <div className="p-4 sm:p-5 pb-3 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-900 shrink-0">
-            <img src={financeSettlementsIcon} alt="Complaints List" className="w-5 h-5 object-contain" />
-          </div>
-          <div>
-            <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-              Complaints List
-            </h2>
-            <p className="text-xs text-slate-600 font-medium">
-              All support requests and complaints from passengers and drivers.
-            </p>
-          </div>
-        </div>
-
-        {/* Filter Controls Row */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-3 p-4 sm:p-5 border-b border-slate-100 bg-slate-50/30">
+      {/* 2. FILTER BAR (Drivers/Notifications Style) */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-3">
           {/* Search Input */}
           <div className="flex-1 relative">
             <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -615,40 +599,42 @@ export default function SupportComplaints() {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Complaints Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
+      {/* 3. COMPLAINTS DATA TABLE (Ratings & Reviews / Notifications Style) */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs sm:text-sm min-w-[950px]">
             <thead>
-              <tr className="bg-[#feea98]/50 border-b border-amber-200/70 text-slate-900 text-xs sm:text-[13px] font-black uppercase tracking-wider">
-                <th className="py-3 px-3 text-center w-12">#</th>
-                <th className="py-3 px-3">User</th>
-                <th className="py-3 px-3">User Type</th>
-                <th className="py-3 px-3">Ticket ID</th>
-                <th className="py-3 px-3">Category</th>
-                <th className="py-3 px-3">Subject</th>
-                <th className="py-3 px-3 text-center">Ride ID</th>
-                <th className="py-3 px-3">Created On</th>
-                <th className="py-3 px-3 text-center">Status</th>
-                <th className="py-3 px-3 text-center">Action</th>
+              <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+                <th className="py-2.5 px-3.5 text-center w-12 whitespace-nowrap">#</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">User</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">User Type</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Ticket ID</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Category</th>
+                <th className="py-2.5 px-3.5 min-w-[200px] whitespace-nowrap">Subject</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Ride ID</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Created On</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Status</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs sm:text-sm font-medium text-slate-800">
+            <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
               {displayedItems.map((item, index) => (
                 <tr
                   key={item.id}
                   onClick={() => navigate(`/support/${item.id || item.ticketId.replace('#', '')}`)}
-                  className="hover:bg-amber-50/40 transition-colors group cursor-pointer"
+                  className="hover:bg-amber-50/20 transition-colors cursor-pointer"
                 >
                   {/* # */}
-                  <td className="py-3.5 px-3 text-center font-bold text-slate-700">
-                    {index + 1}
+                  <td className="py-2 px-3.5 text-center font-bold text-slate-500 text-sm sm:text-base">
+                    {(currentPage - 1) * entriesPerPage + index + 1}
                   </td>
 
                   {/* User */}
-                  <td className="py-3.5 px-3">
+                  <td className="py-2 px-3.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full border border-amber-300 p-0.5 shrink-0 overflow-hidden bg-amber-50">
+                      <div className="w-8.5 h-8.5 rounded-full border border-amber-300 ring-1 ring-amber-100 shrink-0 overflow-hidden bg-amber-50">
                         <img
                           src={item.user.avatar}
                           alt={item.user.name}
@@ -658,21 +644,21 @@ export default function SupportComplaints() {
                           }}
                         />
                       </div>
-                      <span className="font-extrabold text-slate-900 whitespace-nowrap">
+                      <span className="font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
                         {item.user.name}
                       </span>
                     </div>
                   </td>
 
                   {/* User Type Badge */}
-                  <td className="py-3.5 px-3">
+                  <td className="py-2 px-3.5 whitespace-nowrap">
                     {item.userType === 'Passenger' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200">
                         <User className="w-3.5 h-3.5 text-sky-600" />
                         Passenger
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
                         <span className="w-3.5 h-3.5 rounded-full border border-emerald-600 flex items-center justify-center text-[9px] font-black">
                           ✓
                         </span>
@@ -682,67 +668,66 @@ export default function SupportComplaints() {
                   </td>
 
                   {/* Ticket ID */}
-                  <td className="py-3.5 px-3">
-                    <span className="inline-block px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/80 font-mono font-extrabold text-xs text-slate-900 shadow-2xs">
+                  <td className="py-2 px-3.5 whitespace-nowrap">
+                    <span className="inline-block bg-[#fffdf0] border border-amber-200/80 px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-bold text-slate-900 shadow-2xs font-mono">
                       {item.ticketId}
                     </span>
                   </td>
 
                   {/* Category */}
-                  <td className="py-3.5 px-3">
-                    <div className="flex items-center gap-2 text-slate-800 font-bold whitespace-nowrap">
-                      <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center">
+                  <td className="py-2 px-3.5 whitespace-nowrap">
+                    <div className="flex items-center gap-2 text-slate-800 font-bold">
+                      <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                         {renderCategoryIcon(item.category)}
                       </div>
-                      <span>{item.category}</span>
+                      <span className="text-xs sm:text-sm font-bold text-slate-900">{item.category}</span>
                     </div>
                   </td>
 
                   {/* Subject */}
-                  <td className="py-3.5 px-3">
-                    <span
-                      className="font-medium text-slate-800 truncate max-w-[200px] block"
-                      title={item.fullSubject}
-                    >
+                  <td className="py-2 px-3.5">
+                    <span className="font-medium text-slate-800 text-xs sm:text-sm truncate max-w-[220px] block">
                       {item.subject}
                     </span>
                   </td>
 
                   {/* Ride ID */}
-                  <td className="py-3.5 px-3 text-center">
+                  <td className="py-2 px-3.5 text-center whitespace-nowrap">
                     {item.rideId ? (
-                      <span className="inline-block px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 font-bold text-xs text-slate-900">
+                      <span className="inline-block bg-[#fffdf0] border border-amber-200/80 px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-bold text-slate-900 shadow-2xs">
                         {item.rideId}
                       </span>
                     ) : (
-                      <span className="text-slate-400 font-bold text-sm">—</span>
+                      <span className="text-slate-400 font-bold text-sm sm:text-base">—</span>
                     )}
                   </td>
 
                   {/* Created On */}
-                  <td className="py-3.5 px-3 whitespace-nowrap">
-                    <div className="text-xs font-bold text-slate-900">
+                  <td className="py-2 px-3.5 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm font-medium text-slate-700">
                       {item.createdOn}
                     </div>
-                    <div className="text-[11px] font-semibold text-slate-500">
+                    <div className="text-[11px] text-slate-500 font-normal">
                       {item.createdTime}
                     </div>
                   </td>
 
                   {/* Status */}
-                  <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                  <td className="py-2 px-3.5 text-center whitespace-nowrap">
                     {renderStatusBadge(item.ticketStatus || item.status)}
                   </td>
 
                   {/* Action */}
-                  <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                  <td className="py-2 px-3.5 text-center whitespace-nowrap">
                     <button
-                      onClick={() => navigate(`/support/${item.id || item.ticketId.replace('#', '')}`)}
-                      type="button"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 text-slate-800 hover:text-amber-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/support/${item.id || item.ticketId.replace('#', '')}`);
+                      }}
+                      className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer inline-flex items-center justify-center"
+                      title="View Ticket Details"
                     >
-                      <Eye className="w-3.5 h-3.5" />
-                      View
+                      <Eye className="w-4.5 h-4.5 text-slate-800" />
                     </button>
                   </td>
                 </tr>
@@ -750,7 +735,7 @@ export default function SupportComplaints() {
 
               {displayedItems.length === 0 && (
                 <tr>
-                  <td colSpan="10" className="py-12 text-center text-slate-600 font-bold">
+                  <td colSpan="10" className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
                     No support tickets or complaints match the selected filters.
                   </td>
                 </tr>
@@ -767,6 +752,7 @@ export default function SupportComplaints() {
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setEntriesPerPage}
           pageSizeOptions={[5, 10, 25, 50]}
+          itemLabel="complaints"
         />
       </div>
 

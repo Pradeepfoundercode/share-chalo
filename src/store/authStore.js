@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export const useAuthStore = create(
   persist(
@@ -8,12 +8,21 @@ export const useAuthStore = create(
       admin: null,
       token: null,
 
-      login: (adminData, token = 'admin-demo-token-123') => {
+      login: (user, token) => {
         set({
           isAuthenticated: true,
-          admin: adminData,
-          token: token,
+          admin: user,
+          token,
         });
+      },
+
+      updateAdmin: (updatedAdmin) => {
+        set((state) => ({
+          admin: {
+            ...state.admin,
+            ...updatedAdmin,
+          },
+        }));
       },
 
       logout: () => {
@@ -25,8 +34,13 @@ export const useAuthStore = create(
       },
     }),
     {
-      name: 'share-chalo-admin-auth',
+      name: "share-chalo-admin-auth",
+
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        admin: state.admin,
+        token: state.token,
+      }),
     }
   )
 );
-
