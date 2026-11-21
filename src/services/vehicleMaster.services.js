@@ -12,9 +12,9 @@ export const getVehicleBrandsApi = async ({ page = 1, limit = 20 } = {}) => {
 
 
 export const createVehicleBrandApi = async (payload) => {
-  console.log(payload, "payload")
-  // const { data } = await API.post("/admins/vehicle-brands", payload);
-  // return data;
+  console.log(payload)
+  const { data } = await API.post("/admins/vehicle-brands", payload);
+  return data;
 };
 
 export const updateVehicleBrandApi = async ({ id, ...payload }) => {
