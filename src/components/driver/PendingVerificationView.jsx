@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Bell,
@@ -46,6 +46,15 @@ export default function PendingVerificationView({ driver }) {
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectRemark, setRejectRemark] = useState('');
   const [rejecting, setRejecting] = useState(false);
+
+  // Ensure view starts from the very top when mounting or changing step
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeStep, driver?.id]);
 
   const isProfileApproved = (driver.profileStatus || '').toLowerCase() === 'approved';
   const isKycApproved = (driver.kycStatus || '').toLowerCase() === 'approved';

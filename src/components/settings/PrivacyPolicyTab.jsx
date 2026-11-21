@@ -278,17 +278,15 @@ export default function PrivacyPolicyTab() {
 
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border capitalize ${badgeClasses}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold border capitalize ${badgeClasses}`}
       >
-        <span
-          className={`w-1.5 h-1.5 rounded-full ${
-            roleKey === 'driver'
-              ? 'bg-blue-500'
-              : roleKey === 'user'
-              ? 'bg-amber-500'
-              : 'bg-purple-500'
-          }`}
-        />
+        {roleKey !== 'all' && (
+          <span
+            className={`w-2 h-2 rounded-full ${
+              roleKey === 'driver' ? 'bg-blue-500' : 'bg-amber-500'
+            }`}
+          />
+        )}
         {roleKey}
       </span>
     );
@@ -375,7 +373,7 @@ export default function PrivacyPolicyTab() {
 
         {/* Table Container */}
         <div className="rounded-xl border border-slate-200/80 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto no-scrollbar">
             <table className="w-full min-w-[580px] text-left border-collapse">
               <thead>
                 <tr className="bg-[#fef9ec] border-b border-amber-100/60 text-[12px] sm:text-[13px] font-bold text-slate-900">
@@ -490,7 +488,7 @@ export default function PrivacyPolicyTab() {
 
                         {/* Sort Order */}
                         <td className="py-3 px-3 text-center">
-                          <span className="inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 rounded-md bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200">
+                          <span className="inline-flex items-center justify-center min-w-[28px] h-6 px-2 rounded-md bg-slate-100 text-slate-700 font-bold text-xs sm:text-[13px] border border-slate-200">
                             {policy.sortOrder ?? '-'}
                           </span>
                         </td>
@@ -511,7 +509,7 @@ export default function PrivacyPolicyTab() {
                                 nextStatus: next,
                               });
                             }}
-                            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer hover:shadow-2xs active:scale-95 ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-[13px] font-bold transition-all cursor-pointer hover:shadow-2xs active:scale-95 ${
                               isActive
                                 ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/70'
                                 : 'text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100/70'
@@ -521,7 +519,7 @@ export default function PrivacyPolicyTab() {
                             }`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+                              className={`w-2 h-2 rounded-full ${
                                 isActive ? 'bg-emerald-500' : 'bg-rose-500'
                               }`}
                             />

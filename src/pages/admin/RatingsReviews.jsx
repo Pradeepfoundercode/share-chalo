@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Star,
   ListFilter,
@@ -8,20 +9,138 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  MoreVertical
+  MoreVertical,
+  Loader2,
+  AlertCircle,
+  RotateCcw,
+  Filter,
 } from 'lucide-react';
-import { reviewsStats, reviewsList } from '../../data/reviewsData';
 import Pagination from '../../components/common/Pagination';
-import priyaAvatar from '../../assets/priya_sharma_avatar.png';
-import arjunAvatar from '../../assets/arjun_singh_avatar.png';
-import harshAvatar from '../../assets/harsh_singh_avatar_square.png';
-import defaultAvatar from '../../assets/Smiling Man in Yellow Circular Frame.png';
 import group10Icon from '../../assets/dashboard/Group (10).svg';
 import driverIcon from '../../assets/dashboard/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 1.svg';
 import reviewsStarIcon from '../../assets/dashboard/reviews-star.svg';
 import reviewsDriverIcon from '../../assets/dashboard/reviews-driver-rating.svg';
 import reviewsPassengerIcon from '../../assets/dashboard/reviews-passenger-rating.svg';
 import reviewsChatIcon from '../../assets/dashboard/reviews-chat-bubble.svg';
+import { getReviewsApi } from '../../services/review.services';
+
+// Format Date & Time helper
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    return d.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return String(dateStr);
+  }
+};
+
+// Normalize API review to standard UI format
+const normalizeReview = (r, idx) => {
+  const reviewerName =
+    r.reviewer?.name ||
+    r.reviewerName ||
+    r.fromUser?.name ||
+    r.user?.name ||
+    r.passengerName ||
+    r.driverName ||
+    '-';
+
+  const reviewerRole =
+    r.reviewer?.role ||
+    r.reviewerRole ||
+    r.reviewerType ||
+    r.fromUser?.role ||
+    r.role ||
+    'Passenger';
+
+  // Exact image from API (no fake image fallback)
+  const reviewerAvatar =
+    r.reviewer?.imageUrl ||
+    r.reviewer?.avatar ||
+    r.reviewer?.profileImage ||
+    r.reviewer?.photo ||
+    r.reviewer?.image ||
+    r.reviewerAvatar ||
+    r.reviewerPhoto ||
+    r.reviewerImage ||
+    r.avatar ||
+    r.profileImage ||
+    r.imageUrl ||
+    r.photo ||
+    r.image ||
+    '';
+
+  const targetName =
+    r.reviewFor?.name ||
+    r.reviewForName ||
+    r.target?.name ||
+    r.targetName ||
+    r.toUser?.name ||
+    (String(reviewerRole).toLowerCase() === 'passenger' ? r.driverName : r.passengerName) ||
+    '-';
+
+  const targetRole =
+    r.reviewFor?.role ||
+    r.reviewForRole ||
+    r.targetRole ||
+    r.targetType ||
+    r.target?.role ||
+    r.toUser?.role ||
+    (String(reviewerRole).toLowerCase() === 'passenger' ? 'driver' : 'passenger');
+
+  const targetAvatar =
+    r.reviewFor?.imageUrl ||
+    r.reviewFor?.avatar ||
+    r.reviewFor?.profileImage ||
+    r.reviewFor?.photo ||
+    r.reviewFor?.image ||
+    r.targetAvatar ||
+    r.target?.imageUrl ||
+    '';
+
+  const rating = Number(r.rating ?? r.stars ?? r.score ?? 5);
+
+  const reviewText =
+    r.reviewText ||
+    r.review ||
+    r.comment ||
+    r.feedback ||
+    r.message ||
+    '-';
+
+  const rideId =
+    r.rideId ||
+    r.ride?.rideId ||
+    r.rideCode ||
+    (r.ride?.id ? `#${r.ride.id}` : null) ||
+    r.tripId ||
+    (r.id ? `#${r.id}` : '-');
+
+  const dateTime = r.dateTime || r.createdAt || r.reviewDate || r.date;
+
+  return {
+    id: r.id ?? r.reviewId ?? r._id ?? idx,
+    reviewerName,
+    reviewerRole,
+    reviewerAvatar,
+    targetName,
+    targetRole,
+    rating,
+    reviewText,
+    rideId,
+    dateTime: formatDateTime(dateTime),
+    rawDate: dateTime,
+  };
+};
 
 export default function RatingsReviews() {
   const [activeTab, setActiveTab] = useState('All Reviews');
@@ -41,7 +160,93 @@ export default function RatingsReviews() {
   const [tempEnd, setTempEnd] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+
+  // Filters applied state (applied when user clicks "Apply" button or presses Enter)
+  const [appliedFilters, setAppliedFilters] = useState({
+    rating: undefined,
+    dateFrom: undefined,
+    dateTo: undefined,
+    search: undefined,
+    targetRole: 'All',
+  });
+
+  const handleApply = () => {
+    setCurrentPage(1);
+    setAppliedFilters({
+      rating: ratingFilter !== 'All' ? Number(ratingFilter) : undefined,
+      dateFrom: startDate || undefined,
+      dateTo: endDate || undefined,
+      search: searchTerm.trim() || undefined,
+      targetRole: roleFilter,
+    });
+  };
+
+  // Scroll to top on page or tab change
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [currentPage, activeTab]);
+
+  // Map active tab to reviewerRole query param
+  const reviewerRoleParam =
+    activeTab === 'Passenger Reviews'
+      ? 'passenger'
+      : activeTab === 'Driver Reviews'
+      ? 'driver'
+      : undefined;
+
+  // Direct query parameters passed straight to API without unnecessary conditions
+  const queryParams = {
+    page: currentPage,
+    limit: entriesPerPage,
+    ...(reviewerRoleParam && { reviewerRole: reviewerRoleParam }),
+    ...(appliedFilters.rating && { rating: appliedFilters.rating }),
+    ...(appliedFilters.dateFrom && { dateFrom: appliedFilters.dateFrom }),
+    ...(appliedFilters.dateTo && { dateTo: appliedFilters.dateTo }),
+    ...(appliedFilters.search && { search: appliedFilters.search }),
+  };
+
+  // ========================================
+  // GET REVIEWS API (React Query)
+  // ========================================
+  const {
+    data: reviewsResponse,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['reviews', queryParams],
+    queryFn: () => getReviewsApi(queryParams),
+  });
+
+  const apiData = reviewsResponse?.data;
+  const meta = reviewsResponse?.meta;
+
+  const rawReviews = useMemo(() => {
+    if (Array.isArray(apiData?.reviews)) return apiData.reviews;
+    if (Array.isArray(apiData?.items)) return apiData.items;
+    if (Array.isArray(apiData?.rows)) return apiData.rows;
+    if (Array.isArray(apiData)) return apiData;
+    return [];
+  }, [apiData]);
+
+  const stats = apiData?.stats || apiData?.summary || reviewsResponse?.stats;
+
+  const summaryStats = {
+    overallRating: stats?.overallRating ?? stats?.averageRating ?? stats?.avgRating ?? 0,
+    driverRating: stats?.driverRating ?? stats?.driverAvgRating ?? 0,
+    passengerRating: stats?.passengerRating ?? stats?.passengerAvgRating ?? 0,
+    totalReviews: stats?.totalReviews ?? meta?.total ?? rawReviews.length,
+  };
+
+  const allReviews = useMemo(() => {
+    return rawReviews.map((r, idx) => normalizeReview(r, idx));
+  }, [rawReviews]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -52,6 +257,13 @@ export default function RatingsReviews() {
     setTempStart('');
     setTempEnd('');
     setCurrentPage(1);
+    setAppliedFilters({
+      rating: undefined,
+      dateFrom: undefined,
+      dateTo: undefined,
+      search: undefined,
+      targetRole: 'All',
+    });
   };
 
   // Tab definitions
@@ -60,17 +272,6 @@ export default function RatingsReviews() {
     { id: 'Passenger Reviews', label: 'Passenger Reviews', iconImg: group10Icon },
     { id: 'Driver Reviews', label: 'Driver Reviews', iconImg: driverIcon },
   ];
-
-  // Helper to pick avatar for reviewer
-  const getReviewerAvatar = (item) => {
-    if (item.reviewerName === 'Priya Sharma') return priyaAvatar;
-    if (item.reviewerName === 'Neha Gupta' || item.reviewerName === 'Anjali Sharma')
-      return priyaAvatar;
-    if (item.reviewerName === 'Amit Verma') return arjunAvatar;
-    if (item.reviewerName === 'Rahul Singh' || item.reviewerName === 'Manoj Yadav')
-      return harshAvatar;
-    return defaultAvatar;
-  };
 
   // Helper for rendering 5 stars
   const renderStars = (rating) => {
@@ -93,86 +294,20 @@ export default function RatingsReviews() {
             />
           );
         })}
-        <span className="font-black text-sm sm:text-base text-slate-900 ml-1.5 select-none">
-          {rating.toFixed(1)}
-        </span>
       </div>
     );
   };
 
-  // Helper to parse date
-  const parseReviewDate = (dateStr) => {
-    if (!dateStr) return null;
-    const parts = dateStr.split(',')[0].trim().split(' ');
-    if (parts.length >= 3) {
-      const day = parseInt(parts[0], 10);
-      const monthNames = {
-        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-        Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-      };
-      const month = monthNames[parts[1]];
-      const year = parseInt(parts[2], 10);
-      if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-        return new Date(year, month, day);
-      }
-    }
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? null : d;
-  };
-
-  // Filtered reviews logic
+  // Filtered reviews: server handles activeTab (reviewerRole), rating, dateFrom, dateTo, search.
+  // roleFilter (Review For dropdown) filters locally on targetRole if selected.
   const filteredReviews = useMemo(() => {
-    return reviewsList.filter((item) => {
-      // Tab Filter
-      if (activeTab === 'Passenger Reviews' && item.reviewerRole !== 'Passenger') {
-        return false;
+    return allReviews.filter((item) => {
+      if (appliedFilters.targetRole && appliedFilters.targetRole !== 'All') {
+        if (String(item.targetRole).toLowerCase() !== appliedFilters.targetRole.toLowerCase()) return false;
       }
-      if (activeTab === 'Driver Reviews' && item.reviewerRole !== 'Driver') {
-        return false;
-      }
-
-      // Search Filter
-      if (searchTerm.trim() !== '') {
-        const query = searchTerm.toLowerCase();
-        const matchesName =
-          item.reviewerName.toLowerCase().includes(query) ||
-          item.targetName.toLowerCase().includes(query);
-        const matchesRide = item.rideId.toLowerCase().includes(query);
-        const matchesReview = item.reviewText.toLowerCase().includes(query);
-        if (!matchesName && !matchesRide && !matchesReview) return false;
-      }
-
-      // Rating Filter
-      if (ratingFilter !== 'All') {
-        const star = Number(ratingFilter);
-        if (Math.floor(item.rating) !== star) return false;
-      }
-
-      // Role Filter (For: All / Driver / Passenger)
-      if (roleFilter !== 'All') {
-        if (item.targetRole !== roleFilter) return false;
-      }
-
-      // Review Date Filter
-      if (startDate || endDate) {
-        const reviewDate = parseReviewDate(item.dateTime);
-        if (reviewDate) {
-          if (startDate) {
-            const start = new Date(startDate);
-            start.setHours(0, 0, 0, 0);
-            if (reviewDate < start) return false;
-          }
-          if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            if (reviewDate > end) return false;
-          }
-        }
-      }
-
       return true;
     });
-  }, [activeTab, searchTerm, ratingFilter, roleFilter, startDate, endDate]);
+  }, [allReviews, appliedFilters.targetRole]);
 
   return (
     <div className="space-y-4 sm:space-y-5 pb-6">
@@ -187,13 +322,10 @@ export default function RatingsReviews() {
           </div>
           <div className="min-w-0">
             <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {reviewsStats.overallRating}
+              {summaryStats.overallRating}
             </h3>
             <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
               Overall Rating
-            </p>
-            <p className="text-xs sm:text-[13px] font-medium text-slate-500 leading-tight mt-0.5 truncate">
-              {reviewsStats.overallSub}
             </p>
           </div>
         </div>
@@ -205,13 +337,10 @@ export default function RatingsReviews() {
           </div>
           <div className="min-w-0">
             <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {reviewsStats.driverRating}
+              {summaryStats.driverRating}
             </h3>
             <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
               Driver Rating
-            </p>
-            <p className="text-xs sm:text-[13px] font-medium text-slate-500 leading-tight mt-0.5 truncate">
-              {reviewsStats.driverSub}
             </p>
           </div>
         </div>
@@ -223,13 +352,10 @@ export default function RatingsReviews() {
           </div>
           <div className="min-w-0">
             <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {reviewsStats.passengerRating}
+              {summaryStats.passengerRating}
             </h3>
             <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
               Passenger Rating
-            </p>
-            <p className="text-xs sm:text-[13px] font-medium text-slate-500 leading-tight mt-0.5 truncate">
-              {reviewsStats.passengerSub}
             </p>
           </div>
         </div>
@@ -241,7 +367,7 @@ export default function RatingsReviews() {
           </div>
           <div className="min-w-0">
             <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {reviewsStats.totalReviews}
+              {summaryStats.totalReviews}
             </h3>
             <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
               Total Reviews
@@ -292,16 +418,16 @@ export default function RatingsReviews() {
             type="text"
             placeholder="Search by name, ride ID or review..."
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleApply();
             }}
             className="w-full pl-10.5 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
 
         {/* Dropdowns Group */}
-        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-2 w-full xl:w-auto">
           {/* Rating Dropdown */}
           <div className="flex-1 sm:flex-initial relative max-sm:w-full">
             <label className="block text-xs font-bold text-slate-700 mb-1 max-sm:mt-2">
@@ -336,7 +462,6 @@ export default function RatingsReviews() {
                       onClick={() => {
                         setRatingFilter(r);
                         setRatingDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -393,7 +518,6 @@ export default function RatingsReviews() {
                       onClick={() => {
                         setRoleFilter(rf);
                         setRoleDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -602,24 +726,34 @@ export default function RatingsReviews() {
                       setStartDate(tempStart);
                       setEndDate(tempEnd);
                       setDatePickerOpen(false);
-                      setCurrentPage(1);
                     }}
                     className="flex-1 h-8 rounded-xl bg-[#fed011] hover:bg-amber-400 text-black text-xs font-bold shadow-xs cursor-pointer transition-colors"
                   >
-                    Apply Filter
+                    Done
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Export Button */}
+          {/* Reset Button */}
+          <button
+            onClick={handleReset}
+            type="button"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-gray-200 rounded-xl transition-all cursor-pointer max-sm:w-full max-sm:mt-1 shadow-2xs"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </button>
+
+          {/* Apply Button */}
           <button
             type="button"
-            className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto shrink-0"
+            onClick={handleApply}
+            className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer max-sm:w-full"
           >
-            <Download className="w-4 h-4 stroke-[2.4]" />
-            <span>Export</span>
+            <Filter className="w-4 h-4 fill-black" />
+            Apply
           </button>
         </div>
       </div>
@@ -632,7 +766,7 @@ export default function RatingsReviews() {
           <table className="w-full text-left text-xs sm:text-sm min-w-[800px]">
             {/* Header Row with Yellow/Amber Tint */}
             <thead>
-              <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+              <tr className="bg-[#feea98]/60 text-slate-900 font-bold border-b border-amber-200/60 text-sm sm:text-base">
                 <th className="py-2.5 px-3.5 whitespace-nowrap">#</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Reviewer</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Review For</th>
@@ -646,91 +780,123 @@ export default function RatingsReviews() {
 
             {/* Body */}
             <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-              {filteredReviews.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
+                  <td colSpan={8} className="py-16 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="w-8 h-8 animate-spin text-[#fed011]" />
+                      <p className="text-sm font-semibold text-slate-600">Loading reviews...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <AlertCircle className="w-8 h-8 text-rose-500" />
+                      <p className="text-sm font-bold text-slate-800">
+                        Unable to load data
+                      </p>
+                      <button
+                        onClick={() => refetch()}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#fed011] text-black hover:bg-amber-400 transition-colors cursor-pointer shadow-xs mt-1"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Retry
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredReviews.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400 font-bold text-sm sm:text-base">
                     No reviews found matching your filter criteria.
                   </td>
                 </tr>
               ) : (
-                filteredReviews.slice(0, 5).map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-amber-50/20 transition-colors">
-                    {/* Index */}
-                    <td className="py-2 px-3.5 font-bold text-slate-500 text-sm sm:text-base">{idx + 1}</td>
+                filteredReviews.map((item, idx) => {
+                  const itemIndex = (currentPage - 1) * entriesPerPage + idx + 1;
+                  return (
+                    <tr key={item.id ?? idx} className="hover:bg-amber-50/20 transition-colors">
+                      {/* Index */}
+                      <td className="py-2.5 px-3.5 font-bold text-slate-500 text-sm sm:text-base">{itemIndex}</td>
 
-                    {/* Reviewer (Avatar + Name + Role) */}
-                    <td className="py-2 px-3.5">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={getReviewerAvatar(item)}
-                          alt={item.reviewerName}
-                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover shrink-0 ring-2 ring-amber-300/80 bg-amber-50 shadow-2xs"
-                        />
-                        <div>
-                          <p className="font-bold text-slate-900 text-sm sm:text-base leading-tight whitespace-nowrap">
-                            {item.reviewerName}
-                          </p>
-                          <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-0.5">
-                            {item.reviewerRole}
-                          </p>
+                      {/* Reviewer (Avatar + Name + Role) */}
+                      <td className="py-2.5 px-3.5">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={item.reviewerAvatar || ''}
+                            alt={item.reviewerName || 'avatar'}
+                            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover shrink-0 ring-2 ring-amber-300/80 bg-amber-50 shadow-2xs"
+                          />
+                          <div>
+                            <p className="font-bold text-slate-900 text-sm sm:text-base leading-tight whitespace-nowrap">
+                              {item.reviewerName}
+                            </p>
+                            <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-0.5">
+                              {item.reviewerRole}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Review For (Icon + Role + Name) */}
-                    <td className="py-2 px-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 shadow-2xs">
-                          {item.targetRole === 'Driver' ? (
-                            <img src={driverIcon} alt="Driver" className="w-5 h-5 sm:w-5.5 sm:h-5.5 object-contain" />
-                          ) : (
-                            <img src={group10Icon} alt="Passenger" className="w-5 h-5 sm:w-5.5 sm:h-5.5 object-contain" />
-                          )}
+                      {/* Review For (Icon + Name + Role) */}
+                      <td className="py-2.5 px-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 shadow-2xs">
+                            {String(item.targetRole).toLowerCase() === 'driver' ? (
+                              <img src={driverIcon} alt="Driver" className="w-5 h-5 sm:w-5.5 sm:h-5.5 object-contain" />
+                            ) : (
+                              <img src={group10Icon} alt="Passenger" className="w-5 h-5 sm:w-5.5 sm:h-5.5 object-contain" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 text-sm sm:text-base leading-tight whitespace-nowrap">
+                              {item.targetName}
+                            </p>
+                            {item.targetRole && (
+                              <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-0.5 capitalize whitespace-nowrap">
+                                {item.targetRole}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900 text-sm sm:text-base leading-tight whitespace-nowrap">
-                            {item.targetRole}
-                          </p>
-                          <p className="text-xs sm:text-sm text-slate-600 font-semibold mt-0.5 whitespace-nowrap">
-                            {item.targetName}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Rating (Stars + Number) */}
-                    <td className="py-2 px-3.5 whitespace-nowrap">
-                      {renderStars(item.rating)}
-                    </td>
+                      {/* Rating (Stars + Number) */}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        {renderStars(item.rating)}
+                      </td>
 
-                    {/* Review Text */}
-                    <td className="py-2 px-3.5 font-medium text-slate-800 text-xs sm:text-sm leading-snug">
-                      {item.reviewText}
-                    </td>
+                      {/* Review Text */}
+                      <td className="py-2.5 px-3.5 font-medium text-slate-800 text-xs sm:text-sm leading-snug">
+                        {item.reviewText}
+                      </td>
 
-                    {/* Ride ID Pill */}
-                    <td className="py-2 px-3.5 whitespace-nowrap">
-                      <span className="inline-block bg-[#fffdf0] border border-amber-200/80 px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold text-slate-900 shadow-2xs">
-                        {item.rideId}
-                      </span>
-                    </td>
+                      {/* Ride ID Pill */}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap">
+                        <span className="inline-block bg-[#fffdf0] border border-amber-200/80 px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold text-slate-900 shadow-2xs">
+                          {item.rideId}
+                        </span>
+                      </td>
 
-                    {/* Date & Time */}
-                    <td className="py-2 px-3.5 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-700">
-                      {item.dateTime}
-                    </td>
+                      {/* Date & Time */}
+                      <td className="py-2.5 px-3.5 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-700">
+                        {item.dateTime}
+                      </td>
 
-                    {/* Action Menu (3-dots) */}
-                    <td className="py-2 px-2.5 text-center">
-                      <button
-                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-black transition-colors cursor-pointer"
-                        title="Options"
-                      >
-                        <MoreVertical className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      {/* Action Menu (3-dots) */}
+                      <td className="py-2.5 px-2.5 text-center">
+                        <button
+                          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-black transition-colors cursor-pointer"
+                          title="Options"
+                        >
+                          <MoreVertical className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -741,14 +907,16 @@ export default function RatingsReviews() {
             ========================================================= */}
         <Pagination
           currentPage={currentPage}
-          totalItems={12460}
+          totalItems={meta?.total ?? filteredReviews.length}
           itemsPerPage={entriesPerPage}
           onPageChange={setCurrentPage}
-          onItemsPerPageChange={setEntriesPerPage}
-          pageSizeOptions={[5, 10, 25, 50]}
+          onItemsPerPageChange={(newLimit) => {
+            setEntriesPerPage(newLimit);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[10, 20, 50, 100]}
         />
       </div>
     </div>
   );
 }
-

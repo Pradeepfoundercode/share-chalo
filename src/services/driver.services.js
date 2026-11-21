@@ -14,6 +14,19 @@ export const getDriverByIdApi = async (driverId) => {
 };
 
 // ========================================
+// GET DRIVER RIDE HISTORY API
+// ========================================
+export const getDriverRideHistoryApi = async (
+  driverId,
+  { page = 1, limit = 20, status = "all" } = {}
+) => {
+  const { data } = await API.get(`/admins/drivers/${driverId}/ride-history`, {
+    params: { page, limit, status },
+  });
+  return data;
+};
+
+// ========================================
 // DRIVER VERIFICATION REVIEWS (PATCH)
 // ========================================
 export const reviewDriverProfileApi = async (driverId, payload = { action: "approved" }) => {

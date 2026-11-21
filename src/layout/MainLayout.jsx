@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
@@ -8,6 +8,15 @@ export default function MainLayout() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mainRef = useRef(null);
+
+  // Scroll main container to top on any route or query change
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname, location.search]);
 
   const toggleSidebar = () => {
     if (window.innerWidth < 1024) {
@@ -63,7 +72,7 @@ export default function MainLayout() {
           />
         )}
 
-        <main className={`flex-1 overflow-y-auto ${isDetailsPage ? 'p-3 sm:p-4 lg:p-5' : 'p-3 sm:p-4 lg:p-5'}`}>
+        <main ref={mainRef} className={`flex-1 overflow-y-auto ${isDetailsPage ? 'p-3 sm:p-4 lg:p-5' : 'p-3 sm:p-4 lg:p-5'}`}>
           <div className="w-full">
             <Outlet />
           </div>

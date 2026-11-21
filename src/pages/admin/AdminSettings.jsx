@@ -191,58 +191,58 @@ export default function AdminSettings() {
       )}
 
       {/* Top Filter / Switch Tabs */}
-      <div className="flex items-center gap-2 pl-2 sm:pl-3">
+      <div className="flex items-center gap-2 pl-2 sm:pl-3 overflow-x-auto whitespace-nowrap py-1 no-scrollbar">
         {/* Admin Profile Tab (Commented out for now) */}
         {/* <button
           type="button"
           onClick={() => handleTabClick('Admin Profile')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0 ${
             activeTab === 'Admin Profile'
               ? 'bg-[#fed011] text-black shadow-xs font-black'
               : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
           <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.2]" />
-          <span>Admin Profile</span>
+          <span className="whitespace-nowrap">Admin Profile</span>
         </button> */}
 
         <button
           type="button"
           onClick={() => handleTabClick('Change Password')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0 ${
             activeTab === 'Change Password'
               ? 'bg-[#fed011] text-black shadow-xs font-black'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              : 'bg-white  text-slate-700 hover:bg-slate-50'
           }`}
         >
           <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.2]" />
-          <span>Change Password</span>
+          <span className="whitespace-nowrap">Change Password</span>
         </button>
 
         <button
           type="button"
           onClick={() => handleTabClick('FAQs')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0 ${
             activeTab === 'FAQs'
               ? 'bg-[#fed011] text-black shadow-xs font-black'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              : 'bg-white  text-slate-700 hover:bg-slate-50'
           }`}
         >
           <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.2]" />
-          <span>FAQs</span>
+          <span className="whitespace-nowrap">FAQs</span>
         </button>
 
         <button
           type="button"
           onClick={() => handleTabClick('Privacy Policy')}
-          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0 ${
             activeTab === 'Privacy Policy'
               ? 'bg-[#fed011] text-black shadow-xs font-black'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              : 'bg-white  text-slate-700 hover:bg-slate-50'
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.2]" />
-          <span>Privacy Policy</span>
+          <span className="whitespace-nowrap">Privacy Policy</span>
         </button>
       </div>
 
@@ -367,7 +367,7 @@ export default function AdminSettings() {
               </div>
             </form>
           </div>
-
+                                                        
           <div className="p-4 pt-1 flex justify-center">
             <button
               type="submit"

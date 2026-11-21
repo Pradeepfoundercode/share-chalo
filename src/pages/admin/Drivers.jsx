@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -47,6 +47,15 @@ export default function Drivers() {
   const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
   const [tempStart, setTempStart] = useState('');
   const [tempEnd, setTempEnd] = useState('');
+
+  // Scroll to top on page or tab change
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [currentPage, selectedTab]);
 
   // ========================================
   // GET DRIVERS API (Page & Limit only)
@@ -639,7 +648,7 @@ export default function Drivers() {
                 <th className="py-2.5 px-4">Driver ID</th>
                 <th className="py-2.5 px-4">Mobile</th>
                 <th className="py-2.5 px-4">Vehicle Type</th>
-                <th className="py-2.5 px-4">KYC Status</th>
+                <th className="py-2.5 px-4">Status</th>
                 <th className="py-2.5 px-4">Account Status</th>
                 <th className="py-2.5 px-4">Registered On</th>
                 <th className="py-2.5 px-4 text-center">View</th>
@@ -728,7 +737,7 @@ export default function Drivers() {
                         </span>
                       </td>
 
-                      {/* KYC Status */}
+                      {/* Status */}
                       <td className="py-2.5 px-4 whitespace-nowrap text-xs">
                         {renderKycBadge(driver.status || driver.kycStatus)}
                       </td>

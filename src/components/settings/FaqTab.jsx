@@ -372,7 +372,7 @@ export default function FaqTab() {
 
         {/* Table Container */}
         <div className="rounded-xl border border-slate-200/80 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto no-scrollbar">
             <table className="w-full min-w-[580px] text-left border-collapse">
               <thead>
                 <tr className="bg-[#fef9ec] border-b border-amber-100/60 text-[12px] sm:text-[13px] font-bold text-slate-900">

@@ -84,31 +84,31 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Row 1: 4 Key Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Row 1: 4 Key Stat Cards (2 columns x 2 rows on small devices) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* Card 1: Total Drivers */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-13 h-13 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="bg-white rounded-2xl py-2 px-2.5 sm:p-4 min-h-[76px] sm:min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+            <div className="w-8.5 h-8.5 sm:w-12 sm:h-12 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
               <img
                 src={driversIcon}
                 alt="Total Drivers"
-                className="w-7 h-7 object-contain"
+                className="w-4.5 h-4.5 sm:w-6.5 sm:h-6.5 object-contain"
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-2xl sm:text-[28px] font-extrabold text-slate-900 leading-tight">
+              <h3 className="text-sm sm:text-2xl font-extrabold text-slate-900 leading-tight">
                 1,250
               </h3>
-              <p className="text-sm font-bold text-slate-800 mt-0.5 whitespace-nowrap">
+              <p className="text-[10px] sm:text-sm font-bold text-slate-800 mt-0.5 truncate">
                 Total Drivers
               </p>
             </div>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0 translate-y-8">
-              ↑ +4.8%
-            </span>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-10 pointer-events-none select-none overflow-hidden opacity-90">
+          <span className="absolute right-2 bottom-1.5 sm:right-3 sm:bottom-2.5 z-10 text-[9px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 sm:px-2 rounded-full shadow-2xs">
+            ↑ +4.8%
+          </span>
+          <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 pointer-events-none select-none overflow-hidden opacity-90">
             <img
               src={goldenWavesBg}
               alt="Golden Wave"
@@ -118,28 +118,28 @@ export default function Dashboard() {
         </div>
 
         {/* Card 2: Total Passengers */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-13 h-13 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="bg-white rounded-2xl py-2 px-2.5 sm:p-4 min-h-[76px] sm:min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+            <div className="w-8.5 h-8.5 sm:w-12 sm:h-12 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
               <img
                 src={passengersIcon}
                 alt="Total Passengers"
-                className="w-7 h-7 object-contain"
+                className="w-4.5 h-4.5 sm:w-6.5 sm:h-6.5 object-contain"
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-2xl sm:text-[28px] font-extrabold text-slate-900 leading-tight">
+              <h3 className="text-sm sm:text-2xl font-extrabold text-slate-900 leading-tight">
                 8,450
               </h3>
-              <p className="text-sm font-bold text-slate-800 mt-0.5 whitespace-nowrap">
+              <p className="text-[10px] sm:text-sm font-bold text-slate-800 mt-0.5 truncate">
                 Total Passengers
               </p>
             </div>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0 translate-y-8">
-              ↑ +6.3%
-            </span>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-10 pointer-events-none select-none overflow-hidden opacity-90">
+          <span className="absolute right-2 bottom-1.5 sm:right-3 sm:bottom-2.5 z-10 text-[9px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 sm:px-2 rounded-full shadow-2xs">
+            ↑ +6.3%
+          </span>
+          <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 pointer-events-none select-none overflow-hidden opacity-90">
             <img
               src={goldenWavesBg}
               alt="Golden Wave"
@@ -149,28 +149,28 @@ export default function Dashboard() {
         </div>
 
         {/* Card 3: Active Rides */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-13 h-13 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="bg-white rounded-2xl py-2 px-2.5 sm:p-4 min-h-[76px] sm:min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+            <div className="w-8.5 h-8.5 sm:w-12 sm:h-12 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
               <img
                 src={vehiclesIcon}
                 alt="Active Rides"
-                className="w-7 h-7 object-contain"
+                className="w-4.5 h-4.5 sm:w-6.5 sm:h-6.5 object-contain"
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-2xl sm:text-[28px] font-extrabold text-slate-900 leading-tight">
+              <h3 className="text-sm sm:text-2xl font-extrabold text-slate-900 leading-tight">
                 185
               </h3>
-              <p className="text-sm font-bold text-slate-800 mt-0.5 whitespace-nowrap">
+              <p className="text-[10px] sm:text-sm font-bold text-slate-800 mt-0.5 truncate">
                 Active Rides
               </p>
             </div>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0 translate-y-8">
-              ↑ +3.1%
-            </span>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-10 pointer-events-none select-none overflow-hidden opacity-90">
+          <span className="absolute right-2 bottom-1.5 sm:right-3 sm:bottom-2.5 z-10 text-[9px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 sm:px-2 rounded-full shadow-2xs">
+            ↑ +3.1%
+          </span>
+          <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 pointer-events-none select-none overflow-hidden opacity-90">
             <img
               src={goldenWavesBg}
               alt="Golden Wave"
@@ -180,28 +180,28 @@ export default function Dashboard() {
         </div>
 
         {/* Card 4: Total Bookings */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-13 h-13 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="bg-white rounded-2xl py-2 px-2.5 sm:p-4 min-h-[76px] sm:min-h-[120px] border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+            <div className="w-8.5 h-8.5 sm:w-12 sm:h-12 rounded-full bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
               <img
                 src={kycIcon}
                 alt="Total Bookings"
-                className="w-7 h-7 object-contain"
+                className="w-4.5 h-4.5 sm:w-6.5 sm:h-6.5 object-contain"
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-2xl sm:text-[28px] font-extrabold text-slate-900 leading-tight">
+              <h3 className="text-sm sm:text-2xl font-extrabold text-slate-900 leading-tight">
                 520
               </h3>
-              <p className="text-sm font-bold text-slate-800 mt-0.5 whitespace-nowrap">
+              <p className="text-[10px] sm:text-sm font-bold text-slate-800 mt-0.5 truncate">
                 Total Bookings
               </p>
             </div>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0 translate-y-8">
-              ↑ +5.9%
-            </span>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-10 pointer-events-none select-none overflow-hidden opacity-90">
+          <span className="absolute right-2 bottom-1.5 sm:right-3 sm:bottom-2.5 z-10 text-[9px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 sm:px-2 rounded-full shadow-2xs">
+            ↑ +5.9%
+          </span>
+          <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 pointer-events-none select-none overflow-hidden opacity-90">
             <img
               src={goldenWavesBg}
               alt="Golden Wave"
@@ -224,7 +224,6 @@ export default function Dashboard() {
               <h3 className="text-xl font-bold">Financial Overview</h3>
             </div>
 
-            {/* Changed from grid-cols-2 to grid-cols-1 sm:grid-cols-2 for small mobiles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-amber-200/70 flex items-center justify-center p-2 shrink-0">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   useQuery,
@@ -22,13 +21,18 @@ import Pagination from '../common/Pagination';
 import {
   getVehicleBrandsApi,
   createVehicleBrandApi,
+  updateVehicleBrandApi,
   updateVehicleBrandStatusApi,
 } from '../../services/vehicleMaster.services';
+
+import { uploadImageToCloudinary } from '../../utils/cloudinary';
 
 export default function BrandTab() {
   const [searchTerm, setSearchTerm] = useState('');
   const [newBrandName, setNewBrandName] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [editingId, setEditingId] = useState(null);
@@ -78,7 +82,32 @@ export default function BrandTab() {
     onError: (error) => {
       setFormError(
         error?.response?.data?.message ||
-          'Failed to create vehicle brand.'
+        'Failed to create vehicle brand.'
+      );
+    },
+  });
+
+  // ========================================
+  // UPDATE VEHICLE BRAND API (EDIT)
+  // ========================================
+
+  const updateBrandMutation = useMutation({
+    mutationFn: updateVehicleBrandApi,
+
+    onSuccess: (response) => {
+      if (response?.success) {
+        queryClient.invalidateQueries({
+          queryKey: ['vehicle-brands'],
+        });
+
+        handleCancel();
+      }
+    },
+
+    onError: (error) => {
+      setFormError(
+        error?.response?.data?.message ||
+        'Failed to update vehicle brand.'
       );
     },
   });
@@ -100,7 +129,7 @@ export default function BrandTab() {
     },
 
     onError: (error) => {
-      // Error handled inside modal
+      console.log(error);
     },
   });
 
@@ -121,7 +150,7 @@ export default function BrandTab() {
   const paginatedBrands = filteredBrands;
 
   // ========================================
-  // IMAGE PREVIEW
+  // IMAGE SELECT (SIRF PREVIEW KE LIYE)
   // ========================================
 
   const handleImageUpload = (e) => {
@@ -129,9 +158,8 @@ export default function BrandTab() {
 
     if (file) {
       setFormError('');
-
-      const url = URL.createObjectURL(file);
-      setPreviewImage(url);
+      setSelectedFile(file);
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
@@ -142,43 +170,47 @@ export default function BrandTab() {
   const handleCancel = () => {
     setNewBrandName('');
     setPreviewImage(null);
+    setSelectedFile(null);
     setEditingId(null);
     setFormError('');
   };
 
   // ========================================
-  // SAVE BRAND
+  // SAVE BRAND (CLOUDINARY UPLOAD + API)
   // ========================================
 
-  const handleSaveBrand = () => {
+  const handleSaveBrand = async () => {
     if (!newBrandName.trim()) {
       setFormError('Please enter brand name.');
       return;
     }
 
-    // Edit API abhi available nahi hai.
-    if (editingId) {
-      setFormError('Edit API is not integrated yet.');
-      return;
-    }
-
     setFormError('');
 
-    // Local blob preview URL backend ko nahi bhejna.
-    const payload = {
-      name: newBrandName.trim(),
-    };
+    try {
+      let logoUrl = editingId ? previewImage : null;
 
-    // Only send a real public image URL.
-    if (
-      previewImage &&
-      (previewImage.startsWith('https://') ||
-        previewImage.startsWith('http://'))
-    ) {
-      payload.logoUrl = previewImage;
+      // Agar nayi file select hui hai toh Cloudinary pe upload karke URL lo
+      if (selectedFile) {
+        setIsUploading(true);
+        logoUrl = await uploadImageToCloudinary(selectedFile, 'brands');
+      }
+
+      const payload = {
+        name: newBrandName.trim(),
+        ...(logoUrl && { logoUrl }),
+      };
+
+      if (editingId) {
+        updateBrandMutation.mutate({ id: editingId, ...payload });
+      } else {
+        createBrandMutation.mutate(payload);
+      }
+    } catch (err) {
+      setFormError(err?.message || 'Failed to upload image.');
+    } finally {
+      setIsUploading(false);
     }
-
-    createBrandMutation.mutate(payload);
   };
 
   // ========================================
@@ -188,6 +220,7 @@ export default function BrandTab() {
   const handleEdit = (brand) => {
     setNewBrandName(brand.name);
     setPreviewImage(brand.logoUrl || null);
+    setSelectedFile(null);
     setEditingId(brand.id);
     setFormError('');
 
@@ -198,6 +231,11 @@ export default function BrandTab() {
         block: 'start',
       });
   };
+
+  const isSubmitting =
+    isUploading ||
+    createBrandMutation.isPending ||
+    updateBrandMutation.isPending;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
@@ -362,19 +400,17 @@ export default function BrandTab() {
                               nextStatus: next,
                             });
                           }}
-                          className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer hover:shadow-2xs active:scale-95 ${
-                            (brand.status || '').toLowerCase() === 'active'
-                              ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/70'
-                              : 'text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100/70'
-                          }`}
+                          className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer hover:shadow-2xs active:scale-95 ${(brand.status || '').toLowerCase() === 'active'
+                            ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/70'
+                            : 'text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100/70'
+                            }`}
                           title={`Click to change status to ${(brand.status || '').toLowerCase() === 'active' ? 'Inactive' : 'Active'}`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-                              (brand.status || '').toLowerCase() === 'active'
-                                ? 'bg-emerald-500'
-                                : 'bg-rose-500'
-                            }`}
+                            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${(brand.status || '').toLowerCase() === 'active'
+                              ? 'bg-emerald-500'
+                              : 'bg-rose-500'
+                              }`}
                           />
                           <span className="capitalize">{brand.status || 'active'}</span>
                         </button>
@@ -431,7 +467,8 @@ export default function BrandTab() {
 
           <button
             onClick={handleCancel}
-            className="p-1.5 text-slate-400 hover:text-black hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            disabled={isSubmitting}
+            className="p-1.5 text-slate-400 hover:text-black hover:bg-slate-100 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
             title="Close"
           >
             <X className="w-4.5 h-4.5" />
@@ -445,6 +482,7 @@ export default function BrandTab() {
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
+              disabled={isSubmitting}
               className="hidden"
             />
 
@@ -494,9 +532,10 @@ export default function BrandTab() {
                 setFormError('');
               }}
               onKeyDown={(e) =>
-                e.key === 'Enter' && handleSaveBrand()
+                e.key === 'Enter' && !isSubmitting && handleSaveBrand()
               }
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
+              disabled={isSubmitting}
+              className="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all disabled:opacity-60"
             />
           </div>
         </div>
@@ -514,27 +553,27 @@ export default function BrandTab() {
         <div className="flex items-center gap-2.5 pt-1.5">
           <button
             onClick={handleCancel}
-            className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors cursor-pointer"
+            disabled={isSubmitting}
+            className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
 
           <button
             onClick={handleSaveBrand}
-            disabled={
-              !newBrandName.trim() ||
-              createBrandMutation.isPending
-            }
+            disabled={!newBrandName.trim() || isSubmitting}
             className="flex-1 py-2.5 px-3 bg-[#fed011] hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
           >
             <Save className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2]" />
 
             <span>
-              {createBrandMutation.isPending
-                ? 'Saving...'
-                : editingId
-                  ? 'Update'
-                  : 'Save Brand'}
+              {isUploading
+                ? 'Uploading...'
+                : createBrandMutation.isPending || updateBrandMutation.isPending
+                  ? 'Saving...'
+                  : editingId
+                    ? 'Update'
+                    : 'Save Brand'}
             </span>
           </button>
         </div>

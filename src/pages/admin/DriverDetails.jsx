@@ -256,6 +256,12 @@ export default function DriverDetails() {
     driver.vehicleCategory?.toLowerCase() === 'bus' ||
     (driver.vehicleType || '').toLowerCase().includes('bus');
 
+  const isPending =
+    (driver.approvalStatus || '').toLowerCase() === 'pending' ||
+    (driver.kycStatus || '').toLowerCase() === 'pending' ||
+    (driver.raw?.approvalStatus || '').toLowerCase() === 'pending' ||
+    (driver.raw?.kycStatus || '').toLowerCase() === 'pending';
+
   // Active tab state
   const [activeTab, setActiveTab] = useState('personal');
   const [previewPhoto, setPreviewPhoto] = useState(null);
@@ -264,6 +270,15 @@ export default function DriverDetails() {
   const [seatType, setSeatType] = useState('Seater');
   const [acType, setAcType] = useState('AC');
   const [seatArrangement, setSeatArrangement] = useState('2 × 2');
+
+  // Scroll to top on mount, driver ID change, tab change, or pending status change
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [id, activeTab, isPending]);
 
   if (isLoading) {
     return (
@@ -275,12 +290,6 @@ export default function DriverDetails() {
       </div>
     );
   }
-
-  const isPending =
-    (driver.approvalStatus || '').toLowerCase() === 'pending' ||
-    (driver.kycStatus || '').toLowerCase() === 'pending' ||
-    (driver.raw?.approvalStatus || '').toLowerCase() === 'pending' ||
-    (driver.raw?.kycStatus || '').toLowerCase() === 'pending';
 
   // If driver status is pending, show Driver Verification workflow view
   if (isPending) {

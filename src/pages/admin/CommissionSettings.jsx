@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import carCutout from '../../assets/White Compact Sedan on a Tree-Lined Road.png';
 import hatchbackCutout from '../../assets/White Compact Hatchback Car Cutout.png';
 import busCutout from '../../assets/commercial_bus.png';
 import paleYellowWavesBg from '../../assets/drivers/Pale Yellow Layered Waves.png';
+import {
+  getCommissionSettingsApi,
+  updateCommissionSettingsApi,
+} from '../../services/commission.services';
 
 // SVG Icons matching assets / dashboard / drivers
 const PercentIcon = ({ className = 'w-5 h-5' }) => (
@@ -82,42 +87,154 @@ const XIcon = ({ className = 'w-4 h-4' }) => (
 );
 
 export default function CommissionSettings() {
+  const queryClient = useQueryClient();
+
   const [rates, setRates] = useState({
-    privateCar: 10,
-    commercialCar: 12,
-    commercialBus: 15,
+    1: 10,
+    2: 12,
+    3: 15,
   });
 
-  const [isSaving, setIsSaving] = useState(false);
-  const exampleFare = 5000;
+  // ========================================
+  // GET COMMISSION SETTINGS API (React Query)
+  // ========================================
+  const {
+    data: responseData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['commission-settings'],
+    queryFn: getCommissionSettingsApi,
+  });
 
-  const handleRateChange = (vehicle, value) => {
+  const apiData = responseData?.data;
+
+  // Initialize/sync rates when API data loads
+  useEffect(() => {
+    if (apiData?.vehicleTypes && Array.isArray(apiData.vehicleTypes)) {
+      const initialRates = {};
+      apiData.vehicleTypes.forEach((v) => {
+        initialRates[v.vehicleTypeId] = v.commissionRate;
+      });
+      setRates(initialRates);
+    }
+  }, [apiData]);
+
+  // Fallback vehicle types if API returns empty
+  const defaultVehicleTypes = [
+    { vehicleTypeId: 1, vehicleTypeName: 'Private', commissionRate: 10, isActive: true },
+    { vehicleTypeId: 2, vehicleTypeName: 'Commercial', commissionRate: 12, isActive: true },
+    { vehicleTypeId: 3, vehicleTypeName: 'Bus', commissionRate: 15, isActive: true },
+  ];
+
+  const vehicleTypes =
+    apiData?.vehicleTypes && apiData.vehicleTypes.length > 0
+      ? apiData.vehicleTypes
+      : defaultVehicleTypes;
+
+  const exampleFare =
+    apiData?.calculationPreview?.[0]?.totalRideFare || 5000;
+
+  const getVehicleMeta = (v) => {
+    const name = (v.vehicleTypeName || '').toLowerCase();
+    if (name.includes('bus')) {
+      return {
+        image: busCutout,
+        IconComponent: SideBusIcon,
+      };
+    }
+    if (name.includes('commercial') || name.includes('taxi')) {
+      return {
+        image: hatchbackCutout,
+        IconComponent: FrontCarIcon,
+      };
+    }
+    return {
+      image: carCutout,
+      IconComponent: FrontCarIcon,
+    };
+  };
+
+  const handleRateChange = (vehicleTypeId, value) => {
     if (value === '') {
-      setRates((prev) => ({ ...prev, [vehicle]: '' }));
+      setRates((prev) => ({ ...prev, [vehicleTypeId]: '' }));
       return;
     }
     const cleanVal = String(value).replace(/\D/g, '');
     const num = Math.max(0, Math.min(100, Number(cleanVal) || 0));
     setRates((prev) => ({
       ...prev,
-      [vehicle]: num,
+      [vehicleTypeId]: num,
     }));
   };
 
+  // ========================================
+  // UPDATE COMMISSION SETTINGS API (Mutation)
+  // ========================================
+  const updateCommissionMutation = useMutation({
+    mutationFn: updateCommissionSettingsApi,
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['commission-settings'] });
+      toast.success(res?.message || 'Commission settings updated successfully!');
+    },
+    onError: (err) => {
+      const msg =
+        err?.response?.data?.message || 'Failed to update commission settings. Please try again.';
+      toast.error(msg);
+    },
+  });
+
   const handleSave = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success('Commission settings updated successfully!');
-    }, 400);
+    const payload = {
+      platformEnabled: apiData?.platformEnabled ?? true,
+      vehicleTypes: vehicleTypes.map((v) => ({
+        vehicleTypeId: v.vehicleTypeId,
+        commissionRate:
+          rates[v.vehicleTypeId] !== undefined && rates[v.vehicleTypeId] !== ''
+            ? Number(rates[v.vehicleTypeId])
+            : Number(v.commissionRate) || 0,
+        isActive: v.isActive !== undefined ? v.isActive : true,
+      })),
+    };
+
+    updateCommissionMutation.mutate(payload);
   };
+
+  if (isLoading) {
+    return (
+      <div className="py-20 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-[#fed011]" />
+        <p className="text-sm font-semibold text-slate-600">Loading commission settings...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="py-16 flex flex-col items-center justify-center gap-3">
+        <AlertCircle className="w-8 h-8 text-rose-500" />
+        <p className="text-sm font-bold text-slate-800">
+          {error?.response?.data?.message || 'Failed to load commission settings'}
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#fed011] text-black hover:bg-amber-400 transition-colors cursor-pointer shadow-xs"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-5 pb-6">
       {/* =========================================================
           1. TOP BANNER: PLATFORM COMMISSION
           ========================================================= */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 p-4 sm:p-5 shadow-2xs flex items-center gap-3 sm:gap-4">
         {/* Background Pale Yellow Layered Waves banner */}
         <div className="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-90">
           <img
@@ -133,21 +250,13 @@ export default function CommissionSettings() {
             <PercentIcon className="w-6 h-6 sm:w-7 sm:h-7 text-black" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight leading-tight">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
               Platform Commission
             </h2>
-            <p className="text-xs sm:text-base font-semibold text-slate-600 mt-0.5 leading-snug">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 mt-0.5 leading-snug">
               Set commission percentage on the total ride fare for completed rides.
             </p>
           </div>
-        </div>
-
-        {/* Right: Active Status Badge */}
-        <div className="relative z-10 shrink-0 self-start sm:self-auto">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-[15px] font-bold bg-[#dcfce7] text-[#15803d] border border-emerald-200/80 shadow-2xs">
-            <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
-            Active
-          </span>
         </div>
       </div>
 
@@ -164,124 +273,61 @@ export default function CommissionSettings() {
                 <FrontCarIcon className="w-6 h-6 sm:w-7 sm:h-7 text-black" />
               </div>
               <div>
-                <h3 className="text-xl sm:text-[26px] font-bold text-slate-900 leading-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
                   Vehicle-wise Commission
                 </h3>
-                <p className="text-xs sm:text-lg font-semibold text-slate-500 mt-0.5 leading-snug">
+                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5 leading-snug">
                   Set different commission rates for private and commercial vehicles.
                 </p>
               </div>
             </div>
 
-            {/* 3 Vehicle Rate Cards */}
+            {/* Dynamic Vehicle Rate Cards */}
             <div className="space-y-3 sm:space-y-3.5">
-              {/* Card 1: Private Car */}
-              <div className="bg-[#fffdf0] border border-amber-200/80 rounded-xl sm:rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3.5 shadow-2xs hover:border-amber-300 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                  <div className="w-16 h-10 sm:w-24 sm:h-14 flex items-center justify-center shrink-0">
-                    <img
-                      src={carCutout}
-                      alt="Private Car"
-                      className="max-h-full max-w-full object-contain scale-110 drop-shadow-2xs"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight truncate">
-                      Private Car
-                    </h4>
-                    <p className="text-[11px] sm:text-base font-semibold text-slate-500 mt-0.5 truncate">
-                      (Carpool / Ride Share)
-                    </p>
-                  </div>
-                </div>
+              {vehicleTypes.map((v) => {
+                const meta = getVehicleMeta(v);
+                const currentRate =
+                  rates[v.vehicleTypeId] !== undefined
+                    ? rates[v.vehicleTypeId]
+                    : v.commissionRate;
 
-                {/* Number Input Box */}
-                <div className="flex items-center bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-2xs shrink-0 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-200/50">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={rates.privateCar}
-                    onChange={(e) => handleRateChange('privateCar', e.target.value)}
-                    className="w-8 sm:w-12 text-center font-bold text-slate-900 text-lg sm:text-xl focus:outline-none bg-transparent"
-                  />
-                  <span className="text-lg sm:text-xl font-bold text-slate-600 ml-0.5 sm:ml-1 select-none">
-                    %
-                  </span>
-                </div>
-              </div>
+                return (
+                  <div
+                    key={v.vehicleTypeId}
+                    className="bg-[#fffdf0] border border-amber-200/80 rounded-xl sm:rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3.5 shadow-2xs hover:border-amber-300 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                      <div className="w-16 h-10 sm:w-24 sm:h-14 flex items-center justify-center shrink-0">
+                        <img
+                          src={meta.image}
+                          alt={v.vehicleTypeName}
+                          className="max-h-full max-w-full object-contain scale-110 drop-shadow-2xs"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-tight truncate">
+                          {v.vehicleTypeName}
+                        </h4>
+                      </div>
+                    </div>
 
-              {/* Card 2: Commercial Car */}
-              <div className="bg-[#fffdf0] border border-amber-200/80 rounded-xl sm:rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3.5 shadow-2xs hover:border-amber-300 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                  <div className="w-16 h-10 sm:w-24 sm:h-14 flex items-center justify-center shrink-0">
-                    <img
-                      src={hatchbackCutout}
-                      alt="Commercial Car"
-                      className="max-h-full max-w-full object-contain scale-110 drop-shadow-2xs"
-                    />
+                    {/* Number Input Box */}
+                    <div className="flex items-center bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 shadow-2xs shrink-0 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-200/50">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={currentRate}
+                        onChange={(e) => handleRateChange(v.vehicleTypeId, e.target.value)}
+                        className="w-7 sm:w-10 text-center font-bold text-slate-900 text-base sm:text-lg focus:outline-none bg-transparent"
+                      />
+                      <span className="text-base sm:text-lg font-bold text-slate-600 ml-0.5 select-none">
+                        %
+                      </span>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h4 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight truncate">
-                      Commercial Car
-                    </h4>
-                    <p className="text-[11px] sm:text-base font-semibold text-slate-500 mt-0.5 truncate">
-                      (Taxi / Rental)
-                    </p>
-                  </div>
-                </div>
-
-                {/* Number Input Box */}
-                <div className="flex items-center bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-2xs shrink-0 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-200/50">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={rates.commercialCar}
-                    onChange={(e) => handleRateChange('commercialCar', e.target.value)}
-                    className="w-8 sm:w-12 text-center font-bold text-slate-900 text-lg sm:text-xl focus:outline-none bg-transparent"
-                  />
-                  <span className="text-lg sm:text-xl font-bold text-slate-600 ml-0.5 sm:ml-1 select-none">
-                    %
-                  </span>
-                </div>
-              </div>
-
-              {/* Card 3: Commercial Bus */}
-              <div className="bg-[#fffdf0] border border-amber-200/80 rounded-xl sm:rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3.5 shadow-2xs hover:border-amber-300 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                  <div className="w-16 h-10 sm:w-24 sm:h-14 flex items-center justify-center shrink-0">
-                    <img
-                      src={busCutout}
-                      alt="Commercial Bus"
-                      className="max-h-full max-w-full object-contain scale-110 drop-shadow-2xs"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight truncate">
-                      Commercial Bus
-                    </h4>
-                    <p className="text-[11px] sm:text-base font-semibold text-slate-500 mt-0.5 truncate">
-                      (Bus / Intercity)
-                    </p>
-                  </div>
-                </div>
-
-                {/* Number Input Box */}
-                <div className="flex items-center bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-2xs shrink-0 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-200/50">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={rates.commercialBus}
-                    onChange={(e) => handleRateChange('commercialBus', e.target.value)}
-                    className="w-8 sm:w-12 text-center font-bold text-slate-900 text-lg sm:text-xl focus:outline-none bg-transparent"
-                  />
-                  <span className="text-lg sm:text-xl font-bold text-slate-600 ml-0.5 sm:ml-1 select-none">
-                    %
-                  </span>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -295,79 +341,54 @@ export default function CommissionSettings() {
                 <CalculatorIcon className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
               </div>
               <div>
-                <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
                   Commission Calculation Preview
                 </h3>
-                <p className="text-xs sm:text-base font-semibold text-slate-500 mt-0.5">
-                  Example: Total ride fare ₹{exampleFare.toLocaleString()}
+                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
+                  Example: Total ride fare ₹{Number(exampleFare).toLocaleString('en-IN')}
                 </p>
               </div>
             </div>
 
             {/* Preview Table Container */}
-            <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
-              <table className="w-full text-left text-[13px] sm:text-base whitespace-nowrap sm:whitespace-normal">
+            <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs no-scrollbar">
+              <table className="w-full text-left text-xs sm:text-sm whitespace-nowrap sm:whitespace-normal">
                 <thead>
                   <tr className="bg-[#feea98]/80 text-slate-900 font-bold border-b border-amber-200/80">
-                    <th className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-bold">Vehicle Type</th>
-                    <th className="py-2.5 px-2 sm:py-3.5 sm:px-4 text-center font-bold">Commission Rate</th>
-                    <th className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-right font-bold">Amount</th>
+                    <th className="py-2.5 px-3 sm:py-3 sm:px-4 font-bold text-xs sm:text-sm">Vehicle Type</th>
+                    <th className="py-2.5 px-2 sm:py-3 sm:px-4 text-center font-bold text-xs sm:text-sm">Commission Rate</th>
+                    <th className="py-2.5 px-3 sm:py-3 sm:px-4 text-right font-bold text-xs sm:text-sm">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-bold text-slate-900">
-                  {/* Row 1: Private Car */}
-                  <tr className="hover:bg-amber-50/20 transition-colors">
-                    <td className="py-3 px-3 sm:py-4 sm:px-4">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <FrontCarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 shrink-0" />
-                        <span className="font-bold text-sm sm:text-lg">Private Car</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-2 sm:py-4 sm:px-4 text-center">
-                      <span className="inline-block px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-xs sm:text-base font-extrabold bg-[#fef9c3] text-black border border-amber-200/80 shadow-2xs">
-                        {rates.privateCar}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 sm:py-4 sm:px-4 text-right font-bold text-base sm:text-xl text-slate-900">
-                      ₹{Math.round((exampleFare * rates.privateCar) / 100).toLocaleString()}
-                    </td>
-                  </tr>
+                  {vehicleTypes.map((v) => {
+                    const meta = getVehicleMeta(v);
+                    const IconComponent = meta.IconComponent;
+                    const currentRate =
+                      rates[v.vehicleTypeId] !== undefined && rates[v.vehicleTypeId] !== ''
+                        ? Number(rates[v.vehicleTypeId])
+                        : v.commissionRate;
+                    const calculatedAmount = Math.round((exampleFare * currentRate) / 100);
 
-                  {/* Row 2: Commercial Car */}
-                  <tr className="hover:bg-amber-50/20 transition-colors">
-                    <td className="py-3 px-3 sm:py-4 sm:px-4">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <FrontCarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 shrink-0" />
-                        <span className="font-bold text-sm sm:text-lg">Commercial Car</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-2 sm:py-4 sm:px-4 text-center">
-                      <span className="inline-block px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-xs sm:text-base font-extrabold bg-[#fef9c3] text-black border border-amber-200/80 shadow-2xs">
-                        {rates.commercialCar}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 sm:py-4 sm:px-4 text-right font-bold text-base sm:text-xl text-slate-900">
-                      ₹{Math.round((exampleFare * rates.commercialCar) / 100).toLocaleString()}
-                    </td>
-                  </tr>
-
-                  {/* Row 3: Commercial Bus */}
-                  <tr className="hover:bg-amber-50/20 transition-colors">
-                    <td className="py-3 px-3 sm:py-4 sm:px-4">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <SideBusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700 shrink-0" />
-                        <span className="font-bold text-sm sm:text-lg">Commercial Bus</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-2 sm:py-4 sm:px-4 text-center">
-                      <span className="inline-block px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-xs sm:text-base font-extrabold bg-[#fef9c3] text-black border border-amber-200/80 shadow-2xs">
-                        {rates.commercialBus}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 sm:py-4 sm:px-4 text-right font-bold text-base sm:text-xl text-slate-900">
-                      ₹{Math.round((exampleFare * rates.commercialBus) / 100).toLocaleString()}
-                    </td>
-                  </tr>
+                    return (
+                      <tr key={v.vehicleTypeId} className="hover:bg-amber-50/20 transition-colors">
+                        <td className="py-2.5 px-3 sm:py-3 sm:px-4">
+                          <div className="flex items-center gap-2 sm:gap-2.5">
+                            <IconComponent className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-slate-700 shrink-0" />
+                            <span className="font-bold text-xs sm:text-sm">{v.vehicleTypeName}</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-2 sm:py-3 sm:px-4 text-center">
+                          <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-[13px] font-bold bg-[#fef9c3] text-slate-900 border border-amber-200/80 shadow-2xs">
+                            {currentRate}%
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 sm:py-3 sm:px-4 text-right font-bold text-sm sm:text-base text-slate-900">
+                          ₹{Number(calculatedAmount).toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -384,7 +405,7 @@ export default function CommissionSettings() {
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#feea98] text-black flex items-center justify-center shrink-0 shadow-2xs">
             <RulesDocIcon className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
           </div>
-          <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight">
+          <h3 className="text-base sm:text-xl font-bold text-slate-900 leading-tight">
             Payment & Commission Rules
           </h3>
         </div>
@@ -393,30 +414,30 @@ export default function CommissionSettings() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 pt-1">
           {/* Rule 1 */}
           <div className="flex items-start gap-3 sm:gap-3.5">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#16a34a] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-              <Check className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[3]" />
+            <div className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-full bg-[#16a34a] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
             </div>
-            <p className="text-xs sm:text-[15px] font-semibold text-slate-700 leading-relaxed">
+            <p className="text-xs sm:text-sm font-semibold text-slate-700 leading-relaxed">
               Commission will be charged only on completed rides.
             </p>
           </div>
 
           {/* Rule 2 */}
           <div className="flex items-start gap-3 sm:gap-3.5">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#e11d48] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-              <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+            <div className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-full bg-[#e11d48] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+              <XIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
             </div>
-            <p className="text-xs sm:text-[15px] font-semibold text-slate-700 leading-relaxed">
+            <p className="text-xs sm:text-sm font-semibold text-slate-700 leading-relaxed">
               No commission on cancelled rides.
             </p>
           </div>
 
           {/* Rule 3 */}
           <div className="flex items-start gap-3 sm:gap-3.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#feea98] text-black flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-              <CreditCardIcon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-black" />
+            <div className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-xl bg-[#feea98] text-black flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+              <CreditCardIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-black" />
             </div>
-            <div className="text-xs sm:text-[15px] leading-relaxed">
+            <div className="text-xs sm:text-sm leading-relaxed">
               <span className="font-bold text-slate-900 block mb-0.5">Online Payment:</span>
               <span className="font-semibold text-slate-600">
                 Commission is automatically deducted from the settlement.
@@ -426,13 +447,13 @@ export default function CommissionSettings() {
 
           {/* Rule 4 */}
           <div className="flex items-start gap-3 sm:gap-3.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#feea98] text-black flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-              <BanknoteIcon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-black" />
+            <div className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-xl bg-[#feea98] text-black flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+              <BanknoteIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-black" />
             </div>
-            <div className="text-xs sm:text-[15px] leading-relaxed">
+            <div className="text-xs sm:text-sm leading-relaxed">
               <span className="font-bold text-slate-900 block mb-0.5">Cash Payment:</span>
               <span className="font-semibold text-slate-600">
-                Driver will collect full fare from the passenger and pay the platform commission to admin (as per the set rate).
+                Driver collects the full fare and pays the platform commission.
               </span>
             </div>
           </div>
@@ -445,11 +466,15 @@ export default function CommissionSettings() {
       <div className="pt-2 flex justify-center">
         <button
           onClick={handleSave}
-          disabled={isSaving}
-          className="bg-[#fed011] hover:bg-[#fed011]/90 text-black font-extrabold text-sm sm:text-lg px-8 sm:px-12 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl shadow-xs transition-all cursor-pointer flex items-center gap-2 sm:gap-2.5 active:scale-98 disabled:opacity-70 w-full sm:w-auto justify-center"
+          disabled={updateCommissionMutation.isPending}
+          className="bg-[#fed011] hover:bg-[#fed011]/90 text-slate-950 font-bold text-xs sm:text-base px-8 sm:px-10 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-xs transition-all cursor-pointer flex items-center gap-2 sm:gap-2.5 active:scale-98 disabled:opacity-70 w-full sm:w-auto justify-center"
         >
-          <Check className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
-          <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+          {updateCommissionMutation.isPending ? (
+            <Loader2 className="w-4.5 h-4.5 sm:w-5 sm:h-5 animate-spin" />
+          ) : (
+            <Check className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[3]" />
+          )}
+          <span>{updateCommissionMutation.isPending ? 'Saving...' : 'Save Changes'}</span>
         </button>
       </div>
     </div>
