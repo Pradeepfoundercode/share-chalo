@@ -80,6 +80,26 @@ export default function Rides() {
   const [usageTypeOpen, setUsageTypeOpen] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
+  // Applied filters state (only applies when "Apply" button is clicked)
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    vehicleType: 'All Vehicles',
+    usageType: 'All Types',
+    startDate: '',
+    endDate: '',
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      search: searchTerm,
+      vehicleType: vehicleTypeFilter,
+      usageType: usageTypeFilter,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    setCurrentPage(1);
+  };
+
   // Calendar UI state for interactive date picker
   const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
   const [tempStart, setTempStart] = useState('');
@@ -233,7 +253,7 @@ export default function Rides() {
     { id: 'Cancelled', label: 'Cancelled', icon: XCircle },
   ];
 
-  // Filtering
+  // Filtering (using appliedFilters)
   const filteredRides = useMemo(() => {
     return rides.filter((ride) => {
       // Tab filter
@@ -249,34 +269,34 @@ export default function Rides() {
         }
       }
 
-      // Search filter
-      const term = searchTerm.toLowerCase();
+      // Search filter (applied)
+      const term = appliedFilters.search.toLowerCase();
       const matchesSearch =
-        !searchTerm ||
+        !appliedFilters.search ||
         ride.rideId.toLowerCase().includes(term) ||
         ride.driverName.toLowerCase().includes(term) ||
         ride.vehicleNumber.toLowerCase().includes(term) ||
         ride.from.toLowerCase().includes(term) ||
         ride.to.toLowerCase().includes(term);
 
-      // Dropdowns
+      // Dropdowns (applied)
       const matchesVehicleType =
-        vehicleTypeFilter === 'All Vehicles' || ride.vehicleType === vehicleTypeFilter;
+        appliedFilters.vehicleType === 'All Vehicles' || ride.vehicleType === appliedFilters.vehicleType;
       const matchesUsageType =
-        usageTypeFilter === 'All Types' || ride.usageType === usageTypeFilter;
+        appliedFilters.usageType === 'All Types' || ride.usageType === appliedFilters.usageType;
 
-      // Date range filter
+      // Date range filter (applied)
       let matchesDate = true;
-      if (startDate || endDate) {
+      if (appliedFilters.startDate || appliedFilters.endDate) {
         const rideDateObj = new Date(ride.rawDateTime || ride.date);
         if (!isNaN(rideDateObj.getTime())) {
-          if (startDate) {
-            const startObj = new Date(startDate);
+          if (appliedFilters.startDate) {
+            const startObj = new Date(appliedFilters.startDate);
             startObj.setHours(0, 0, 0, 0);
             if (rideDateObj < startObj) matchesDate = false;
           }
-          if (endDate) {
-            const endObj = new Date(endDate);
+          if (appliedFilters.endDate) {
+            const endObj = new Date(appliedFilters.endDate);
             endObj.setHours(23, 59, 59, 999);
             if (rideDateObj > endObj) matchesDate = false;
           }
@@ -285,7 +305,7 @@ export default function Rides() {
 
       return matchesSearch && matchesVehicleType && matchesUsageType && matchesDate;
     });
-  }, [rides, activeTab, searchTerm, vehicleTypeFilter, usageTypeFilter, startDate, endDate]);
+  }, [rides, activeTab, appliedFilters]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -296,6 +316,13 @@ export default function Rides() {
     setTempStart('');
     setTempEnd('');
     setActiveTab('All Rides');
+    setAppliedFilters({
+      search: '',
+      vehicleType: 'All Vehicles',
+      usageType: 'All Types',
+      startDate: '',
+      endDate: '',
+    });
     setCurrentPage(1);
   };
 
@@ -347,10 +374,8 @@ export default function Rides() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
             placeholder="Search by Ride ID, Driver, Vehicle Number..."
             className="w-full pl-10.5 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -392,7 +417,6 @@ export default function Rides() {
                       onClick={() => {
                         setVehicleTypeFilter(type);
                         setVehicleTypeOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -442,7 +466,6 @@ export default function Rides() {
                       onClick={() => {
                         setUsageTypeFilter(usage);
                         setUsageTypeOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -667,7 +690,11 @@ export default function Rides() {
           </button>
 
           {/* Apply Button */}
-          <button className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer max-sm:w-full">
+          <button
+            type="button"
+            onClick={handleApplyFilters}
+            className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer max-sm:w-full"
+          >
             <Filter className="w-4 h-4 fill-black" />
             Apply
           </button>
@@ -677,23 +704,23 @@ export default function Rides() {
       {/* =========================================================
           4. RIDES TABLE
           ========================================================= */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs sm:text-sm min-w-[1050px]">
             <thead>
-              <tr className="bg-[#fef9ec] border-b border-amber-100/60 text-xs font-bold text-slate-900">
-                <th className="py-2.5 px-2.5 pl-4 text-center w-9 whitespace-nowrap">#</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Ride ID</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Route (From → To)</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Ride Date & Time</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Vehicle</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Driver</th>
-                <th className="py-2.5 px-3 whitespace-nowrap">Type</th>
-                <th className="py-2.5 px-2.5 text-center whitespace-nowrap">Total Seats</th>
-                <th className="py-2.5 px-2.5 text-center whitespace-nowrap">Booked Seats</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">Fare (Seat)</th>
-                <th className="py-2.5 px-3 text-center whitespace-nowrap">Status</th>
-                <th className="py-2.5 px-3 pr-4 text-center whitespace-nowrap">Action</th>
+              <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+                <th className="py-2.5 px-3.5 text-center w-12 whitespace-nowrap">#</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Ride ID</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Route (From → To)</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Ride Date & Time</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Driver</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Type</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Total Seats</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Booked Seats</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Fare (Seat)</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Status</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[13px] font-bold text-slate-700">

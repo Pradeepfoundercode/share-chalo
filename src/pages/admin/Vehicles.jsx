@@ -8,7 +8,9 @@ import {
   Briefcase,
   Home,
   Activity,
-  RotateCcw
+  RotateCcw,
+  Download,
+  Filter,
 } from 'lucide-react';
 import { vehiclesStats, vehiclesList } from '../../data/vehiclesData';
 import { Pagination, StatsCards } from '../../components/common';
@@ -33,29 +35,54 @@ export default function Vehicles() {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
+  // Applied filter state (only triggers when "Apply" is clicked)
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    vehicleType: 'Vehicle Type',
+    usageType: 'Usage Type',
+    status: 'Status',
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      search: searchTerm,
+      vehicleType: vehicleTypeFilter,
+      usageType: usageTypeFilter,
+      status: statusFilter,
+    });
+    setCurrentPage(1);
+  };
+
   // Reset Filters
   const handleReset = () => {
     setSearchTerm('');
     setVehicleTypeFilter('Vehicle Type');
     setUsageTypeFilter('Usage Type');
     setStatusFilter('Status');
+    setAppliedFilters({
+      search: '',
+      vehicleType: 'Vehicle Type',
+      usageType: 'Usage Type',
+      status: 'Status',
+    });
     setCurrentPage(1);
   };
 
-  // Filter logic
+  // Filter logic (using appliedFilters)
   const filteredVehicles = vehiclesList.filter((v) => {
     const matchesSearch =
-      v.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.driverName.toLowerCase().includes(searchTerm.toLowerCase());
+      !appliedFilters.search ||
+      v.vehicleNumber.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+      v.driverName.toLowerCase().includes(appliedFilters.search.toLowerCase());
 
     const matchesVehicleType =
-      vehicleTypeFilter === 'Vehicle Type' || v.vehicleType === vehicleTypeFilter;
+      appliedFilters.vehicleType === 'Vehicle Type' || v.vehicleType === appliedFilters.vehicleType;
 
     const matchesUsageType =
-      usageTypeFilter === 'Usage Type' || v.usageType === usageTypeFilter;
+      appliedFilters.usageType === 'Usage Type' || v.usageType === appliedFilters.usageType;
 
     const matchesStatus =
-      statusFilter === 'Status' || v.status === statusFilter;
+      appliedFilters.status === 'Status' || v.status === appliedFilters.status;
 
     return matchesSearch && matchesVehicleType && matchesUsageType && matchesStatus;
   });
@@ -130,6 +157,7 @@ export default function Vehicles() {
             placeholder="Search by vehicle number or driver name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
             className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
@@ -168,7 +196,6 @@ export default function Vehicles() {
                       onClick={() => {
                         setVehicleTypeFilter(type);
                         setVehicleTypeOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -216,7 +243,6 @@ export default function Vehicles() {
                       onClick={() => {
                         setUsageTypeFilter(usage);
                         setUsageTypeOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -264,7 +290,6 @@ export default function Vehicles() {
                       onClick={() => {
                         setStatusFilter(status);
                         setStatusOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -285,20 +310,30 @@ export default function Vehicles() {
             <button
               type="button"
               onClick={handleReset}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-gray-200 rounded-xl transition-all cursor-pointer shadow-2xs"
-              title="Reset Filters"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+              title="Reset all filters"
             >
-              <RotateCcw className="w-4 h-4 text-slate-500" />
+              <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>
             </button>
           )}
+
+          {/* Apply Button */}
+          <button
+            type="button"
+            onClick={handleApplyFilters}
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            <Filter className="w-4 h-4 fill-black" />
+            <span>Apply</span>
+          </button>
         </div>
       </div>
 
       {/* =========================================================
           TABLE CONTAINER (Ratings & Reviews Style)
           ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs sm:text-sm min-w-[900px]">
             <thead>

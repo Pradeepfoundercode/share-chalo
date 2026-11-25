@@ -720,7 +720,7 @@ export default function Notifications() {
       {/* =========================================================
           4. NOTIFICATIONS DATA TABLE (Ratings & Reviews Style)
           ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
         {/* Table Content */}
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs sm:text-sm min-w-[850px]">

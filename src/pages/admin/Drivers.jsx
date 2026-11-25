@@ -22,6 +22,7 @@ import {
   Mail,
   ShieldCheck,
   Loader2,
+  Download,
 } from 'lucide-react';
 import driversIcon from '../../assets/Group (1).svg';
 import Pagination from '../../components/common/Pagination';
@@ -42,6 +43,26 @@ export default function Drivers() {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
+
+  // Applied filter state (table only filters when "Apply" button is clicked)
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    status: 'All Status',
+    vehicle: 'All Vehicles',
+    startDate: '',
+    endDate: '',
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      search: searchTerm,
+      status: statusFilter,
+      vehicle: vehicleFilter,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    setCurrentPage(1);
+  };
 
   // Calendar UI state for custom interactive picker
   const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
@@ -79,7 +100,7 @@ export default function Drivers() {
   const drivers = apiData?.drivers || [];
   const meta = driversResponse?.meta;
 
-  // Client-side filtering
+  // Client-side filtering (applied ONLY on Apply click)
   const filteredDrivers = useMemo(() => {
     return drivers.filter((driver) => {
       // Tab filter
@@ -88,33 +109,33 @@ export default function Drivers() {
       if (selectedTab === 'Approved' && kycStatus !== 'approved') return false;
       if (selectedTab === 'Rejected' && kycStatus !== 'rejected') return false;
 
-      // Status dropdown filter
-      if (statusFilter !== 'All Status' && kycStatus !== statusFilter.toLowerCase()) return false;
+      // Status dropdown filter (applied)
+      if (appliedFilters.status !== 'All Status' && kycStatus !== appliedFilters.status.toLowerCase()) return false;
 
-      // Vehicle dropdown filter
-      if (vehicleFilter !== 'All Vehicles' && driver.vehicleType !== vehicleFilter) return false;
+      // Vehicle dropdown filter (applied)
+      if (appliedFilters.vehicle !== 'All Vehicles' && driver.vehicleType !== appliedFilters.vehicle) return false;
 
-      // Search term
-      if (searchTerm.trim() !== '') {
-        const query = searchTerm.toLowerCase();
+      // Search term (applied)
+      if (appliedFilters.search.trim() !== '') {
+        const query = appliedFilters.search.toLowerCase();
         const matchesName = (driver.name || '').toLowerCase().includes(query);
         const matchesMobile = (driver.mobile || '').toLowerCase().includes(query);
         const matchesId = String(driver.driverId ?? driver.id ?? '').toLowerCase().includes(query);
         if (!matchesName && !matchesMobile && !matchesId) return false;
       }
 
-      // Registration Date Filter
-      if (startDate || endDate) {
+      // Registration Date Filter (applied)
+      if (appliedFilters.startDate || appliedFilters.endDate) {
         if (driver.registeredOn) {
           const driverDate = new Date(driver.registeredOn);
           if (!isNaN(driverDate.getTime())) {
-            if (startDate) {
-              const start = new Date(startDate);
+            if (appliedFilters.startDate) {
+              const start = new Date(appliedFilters.startDate);
               start.setHours(0, 0, 0, 0);
               if (driverDate < start) return false;
             }
-            if (endDate) {
-              const end = new Date(endDate);
+            if (appliedFilters.endDate) {
+              const end = new Date(appliedFilters.endDate);
               end.setHours(23, 59, 59, 999);
               if (driverDate > end) return false;
             }
@@ -128,7 +149,7 @@ export default function Drivers() {
       const idB = Number(b.driverId ?? b.id ?? 0);
       return idA - idB;
     });
-  }, [drivers, selectedTab, statusFilter, vehicleFilter, searchTerm, startDate, endDate]);
+  }, [drivers, selectedTab, appliedFilters]);
 
   // Driver Statistics Cards (Only 4 Cards as requested)
   const driverStats = [
@@ -181,6 +202,13 @@ export default function Drivers() {
     setStartDate('');
     setEndDate('');
     setDatePickerOpen(false);
+    setAppliedFilters({
+      search: '',
+      status: 'All Status',
+      vehicle: 'All Vehicles',
+      startDate: '',
+      endDate: '',
+    });
     setCurrentPage(1);
   };
 
@@ -304,10 +332,8 @@ export default function Drivers() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
             placeholder="Search by Name, Mobile or Driver ID..."
             className="w-full pl-10.5 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -354,7 +380,6 @@ export default function Drivers() {
                       onClick={() => {
                         setStatusFilter(status);
                         setStatusDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -409,7 +434,6 @@ export default function Drivers() {
                       onClick={() => {
                         setVehicleFilter(type);
                         setVehicleDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -625,13 +649,14 @@ export default function Drivers() {
             )}
           </div>
 
-          {/* Reset Button */}
+          {/* Apply Button */}
           <button
-            onClick={handleReset}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-gray-200 rounded-xl transition-all cursor-pointer max-sm:w-full max-sm:mt-1"
+            type="button"
+            onClick={handleApplyFilters}
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
-            Reset
+            <Filter className="w-4 h-4 fill-black" />
+            <span>Apply</span>
           </button>
         </div>
       </div>
@@ -639,19 +664,19 @@ export default function Drivers() {
       {/* =========================================================
           4. DRIVERS DATA TABLE
           ========================================================= */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left border-collapse text-xs sm:text-sm min-w-[950px]">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70 text-slate-800 font-bold text-[13px] select-none">
-                <th className="py-2.5 px-4">Driver</th>
-                <th className="py-2.5 px-4">Driver ID</th>
-                <th className="py-2.5 px-4">Mobile</th>
-                <th className="py-2.5 px-4">Vehicle Type</th>
-                <th className="py-2.5 px-4">Status</th>
-                <th className="py-2.5 px-4">Account Status</th>
-                <th className="py-2.5 px-4">Registered On</th>
-                <th className="py-2.5 px-4 text-center">View</th>
+              <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Driver</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Driver ID</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Mobile</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle Type</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Status</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Account Status</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">Registered On</th>
+                <th className="py-2.5 px-3.5 text-center whitespace-nowrap">View</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

@@ -37,6 +37,24 @@ export default function Passengers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
 
+  // Applied filters state (only applies when "Apply" button is clicked)
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    status: 'All Statuses',
+    startDate: '',
+    endDate: '',
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      search: searchTerm,
+      status: accountStatusFilter,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    setCurrentPage(1);
+  };
+
   // Fetch users/passengers from API
   const { data: usersResponse, isLoading, isError } = useQuery({
     queryKey: ['admin-users', currentPage, entriesPerPage],
@@ -127,37 +145,43 @@ export default function Passengers() {
     setEndDate('');
     setTempStart('');
     setTempEnd('');
+    setAppliedFilters({
+      search: '',
+      status: 'All Statuses',
+      startDate: '',
+      endDate: '',
+    });
     setCurrentPage(1);
   };
 
-  // Filter passengers
+  // Filter passengers (using appliedFilters)
   const filteredPassengers = useMemo(() => {
     return passengers.filter((p) => {
       const pIdStr = String(p.passengerId || p.id || '');
       const matchesSearch =
-        !searchTerm ||
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pIdStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.mobile.includes(searchTerm) ||
-        p.email.toLowerCase().includes(searchTerm.toLowerCase());
+        !appliedFilters.search ||
+        p.name.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+        pIdStr.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
+        p.mobile.includes(appliedFilters.search) ||
+        p.email.toLowerCase().includes(appliedFilters.search.toLowerCase());
 
       const matchesStatus =
-        accountStatusFilter === 'All Statuses' ||
-        accountStatusFilter === 'All Status' ||
-        p.accountStatus.toLowerCase() === accountStatusFilter.toLowerCase();
+        appliedFilters.status === 'All Statuses' ||
+        appliedFilters.status === 'All Status' ||
+        p.accountStatus.toLowerCase() === appliedFilters.status.toLowerCase();
 
       // Date range filter
       let matchesDate = true;
-      if (startDate || endDate) {
+      if (appliedFilters.startDate || appliedFilters.endDate) {
         const pDate = p.registeredOn ? new Date(p.registeredOn) : parseMemberDate(p.memberSince);
         if (pDate && !isNaN(pDate.getTime())) {
-          if (startDate) {
-            const start = new Date(startDate);
+          if (appliedFilters.startDate) {
+            const start = new Date(appliedFilters.startDate);
             start.setHours(0, 0, 0, 0);
             if (pDate < start) matchesDate = false;
           }
-          if (endDate) {
-            const end = new Date(endDate);
+          if (appliedFilters.endDate) {
+            const end = new Date(appliedFilters.endDate);
             end.setHours(23, 59, 59, 999);
             if (pDate > end) matchesDate = false;
           }
@@ -166,7 +190,7 @@ export default function Passengers() {
 
       return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [passengers, searchTerm, accountStatusFilter, startDate, endDate]);
+  }, [passengers, appliedFilters]);
 
   // Stats cards configuration for reusable StatsCards
   const passengerStats = useMemo(() => [
@@ -229,10 +253,10 @@ export default function Passengers() {
   ], [apiStats]);
 
   const hasActiveFilters = Boolean(
-    searchTerm ||
-    (accountStatusFilter && accountStatusFilter !== 'All Statuses') ||
-    startDate ||
-    endDate
+    appliedFilters.search ||
+    (appliedFilters.status && appliedFilters.status !== 'All Statuses') ||
+    appliedFilters.startDate ||
+    appliedFilters.endDate
   );
 
   return (
@@ -257,10 +281,8 @@ export default function Passengers() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
             placeholder="Search by Name, Mobile or ID..."
             className="w-full pl-10 pr-4 py-2 sm:py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -301,7 +323,6 @@ export default function Passengers() {
                       onClick={() => {
                         setAccountStatusFilter(status);
                         setStatusDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -531,6 +552,16 @@ export default function Passengers() {
             </button>
           )}
 
+          {/* Apply Button */}
+          <button
+            type="button"
+            onClick={handleApplyFilters}
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            <Filter className="w-4 h-4 fill-black" />
+            <span>Apply</span>
+          </button>
+
           {/* Export Button */}
           <button
             onClick={() => alert('Exporting Passengers data...')}
@@ -545,7 +576,7 @@ export default function Passengers() {
       {/* =========================================================
           PASSENGERS DATA TABLE (Ratings & Reviews Style)
           ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs sm:text-sm min-w-[1000px]">
             {/* Table Header: Ratings & Reviews Amber/Yellow Tint */}

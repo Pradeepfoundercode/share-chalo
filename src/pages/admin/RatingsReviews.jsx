@@ -761,7 +761,7 @@ export default function RatingsReviews() {
       {/* =========================================================
           4. RATINGS & REVIEWS DATA TABLE (Responsive)
           ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs sm:text-sm min-w-[800px]">
             {/* Header Row with Yellow/Amber Tint */}

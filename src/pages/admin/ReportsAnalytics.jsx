@@ -652,7 +652,7 @@ export default function ReportsAnalytics() {
           ========================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Top Routes (col-span-5) */}
-        <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-xl shadow-2xs overflow-hidden flex flex-col justify-between">
           <div>
             <div className="p-4 sm:p-5 pb-3.5 border-b border-slate-100 flex items-center gap-3">
               <img src={topRoutesIcon} alt="Top Routes" className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0" />
@@ -664,14 +664,14 @@ export default function ReportsAnalytics() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-thin">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-700 font-black uppercase text-[11px] sm:text-xs">
-                    <th className="py-3 px-3.5 w-9 text-center">#</th>
-                    <th className="py-3 px-3.5">Route</th>
-                    <th className="py-3 px-3.5 text-center">Total Rides</th>
-                    <th className="py-3 px-3.5 text-right">Revenue</th>
+                  <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-xs sm:text-sm">
+                    <th className="py-2.5 px-3.5 w-9 text-center whitespace-nowrap">#</th>
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Route</th>
+                    <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Total Rides</th>
+                    <th className="py-2.5 px-3.5 text-right whitespace-nowrap">Revenue</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -698,7 +698,7 @@ export default function ReportsAnalytics() {
         </div>
 
         {/* Recent Rides (col-span-7) */}
-        <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-xl shadow-2xs overflow-hidden flex flex-col justify-between">
           <div>
             <div className="p-4 sm:p-5 pb-3.5 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -719,17 +719,17 @@ export default function ReportsAnalytics() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-thin">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-700 font-black uppercase text-[11px] sm:text-xs">
-                    <th className="py-3 px-3.5">Ride ID</th>
-                    <th className="py-3 px-3.5">Passenger</th>
-                    <th className="py-3 px-3.5">Driver</th>
-                    <th className="py-3 px-3.5">Route</th>
-                    <th className="py-3 px-3.5">Fare</th>
-                    <th className="py-3 px-3.5 text-center">Status</th>
-                    <th className="py-3 px-3.5 text-right">Date & Time</th>
+                  <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-xs sm:text-sm">
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Ride ID</th>
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Passenger</th>
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Driver</th>
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Route</th>
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Fare</th>
+                    <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Status</th>
+                    <th className="py-2.5 px-3.5 text-right whitespace-nowrap">Date & Time</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800">

@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Calendar,
   ChevronDown,
   ChevronRight,
   Check,
+  Clock,
   Search,
   Download,
-  RotateCcw
+  Filter,
+  Loader2
 } from 'lucide-react';
+import { getFinanceOverviewApi } from '../../services/finance.services';
 import {
   financeStats,
   paymentDistribution,
@@ -134,8 +138,225 @@ export default function Finance() {
   // Tab pagination and search states (for non-overview tabs)
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    status: 'All',
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      search: searchTerm,
+      status: statusFilter,
+    });
+    setCurrentPage(1);
+  };
+
+  // Fetch Finance Overview API
+  const { data: financeResponse, isLoading } = useQuery({
+    queryKey: ['admin-finance-overview'],
+    queryFn: () => getFinanceOverviewApi(),
+  });
+
+  const apiData = financeResponse?.data;
+
+  // Summary Metrics
+  const summaryData = useMemo(() => {
+    if (apiData?.summary) {
+      const s = apiData.summary;
+      return {
+        totalBookings: Number(s.totalBookings || 0).toLocaleString('en-IN'),
+        totalRideAmount: `₹ ${Number(s.totalRideAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        commissionEarned: `₹ ${Number(s.commissionAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        commissionRateText: s.commissionRate ? `${s.commissionRate}% Rate` : '↑ +18.2%',
+        onlineCollections: `₹ ${Number(s.onlineCollections || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        cashCollections: `₹ ${Number(s.cashCollections || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+      };
+    }
+    return {
+      totalBookings: financeStats.totalBookings,
+      totalRideAmount: financeStats.totalRideAmount,
+      commissionEarned: financeStats.commissionEarned,
+      commissionRateText: '↑ ' + financeStats.commissionGrowth,
+      onlineCollections: financeStats.onlineCollections,
+      cashCollections: financeStats.cashCollections,
+    };
+  }, [apiData]);
+
+  // Payment Distribution
+  const paymentDistData = useMemo(() => {
+    if (apiData?.paymentDistribution && Array.isArray(apiData.paymentDistribution)) {
+      const onlineObj = apiData.paymentDistribution.find(
+        (p) => (p.mode || '').toLowerCase() === 'online'
+      ) || { amount: 0, percentage: 0 };
+      const cashObj = apiData.paymentDistribution.find(
+        (p) => (p.mode || '').toLowerCase() === 'cash'
+      ) || { amount: 0, percentage: 0 };
+
+      const totalAmt = Number(apiData?.summary?.totalRideAmount ?? (onlineObj.amount + cashObj.amount));
+      const onlinePct = onlineObj.percentage ?? (totalAmt > 0 ? (onlineObj.amount / totalAmt) * 100 : 0);
+      const cashPct = cashObj.percentage ?? (totalAmt > 0 ? (cashObj.amount / totalAmt) * 100 : 0);
+
+      const circumference = 238.7;
+      const onlineDash = (onlinePct / 100) * circumference;
+      const cashDash = (cashPct / 100) * circumference;
+
+      return {
+        totalAmount: `₹ ${totalAmt.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        onlinePayments: `₹ ${Number(onlineObj.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        onlinePercentage: `${onlinePct}%`,
+        cashPayments: `₹ ${Number(cashObj.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        cashPercentage: `${cashPct}%`,
+        onlineDash,
+        cashDash,
+      };
+    }
+
+    return {
+      totalAmount: paymentDistribution.totalAmount,
+      onlinePayments: paymentDistribution.onlinePayments,
+      onlinePercentage: paymentDistribution.onlinePercentage,
+      cashPayments: paymentDistribution.cashPayments,
+      cashPercentage: paymentDistribution.cashPercentage,
+      onlineDash: 159.2,
+      cashDash: 79.5,
+    };
+  }, [apiData]);
+
+  // Earnings Chart Data & Dynamic Curve
+  const chartItems = useMemo(() => {
+    if (
+      apiData?.earningsOverview &&
+      Array.isArray(apiData.earningsOverview) &&
+      apiData.earningsOverview.length > 0
+    ) {
+      return apiData.earningsOverview.map((item) => {
+        const d = new Date(item.date);
+        const dayLabel = !isNaN(d.getTime())
+          ? d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+          : item.date;
+        return {
+          day: dayLabel,
+          rideAmount: Number(item.rideAmount || 0),
+          commission: Number(item.commission || 0),
+        };
+      });
+    }
+    return earningsChartData;
+  }, [apiData]);
+
+  const chartConfig = useMemo(() => {
+    const maxVal = Math.max(
+      ...chartItems.map((c) => Math.max(c.rideAmount, c.commission)),
+      100
+    );
+    const magnitude = Math.pow(10, Math.max(Math.floor(Math.log10(maxVal)), 1));
+    const ceilMax = Math.ceil(maxVal / magnitude) * magnitude || 100;
+
+    const getY = (val) => 195 - (val / ceilMax) * 175;
+
+    const n = chartItems.length;
+    let points = [];
+    if (n === 1) {
+      const yRide = getY(chartItems[0].rideAmount);
+      const yComm = getY(chartItems[0].commission);
+      points = [
+        { x: 110, yRide, yComm, item: chartItems[0] },
+        { x: 350, yRide, yComm, item: chartItems[0] },
+        { x: 590, yRide, yComm, item: chartItems[0] },
+      ];
+    } else {
+      const step = (590 - 110) / (n - 1);
+      points = chartItems.map((item, idx) => ({
+        x: 110 + idx * step,
+        yRide: getY(item.rideAmount),
+        yComm: getY(item.commission),
+        item,
+      }));
+    }
+
+    const ridePath = points.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x},${p.yRide}`, '');
+    const rideAreaPath = `${ridePath} L ${points[points.length - 1].x},195 L ${points[0].x},195 Z`;
+    const commPath = points.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x},${p.yComm}`, '');
+
+    const yLevels = [
+      { y: 20, val: ceilMax },
+      { y: 55, val: Math.round(ceilMax * 0.8) },
+      { y: 90, val: Math.round(ceilMax * 0.6) },
+      { y: 125, val: Math.round(ceilMax * 0.4) },
+      { y: 160, val: Math.round(ceilMax * 0.2) },
+      { y: 195, val: 0 },
+    ];
+
+    return { points, ridePath, rideAreaPath, commPath, yLevels };
+  }, [chartItems]);
+
+  // Recent Transactions Data
+  const recentTransactionsDisplay = useMemo(() => {
+    if (
+      apiData?.recentTransactions &&
+      Array.isArray(apiData.recentTransactions) &&
+      apiData.recentTransactions.length > 0
+    ) {
+      return apiData.recentTransactions.map((txn, idx) => {
+        const formattedType = txn.type
+          ? txn.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+          : 'Ride Payment';
+        const formattedMode = txn.mode
+          ? txn.mode.charAt(0).toUpperCase() + txn.mode.slice(1).toLowerCase()
+          : 'Cash';
+        const dt = txn.dateTime
+          ? new Date(txn.dateTime).toLocaleString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : '-';
+        return {
+          id: idx + 1,
+          txnId: txn.transactionId || `TXN${txn.bookingId || idx + 1}`,
+          bookingId: txn.bookingId,
+          type: formattedType,
+          amount: `₹ ${Number(txn.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+          mode: formattedMode,
+          dateTime: dt,
+          status: txn.status || 'Success',
+          driver: txn.driver,
+          passenger: txn.passenger,
+        };
+      });
+    }
+    return recentTransactionsList;
+  }, [apiData]);
+
+  // Wallet & Settlement Data
+  const settlementData = useMemo(() => {
+    if (apiData?.walletSettlement) {
+      const w = apiData.walletSettlement;
+      return {
+        platformWalletBalance: `₹ ${Number(w.platformWalletBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        cashCommissionDue: `₹ ${Number(w.cashCommissionDue || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        withdrawalRequests: `₹ ${Number(w.pendingWithdrawalRequests || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+        lastSettlement: w.lastSettlement
+          ? `₹ ${Number(w.lastSettlement).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+          : '₹ 0',
+        lastSettlementDate:
+          w.lastSettlementDate || (w.lastSettlement ? 'Completed' : 'No settlements yet'),
+      };
+    }
+    return {
+      platformWalletBalance: walletSettlementStats.platformWalletBalance,
+      cashCommissionDue: walletSettlementStats.cashCommissionDue,
+      withdrawalRequests: walletSettlementStats.withdrawalRequests,
+      lastSettlement: walletSettlementStats.lastSettlement,
+      lastSettlementDate: walletSettlementStats.lastSettlementDate,
+    };
+  }, [apiData]);
 
   // Tab Definitions matching screenshot
   const tabs = [
@@ -238,6 +459,10 @@ export default function Finance() {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
+                setSearchTerm('');
+                setStatusFilter('All');
+                setStatusDropdownOpen(false);
+                setAppliedFilters({ search: '', status: 'All' });
                 setCurrentPage(1);
               }}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs ${
@@ -257,9 +482,14 @@ export default function Finance() {
           2. DASHBOARD TITLE & DATE FILTER ROW
           ========================================================= */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-          Finance Dashboard
-        </h2>
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Finance Dashboard
+          </h2>
+          {isLoading && (
+            <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+          )}
+        </div>
 
         {/* Date Range Picker Dropdown */}
         <div className="relative">
@@ -310,7 +540,7 @@ export default function Finance() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Total Bookings</p>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
-                  {financeStats.totalBookings}
+                  {summaryData.totalBookings}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
                   ↑ {financeStats.bookingsGrowth}
@@ -326,7 +556,7 @@ export default function Finance() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Total Ride Amount</p>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
-                  {financeStats.totalRideAmount}
+                  {summaryData.totalRideAmount}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
                   ↑ {financeStats.rideAmountGrowth}
@@ -342,10 +572,10 @@ export default function Finance() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Commission Earned</p>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
-                  {financeStats.commissionEarned}
+                  {summaryData.commissionEarned}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
-                  ↑ {financeStats.commissionGrowth}
+                  {summaryData.commissionRateText}
                 </p>
               </div>
             </div>
@@ -358,7 +588,7 @@ export default function Finance() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Online Collections</p>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
-                  {financeStats.onlineCollections}
+                  {summaryData.onlineCollections}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
                   ↑ {financeStats.onlineGrowth}
@@ -374,7 +604,7 @@ export default function Finance() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Cash Collections</p>
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
-                  {financeStats.cashCollections}
+                  {summaryData.cashCollections}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
                   ↑ {financeStats.cashGrowth}
@@ -422,31 +652,41 @@ export default function Finance() {
                     </linearGradient>
                   </defs>
 
-                  {/* Horizontal Grid lines (Solid subtle lines on each price level) */}
-                  <line x1="70" y1="20" x2="630" y2="20" stroke="#e2e8f0" strokeWidth="1" />
-                  <line x1="70" y1="55" x2="630" y2="55" stroke="#e2e8f0" strokeWidth="1" />
-                  <line x1="70" y1="90" x2="630" y2="90" stroke="#e2e8f0" strokeWidth="1" />
-                  <line x1="70" y1="125" x2="630" y2="125" stroke="#e2e8f0" strokeWidth="1" />
-                  <line x1="70" y1="160" x2="630" y2="160" stroke="#e2e8f0" strokeWidth="1" />
-                  <line x1="70" y1="195" x2="630" y2="195" stroke="#cbd5e1" strokeWidth="1.2" />
+                  {/* Horizontal Grid lines */}
+                  {chartConfig.yLevels.map((lvl) => (
+                    <line
+                      key={lvl.y}
+                      x1="70"
+                      y1={lvl.y}
+                      x2="630"
+                      y2={lvl.y}
+                      stroke={lvl.y === 195 ? '#cbd5e1' : '#e2e8f0'}
+                      strokeWidth={lvl.y === 195 ? '1.2' : '1'}
+                    />
+                  ))}
 
                   {/* Y-Axis Labels */}
-                  <text x="60" y="24" textAnchor="end" className="text-[11px] fill-slate-700 font-bold">₹1,50,000</text>
-                  <text x="60" y="59" textAnchor="end" className="text-[11px] fill-slate-700 font-bold">₹1,20,000</text>
-                  <text x="60" y="94" textAnchor="end" className="text-[11px] fill-slate-700 font-bold">₹90,000</text>
-                  <text x="60" y="129" textAnchor="end" className="text-[11px] fill-slate-700 font-bold">₹60,000</text>
-                  <text x="60" y="164" textAnchor="end" className="text-[11px] fill-slate-700 font-bold">₹30,000</text>
-                  <text x="60" y="198" textAnchor="end" className="text-[11px] fill-slate-700 font-bold">₹0</text>
+                  {chartConfig.yLevels.map((lvl) => (
+                    <text
+                      key={lvl.y}
+                      x="60"
+                      y={lvl.y + 4}
+                      textAnchor="end"
+                      className="text-[11px] fill-slate-700 font-bold"
+                    >
+                      ₹{lvl.val >= 1000 ? `${Math.round(lvl.val / 1000)}k` : lvl.val}
+                    </text>
+                  ))}
 
                   {/* Green Area Fill for Ride Amount */}
                   <path
-                    d="M 110,140 Q 230,120 350,95 T 480,68 T 590,52 L 590,195 L 110,195 Z"
+                    d={chartConfig.rideAreaPath}
                     fill="url(#financeGreenGradient)"
                   />
 
                   {/* Green Line (Ride Amount) */}
                   <path
-                    d="M 110,140 Q 230,120 350,95 T 480,68 T 590,52"
+                    d={chartConfig.ridePath}
                     fill="none"
                     stroke="#16a34a"
                     strokeWidth="3"
@@ -454,15 +694,21 @@ export default function Finance() {
                   />
 
                   {/* Green Dots */}
-                  <circle cx="110" cy="140" r="4.5" fill="#ffffff" stroke="#16a34a" strokeWidth="2.5" />
-                  <circle cx="230" cy="120" r="4.5" fill="#ffffff" stroke="#16a34a" strokeWidth="2.5" />
-                  <circle cx="350" cy="95" r="4.5" fill="#ffffff" stroke="#16a34a" strokeWidth="2.5" />
-                  <circle cx="480" cy="68" r="4.5" fill="#ffffff" stroke="#16a34a" strokeWidth="2.5" />
-                  <circle cx="590" cy="52" r="5" fill="#ffffff" stroke="#16a34a" strokeWidth="3" />
+                  {chartConfig.points.map((p, idx) => (
+                    <circle
+                      key={`green-${idx}`}
+                      cx={p.x}
+                      cy={p.yRide}
+                      r="4.5"
+                      fill="#ffffff"
+                      stroke="#16a34a"
+                      strokeWidth="2.5"
+                    />
+                  ))}
 
                   {/* Yellow Line (Commission) */}
                   <path
-                    d="M 110,185 Q 230,180 350,175 T 480,172 T 590,170"
+                    d={chartConfig.commPath}
                     fill="none"
                     stroke="#fed011"
                     strokeWidth="2.8"
@@ -470,20 +716,24 @@ export default function Finance() {
                   />
 
                   {/* Yellow Dots */}
-                  <circle cx="110" cy="185" r="3.5" fill="#ffffff" stroke="#f59e0b" strokeWidth="2" />
-                  <circle cx="230" cy="180" r="3.5" fill="#ffffff" stroke="#f59e0b" strokeWidth="2" />
-                  <circle cx="350" cy="175" r="3.5" fill="#ffffff" stroke="#f59e0b" strokeWidth="2" />
-                  <circle cx="480" cy="172" r="3.5" fill="#ffffff" stroke="#f59e0b" strokeWidth="2" />
-                  <circle cx="590" cy="170" r="4" fill="#ffffff" stroke="#f59e0b" strokeWidth="2.5" />
+                  {chartConfig.points.map((p, idx) => (
+                    <circle
+                      key={`yellow-${idx}`}
+                      cx={p.x}
+                      cy={p.yComm}
+                      r="3.5"
+                      fill="#ffffff"
+                      stroke="#f59e0b"
+                      strokeWidth="2"
+                    />
+                  ))}
                 </svg>
 
                 {/* X-Axis Labels */}
                 <div className="flex justify-between pl-20 pr-8 text-xs text-slate-500 font-bold mt-1">
-                  <span>01 Nov</span>
-                  <span>02 Nov</span>
-                  <span>03 Nov</span>
-                  <span>04 Nov</span>
-                  <span>05 Nov</span>
+                  {chartItems.map((c, i) => (
+                    <span key={i}>{c.day}</span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -512,36 +762,40 @@ export default function Finance() {
                       stroke="#f1f5f9"
                       strokeWidth="14"
                     />
-                    {/* Green Segment: 66.7% (2 * PI * 38 * 0.667 = ~159.2) */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      fill="transparent"
-                      stroke="#16a34a"
-                      strokeWidth="14"
-                      strokeDasharray="159.2 238.7"
-                      strokeDashoffset="0"
-                      strokeLinecap="round"
-                    />
-                    {/* Yellow Segment: 33.3% (offset = -163) */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      fill="transparent"
-                      stroke="#fed011"
-                      strokeWidth="14"
-                      strokeDasharray="79.5 238.7"
-                      strokeDashoffset="-162"
-                      strokeLinecap="round"
-                    />
+                    {/* Green Segment: Online Payments */}
+                    {paymentDistData.onlineDash > 0 && (
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#16a34a"
+                        strokeWidth="14"
+                        strokeDasharray={`${paymentDistData.onlineDash} 238.7`}
+                        strokeDashoffset="0"
+                        strokeLinecap="round"
+                      />
+                    )}
+                    {/* Yellow Segment: Cash Payments */}
+                    {paymentDistData.cashDash > 0 && (
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#fed011"
+                        strokeWidth="14"
+                        strokeDasharray={`${paymentDistData.cashDash} 238.7`}
+                        strokeDashoffset={`-${paymentDistData.onlineDash}`}
+                        strokeLinecap="round"
+                      />
+                    )}
                   </svg>
 
                   {/* Inner text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                     <span className="text-base font-black text-slate-900 leading-tight">
-                      ₹ 5,14,320
+                      {paymentDistData.totalAmount}
                     </span>
                     <span className="text-xs font-bold text-slate-500 mt-0.5">
                       Total Amount
@@ -557,9 +811,9 @@ export default function Finance() {
                       <span className="text-sm font-bold text-slate-800">Online Payments</span>
                     </div>
                     <p className="text-base sm:text-lg font-black text-slate-900 mt-0.5 pl-6">
-                      {paymentDistribution.onlinePayments}{' '}
+                      {paymentDistData.onlinePayments}{' '}
                       <span className="text-xs sm:text-[13px] font-bold text-slate-500">
-                        ({paymentDistribution.onlinePercentage})
+                        ({paymentDistData.onlinePercentage})
                       </span>
                     </p>
                   </div>
@@ -570,9 +824,9 @@ export default function Finance() {
                       <span className="text-sm font-bold text-slate-800">Cash Payments</span>
                     </div>
                     <p className="text-base sm:text-lg font-black text-slate-900 mt-0.5 pl-6">
-                      {paymentDistribution.cashPayments}{' '}
+                      {paymentDistData.cashPayments}{' '}
                       <span className="text-xs sm:text-[13px] font-bold text-slate-500">
-                        ({paymentDistribution.cashPercentage})
+                        ({paymentDistData.cashPercentage})
                       </span>
                     </p>
                   </div>
@@ -603,7 +857,7 @@ export default function Finance() {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto rounded-2xl border border-slate-100">
+                <div className="overflow-x-auto scrollbar-thin rounded-xl border border-slate-200/80 shadow-xs">
                   <table className="w-full text-left text-[13px] sm:text-sm">
                     <thead>
                       <tr className="bg-[#feea98]/60 text-slate-900 font-bold border-b border-amber-200/60">
@@ -617,29 +871,44 @@ export default function Finance() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-bold text-slate-800">
-                      {recentTransactionsList.slice(0, 5).map((txn) => (
-                        <tr key={txn.id} className="hover:bg-amber-50/20 transition-colors">
-                          <td className="py-3 px-3.5 font-bold text-slate-500">{txn.id}</td>
-                          <td className="py-3 px-3.5 font-bold text-slate-900 whitespace-nowrap">
-                            {txn.txnId}
-                          </td>
-                          <td className="py-3 px-3.5 whitespace-nowrap">
-                            {renderTypePill(txn.type)}
-                          </td>
-                          <td className="py-3 px-3.5 font-black text-slate-900 whitespace-nowrap">
-                            {txn.amount}
-                          </td>
-                          <td className="py-3 px-3.5 whitespace-nowrap text-slate-700 font-semibold">
-                            {txn.mode}
-                          </td>
-                          <td className="py-3 px-3.5 whitespace-nowrap text-slate-600 text-xs sm:text-[13px] font-semibold">
-                            {txn.dateTime}
-                          </td>
-                          <td className="py-3 px-3.5 whitespace-nowrap">
-                            {renderStatusBadge(txn.status)}
+                      {recentTransactionsDisplay.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-slate-400 font-semibold">
+                            No recent transactions found
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        recentTransactionsDisplay.slice(0, 5).map((txn) => (
+                          <tr key={txn.id} className="hover:bg-amber-50/20 transition-colors">
+                            <td className="py-3 px-3.5 font-bold text-slate-500">{txn.id}</td>
+                            <td className="py-3 px-3.5 font-bold text-slate-900 whitespace-nowrap">
+                              <div>{txn.txnId}</div>
+                              {(txn.passenger || txn.driver) && (
+                                <div className="text-[11px] font-normal text-slate-500">
+                                  {txn.passenger?.name ? `Pass: ${txn.passenger.name}` : ''}
+                                  {txn.passenger?.name && txn.driver?.name ? ' • ' : ''}
+                                  {txn.driver?.name ? `Driver: ${txn.driver.name}` : ''}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-3.5 whitespace-nowrap">
+                              {renderTypePill(txn.type)}
+                            </td>
+                            <td className="py-3 px-3.5 font-black text-slate-900 whitespace-nowrap">
+                              {txn.amount}
+                            </td>
+                            <td className="py-3 px-3.5 whitespace-nowrap text-slate-700 font-semibold">
+                              {txn.mode}
+                            </td>
+                            <td className="py-3 px-3.5 whitespace-nowrap text-slate-600 text-xs sm:text-[13px] font-semibold">
+                              {txn.dateTime}
+                            </td>
+                            <td className="py-3 px-3.5 whitespace-nowrap">
+                              {renderStatusBadge(txn.status)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -671,7 +940,7 @@ export default function Finance() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-base sm:text-lg font-black text-slate-900">
-                        {walletSettlementStats.platformWalletBalance}
+                        {settlementData.platformWalletBalance}
                       </span>
                       <ChevronRight className="w-4.5 h-4.5 text-slate-400" />
                     </div>
@@ -694,7 +963,7 @@ export default function Finance() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-base sm:text-lg font-black text-slate-900">
-                        {walletSettlementStats.cashCommissionDue}
+                        {settlementData.cashCommissionDue}
                       </span>
                       <ChevronRight className="w-4.5 h-4.5 text-slate-400" />
                     </div>
@@ -717,7 +986,7 @@ export default function Finance() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-base sm:text-lg font-black text-slate-900">
-                        {walletSettlementStats.withdrawalRequests}
+                        {settlementData.withdrawalRequests}
                       </span>
                       <ChevronRight className="w-4.5 h-4.5 text-slate-400" />
                     </div>
@@ -734,13 +1003,13 @@ export default function Finance() {
                           Last Settlement
                         </p>
                         <p className="text-xs font-semibold text-slate-500">
-                          {walletSettlementStats.lastSettlementDate}
+                          {settlementData.lastSettlementDate}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-base sm:text-lg font-black text-slate-900">
-                        {walletSettlementStats.lastSettlement}
+                        {settlementData.lastSettlement}
                       </span>
                       <ChevronRight className="w-4.5 h-4.5 text-slate-400" />
                     </div>
@@ -754,72 +1023,116 @@ export default function Finance() {
         /* =========================================================
             4. TAB-SPECIFIC DATA TABLE VIEW (Online Payments, Cash, etc.)
             ========================================================= */
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           {/* Controls Bar: Search, Status, Export */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-3.5 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4.5 h-4.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder={`Search in ${activeTab}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:border-amber-400 shadow-2xs"
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
+                className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
               />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:border-amber-400 shadow-2xs cursor-pointer"
-              >
-                <option value="All">All Statuses</option>
-                <option value="Success">Success</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </select>
+              {/* Custom Status Dropdown */}
+              <div className="relative w-full sm:w-38">
+                <button
+                  type="button"
+                  onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+                  className="w-full flex items-center justify-between px-3.5 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white text-slate-800 hover:bg-slate-50 cursor-pointer shadow-2xs transition-colors"
+                >
+                  <span className="truncate">
+                    {statusFilter === 'All' ? 'All Statuses' : statusFilter}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform ${
+                      statusDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {statusDropdownOpen && (
+                  <div className="absolute left-0 sm:left-auto right-0 mt-1.5 w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
+                    {['All Statuses', 'Success', 'Completed', 'Pending'].map((status) => {
+                      const isSelected =
+                        status === 'All Statuses'
+                          ? statusFilter === 'All' || statusFilter === 'All Statuses'
+                          : statusFilter === status;
+                      return (
+                        <button
+                          key={status}
+                          type="button"
+                          onClick={() => {
+                            setStatusFilter(status === 'All Statuses' ? 'All' : status);
+                            setStatusDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#fed011] text-black shadow-2xs'
+                              : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setStatusFilter('All');
-                }}
-                className="p-2 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 cursor-pointer shadow-2xs"
-                title="Reset Filters"
+                type="button"
+                onClick={handleApplyFilters}
+                className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer"
               >
-                <RotateCcw className="w-4 h-4" />
+                <Filter className="w-4 h-4 fill-black" />
+                <span>Apply</span>
               </button>
 
-              <button className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold cursor-pointer shadow-2xs transition-colors">
-                <Download className="w-4 h-4" />
+              <button
+                type="button"
+                onClick={() => alert(`Exporting ${activeTab} data...`)}
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4 stroke-[2.4]" />
                 <span>Export</span>
               </button>
             </div>
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-[13px]">
+          <div className="overflow-x-auto scrollbar-thin">
+            <table className="w-full text-left text-xs sm:text-sm min-w-[850px]">
               <thead>
-                <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60">
-                  <th className="py-3 px-4">#</th>
-                  <th className="py-3 px-4">Transaction ID</th>
-                  <th className="py-3 px-4">Type</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Mode</th>
-                  <th className="py-3 px-4">Date & Time</th>
-                  <th className="py-3 px-4">Status</th>
+                <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
+                  <th className="py-2.5 px-3.5 text-center w-12 whitespace-nowrap">#</th>
+                  <th className="py-2.5 px-3.5 whitespace-nowrap">Transaction ID</th>
+                  <th className="py-2.5 px-3.5 whitespace-nowrap">Type</th>
+                  <th className="py-2.5 px-3.5 whitespace-nowrap">Amount</th>
+                  <th className="py-2.5 px-3.5 whitespace-nowrap">Mode</th>
+                  <th className="py-2.5 px-3.5 whitespace-nowrap">Date & Time</th>
+                  <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-                {recentTransactionsList
+                {recentTransactionsDisplay
                   .filter((item) => {
-                    if (statusFilter !== 'All' && item.status !== statusFilter) return false;
                     if (
-                      searchTerm &&
-                      !item.txnId.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                      !item.type.toLowerCase().includes(searchTerm.toLowerCase())
+                      appliedFilters.status !== 'All' &&
+                      appliedFilters.status !== 'All Statuses' &&
+                      item.status !== appliedFilters.status
+                    ) {
+                      return false;
+                    }
+                    if (
+                      appliedFilters.search &&
+                      !item.txnId.toLowerCase().includes(appliedFilters.search.toLowerCase()) &&
+                      !item.type.toLowerCase().includes(appliedFilters.search.toLowerCase())
                     ) {
                       return false;
                     }
