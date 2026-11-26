@@ -7,7 +7,6 @@ import {
   Check,
   CheckCircle2,
   Calendar,
-  MoreVertical,
   User,
   ShieldCheck,
   FileText,
@@ -17,7 +16,8 @@ import {
   Mail,
   Bell,
   ChevronDown,
-  X
+  X,
+  Download
 } from 'lucide-react';
 
 // Images
@@ -105,9 +105,9 @@ export default function DriverDetails() {
         city: '',
         avatar: '',
         isPhoneVerified: false,
-        status: 'Active',
-        approvalStatus: 'Approved',
-        kycStatus: 'Approved',
+        status: '',
+        approvalStatus: '',
+        kycStatus: '',
         profileStatus: '',
         vehicleStatus: '',
         createdAt: '',
@@ -173,15 +173,15 @@ export default function DriverDetails() {
       isPhoneVerified: Boolean(apiData.isPhoneVerified),
       status: apiData.status
         ? apiData.status.charAt(0).toUpperCase() + apiData.status.slice(1)
-        : 'Active',
+        : '',
       approvalStatus: apiData.approvalStatus
         ? apiData.approvalStatus.charAt(0).toUpperCase() + apiData.approvalStatus.slice(1)
-        : 'Approved',
+        : (apiData.status ? apiData.status.charAt(0).toUpperCase() + apiData.status.slice(1) : ''),
       kycStatus: apiData.kycStatus
         ? apiData.kycStatus.charAt(0).toUpperCase() + apiData.kycStatus.slice(1)
-        : 'Approved',
-      profileStatus: apiData.profileStatus,
-      vehicleStatus: apiData.vehicleStatus,
+        : (apiData.kycStepStatus ? apiData.kycStepStatus.charAt(0).toUpperCase() + apiData.kycStepStatus.slice(1) : ''),
+      profileStatus: apiData.profileStatus || apiData.profileStepStatus,
+      vehicleStatus: apiData.vehicleStatus || apiData.vehicleStepStatus,
       createdAt: apiData.createdAt,
       memberSince: formattedCreatedAt,
       approvalDate: formattedCreatedAt,
@@ -256,15 +256,51 @@ export default function DriverDetails() {
     driver.vehicleCategory?.toLowerCase() === 'bus' ||
     (driver.vehicleType || '').toLowerCase().includes('bus');
 
-  const isPending =
-    (driver.approvalStatus || '').toLowerCase() === 'pending' ||
-    (driver.kycStatus || '').toLowerCase() === 'pending' ||
-    (driver.raw?.approvalStatus || '').toLowerCase() === 'pending' ||
-    (driver.raw?.kycStatus || '').toLowerCase() === 'pending';
+  const approvalStatusLower = (driver.approvalStatus || driver.raw?.approvalStatus || '').toLowerCase();
+  const kycStatusLower = (driver.kycStatus || driver.raw?.kycStatus || '').toLowerCase();
+  const driverStatusLower = (driver.status || driver.raw?.status || '').toLowerCase();
+
+  // The full details page should ONLY open if the driver is fully approved.
+  // If status is pending, rejected, in-review, or not fully approved, open PendingVerificationView.
+  const isApproved =
+    approvalStatusLower === 'approved' &&
+    driverStatusLower !== 'rejected' &&
+    driverStatusLower !== 'pending' &&
+    kycStatusLower !== 'rejected' &&
+    kycStatusLower !== 'pending';
+
+  const isPending = !isApproved;
 
   // Active tab state
   const [activeTab, setActiveTab] = useState('personal');
   const [previewPhoto, setPreviewPhoto] = useState(null);
+
+  const handleDownload = async (url, title) => {
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const extension = url.split('.').pop()?.split(/[?#]/)[0] || 'jpg';
+      const cleanTitle = (title || 'document').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      link.download = `${cleanTitle}_${driver.id || 'doc'}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.download = `${(title || 'document').toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   // Bus specific interactive states
   const [seatType, setSeatType] = useState('Seater');
@@ -278,7 +314,7 @@ export default function DriverDetails() {
       mainEl.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, [id, activeTab, isPending]);
+  }, [id, activeTab, isApproved]);
 
   if (isLoading) {
     return (
@@ -291,8 +327,9 @@ export default function DriverDetails() {
     );
   }
 
-  // If driver status is pending, show Driver Verification workflow view
-  if (isPending) {
+  // Only fully approved drivers open the main Driver Details page.
+  // Pending, Rejected, or any other verification state opens the Driver Verification stepper view.
+  if (!isApproved) {
     return <PendingVerificationView driver={driver} />;
   }
 
@@ -410,8 +447,8 @@ export default function DriverDetails() {
           </div>
         </div>
 
-        {/* Right Column: Verified & Approved Badge + Menu (3 cols) */}
-        <div className="md:col-span-3 flex items-center justify-start md:justify-end gap-3 shrink-0">
+        {/* Right Column: Verified & Approved Badge (3 cols) */}
+        <div className="md:col-span-3 flex items-center justify-start md:justify-end shrink-0">
           {/* Verified & Approved Badge */}
           <div className="flex items-center gap-3 px-4 py-2.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl">
             <div className="w-7 h-7 rounded-full bg-[#16a34a] flex items-center justify-center text-white shrink-0 shadow-2xs">
@@ -426,11 +463,6 @@ export default function DriverDetails() {
               </p>
             </div>
           </div>
-
-          {/* More Action */}
-          <button className="p-2.5 hover:bg-slate-100 rounded-xl border border-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0">
-            <MoreVertical className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
@@ -863,12 +895,12 @@ export default function DriverDetails() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-0.5">
               {[
-                { name: 'RC (Registration Certificate)', status: 'Approved' },
-                { name: 'Insurance', status: 'Approved' },
-                { name: 'PUC (Pollution Under Control)', status: 'Approved' },
-                { name: 'Commercial Permit', status: 'Approved' },
-                { name: 'Fitness Certificate', status: 'Approved' },
-                { name: 'Route Permit (if applicable)', status: 'Approved' },
+                { name: 'RC (Registration Certificate)', status: 'Approved', url: driver.rcUrl },
+                { name: 'Insurance', status: 'Approved', url: driver.insuranceUrl },
+                { name: 'PUC (Pollution Under Control)', status: 'Approved', url: driver.pucCertificateUrl },
+                { name: 'Commercial Permit', status: 'Approved', url: driver.permitUrl },
+                { name: 'Fitness Certificate', status: 'Approved', url: driver.fitnessCertificateUrl },
+                { name: 'Route Permit (if applicable)', status: 'Approved', url: driver.routePermitUrl },
               ].map((doc, idx) => (
                 <div
                   key={idx}
@@ -883,10 +915,21 @@ export default function DriverDetails() {
                     </span>
                   </div>
 
-                  <span className="inline-flex items-center justify-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 w-fit mx-auto">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                    {doc.status}
-                  </span>
+                  <div className="flex items-center justify-center gap-1.5 pt-1">
+                    <span className="inline-flex items-center justify-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                      {doc.status}
+                    </span>
+                    {doc.url && (
+                      <button
+                        onClick={() => setPreviewPhoto({ img: doc.url, label: doc.name })}
+                        className="p-1 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
+                        title="View Document"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1058,16 +1101,16 @@ export default function DriverDetails() {
               <div className="space-y-1.5 pt-0.5">
                 {(driver.vehicleType === 'Commercial Car'
                   ? [
-                      { name: 'RC (Registration Certificate)', status: 'Approved' },
-                      { name: 'Insurance', status: 'Approved' },
-                      { name: 'PUC (Pollution Under Control)', status: 'Approved' },
-                      { name: 'Commercial Permit', status: 'Approved' },
-                      { name: 'Fitness Certificate', status: 'Approved' },
+                      { name: 'RC (Registration Certificate)', status: 'Approved', url: driver.rcUrl },
+                      { name: 'Insurance', status: 'Approved', url: driver.insuranceUrl },
+                      { name: 'PUC (Pollution Under Control)', status: 'Approved', url: driver.pucCertificateUrl },
+                      { name: 'Commercial Permit', status: 'Approved', url: driver.permitUrl },
+                      { name: 'Fitness Certificate', status: 'Approved', url: driver.fitnessCertificateUrl },
                     ]
                   : [
-                      { name: 'RC (Registration Certificate)', status: 'Approved' },
-                      { name: 'Insurance', status: 'Approved' },
-                      { name: 'PUC (Pollution Under Control)', status: 'Approved' },
+                      { name: 'RC (Registration Certificate)', status: 'Approved', url: driver.rcUrl },
+                      { name: 'Insurance', status: 'Approved', url: driver.insuranceUrl },
+                      { name: 'PUC (Pollution Under Control)', status: 'Approved', url: driver.pucCertificateUrl },
                     ]
                 ).map((doc, idx) => (
                   <div
@@ -1090,8 +1133,14 @@ export default function DriverDetails() {
                       </span>
 
                       <button
-                        className="p-1 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
-                        title="View Document"
+                        onClick={() => doc.url && setPreviewPhoto({ img: doc.url, label: doc.name })}
+                        disabled={!doc.url}
+                        className={`p-1 rounded-full transition-colors ${
+                          doc.url
+                            ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                            : 'text-slate-300 cursor-not-allowed'
+                        }`}
+                        title={doc.url ? 'View Document' : 'No document available'}
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </button>
@@ -1112,20 +1161,39 @@ export default function DriverDetails() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative border border-slate-200"
+            className="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative border border-slate-200 animate-in zoom-in-95"
           >
-            {/* Header with Close Button Only */}
-            <div className="flex items-center justify-end pb-2">
-              <button
-                onClick={() => setPreviewPhoto(null)}
-                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 hover:text-black transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            {/* Header with Title, Download and Close */}
+            <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+              <h4 className="text-base font-black text-black">
+                {typeof previewPhoto === 'string'
+                  ? 'Document Preview'
+                  : previewPhoto.label || previewPhoto.title || 'Document Preview'}
+              </h4>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const imgUrl = typeof previewPhoto === 'string' ? previewPhoto : previewPhoto.img;
+                    const title = typeof previewPhoto === 'string' ? 'document' : (previewPhoto.label || previewPhoto.title || 'document');
+                    handleDownload(imgUrl, title);
+                  }}
+                  className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600 hover:text-black transition-colors cursor-pointer"
+                  title="Download Document"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setPreviewPhoto(null)}
+                  className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 hover:text-black transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Large Image Preview Only */}
-            <div className="flex items-center justify-center bg-slate-50/70 rounded-2xl overflow-hidden max-h-[75vh]">
+            {/* Large Image Preview */}
+            <div className="flex items-center justify-center bg-slate-50/70 rounded-2xl overflow-hidden max-h-[75vh] p-2 border border-slate-100">
               <img
                 src={typeof previewPhoto === 'string' ? previewPhoto : previewPhoto.img}
                 alt="Preview"

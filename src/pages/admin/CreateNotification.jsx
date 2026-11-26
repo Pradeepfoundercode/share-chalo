@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   Home,
@@ -15,9 +17,11 @@ import {
   Plus,
   X,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { DetailsHeader } from '../../components/common';
+import { createNotificationApi } from '../../services/notification.services';
 
 // Custom SVGs requested by user
 import financeSettlementsIcon from '../../assets/dashboard/finance-settlements.svg';
@@ -31,22 +35,21 @@ import diwaliBannerImg from '../../assets/9ff746e1-a841-43b9-87d4-d176938e4a7a.p
 
 export default function CreateNotification() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Form states
-  const [title, setTitle] = useState('Diwali Special Offer');
-  const [message, setMessage] = useState(
-    'Get 20% off on your next 3 rides.\nUse code: DIWALI20 and enjoy a safer, more affordable ride with Share Chalo. 🎉'
-  );
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
 
   // Recipient Target
-  const [recipientOption, setRecipientOption] = useState('Selected Users');
+  const [recipientOption, setRecipientOption] = useState('All Users');
 
   // Schedule option: 'now' or 'schedule'
   const [scheduleOption, setScheduleOption] = useState('now');
-  const [scheduleDate, setScheduleDate] = useState('2026-11-03');
+  const [scheduleDate, setScheduleDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [scheduleTime, setScheduleTime] = useState('12:00');
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
+  const [calendarViewDate, setCalendarViewDate] = useState(() => new Date());
 
   const formatDisplayDate = (dateStr) => {
     if (!dateStr) return 'Select Date';
@@ -61,13 +64,13 @@ export default function CreateNotification() {
   };
 
   // Media preview state
-  const [mediaUploaded, setMediaUploaded] = useState(true);
+  const [mediaUploaded, setMediaUploaded] = useState(false);
 
   // User picker state
   const [userSearch, setUserSearch] = useState('');
   const [userFilter, setUserFilter] = useState('All Users');
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
-  const [selectedUserIds, setSelectedUserIds] = useState([1, 2, 3]);
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
 
   // Toast feedback
   const [toastMsg, setToastMsg] = useState('');
@@ -76,6 +79,26 @@ export default function CreateNotification() {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 3000);
   };
+
+  // Mutation for creating/broadcasting notification
+  const createMutation = useMutation({
+    mutationFn: createNotificationApi,
+    onSuccess: (data) => {
+      const msg = data?.message || 'Notification broadcasted successfully';
+      toast.success(msg);
+      triggerToast(msg);
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+      setTimeout(() => navigate('/notifications'), 1000);
+    },
+    onError: (err) => {
+      const errorMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to broadcast notification';
+      toast.error(errorMsg);
+      triggerToast(errorMsg);
+    },
+  });
 
   // Mock users list for selected users table
   const usersList = [
@@ -142,12 +165,38 @@ export default function CreateNotification() {
 
   const handleSend = (e) => {
     e.preventDefault();
-    triggerToast(
-      scheduleOption === 'now'
-        ? 'Notification broadcasted successfully!'
-        : 'Notification scheduled successfully!'
-    );
-    setTimeout(() => navigate('/notifications'), 1200);
+    if (!title.trim()) {
+      toast.error('Please enter a notification title');
+      return;
+    }
+    if (!message.trim()) {
+      toast.error('Please enter a notification message');
+      return;
+    }
+
+    let target = 'all';
+    if (recipientOption === 'All Passengers') target = 'passenger';
+    else if (recipientOption === 'All Drivers') target = 'driver';
+    else if (recipientOption === 'Selected Users') target = 'all';
+
+    let scheduledAt = null;
+    if (scheduleOption === 'schedule' && scheduleDate) {
+      const timeStr = scheduleTime || '00:00';
+      try {
+        scheduledAt = new Date(`${scheduleDate}T${timeStr}:00`).toISOString();
+      } catch {
+        scheduledAt = null;
+      }
+    }
+
+    const payload = {
+      title: title.trim(),
+      message: message.trim(),
+      target,
+      scheduledAt,
+    };
+
+    createMutation.mutate(payload);
   };
 
   const handleSaveDraft = () => {
@@ -538,10 +587,20 @@ export default function CreateNotification() {
             <div className="flex items-center gap-2.5 pt-1">
               <button
                 type="submit"
-                className="h-10.5 px-6 rounded-xl bg-[#fed011] hover:bg-amber-400 text-black text-sm sm:text-base font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+                disabled={createMutation.isPending}
+                className="h-10.5 px-6 rounded-xl bg-[#fed011] hover:bg-amber-400 disabled:opacity-60 disabled:cursor-not-allowed text-black text-sm sm:text-base font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
               >
-                <Send className="w-4.5 h-4.5" />
-                <span>Send Notification</span>
+                {createMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4.5 h-4.5" />
+                    <span>Send Notification</span>
+                  </>
+                )}
               </button>
 
               <button

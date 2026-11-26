@@ -57,8 +57,13 @@ export default function PendingVerificationView({ driver }) {
   }, [activeStep, driver?.id]);
 
   const isProfileApproved = (driver.profileStatus || '').toLowerCase() === 'approved';
+  const isProfileRejected = (driver.profileStatus || '').toLowerCase() === 'rejected';
+
   const isKycApproved = (driver.kycStatus || '').toLowerCase() === 'approved';
+  const isKycRejected = (driver.kycStatus || '').toLowerCase() === 'rejected';
+
   const isVehicleApproved = (driver.vehicleStatus || '').toLowerCase() === 'approved';
+  const isVehicleRejected = (driver.vehicleStatus || '').toLowerCase() === 'rejected';
 
   const hasVehicle = Boolean(
     driver.raw?.vehicle &&
@@ -73,18 +78,28 @@ export default function PendingVerificationView({ driver }) {
     {
       num: 1,
       name: 'Personal Details',
-      status: isProfileApproved ? 'Approved' : 'In Review',
+      status: isProfileApproved
+        ? 'Approved'
+        : isProfileRejected
+        ? 'Rejected'
+        : 'In Review',
     },
     {
       num: 2,
       name: 'KYC & Documents',
-      status: isKycApproved ? 'Approved' : 'Pending',
+      status: isKycApproved
+        ? 'Approved'
+        : isKycRejected
+        ? 'Rejected'
+        : 'Pending',
     },
     {
       num: 3,
       name: 'Vehicle Details',
       status: isVehicleApproved
         ? 'Approved'
+        : isVehicleRejected
+        ? 'Rejected'
         : isVehicleNotSubmitted
         ? 'Not Submitted'
         : 'Pending',
@@ -92,7 +107,12 @@ export default function PendingVerificationView({ driver }) {
     {
       num: 4,
       name: 'Review & Approve',
-      status: isProfileApproved && isKycApproved && isVehicleApproved ? 'Approved' : 'Pending',
+      status:
+        isProfileApproved && isKycApproved && isVehicleApproved
+          ? 'Approved'
+          : isProfileRejected || isKycRejected || isVehicleRejected
+          ? 'Rejected'
+          : 'Pending',
     },
   ];
 
@@ -126,6 +146,14 @@ export default function PendingVerificationView({ driver }) {
       await queryClient.invalidateQueries({
         queryKey: ['admin-drivers'],
       });
+      await queryClient.invalidateQueries({
+        queryKey: ['drivers'],
+      });
+
+      // Move to next step if not the last step
+      if (activeStep < 4) {
+        setActiveStep((prev) => prev + 1);
+      }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to approve.';
       toast.error(msg);
@@ -178,6 +206,12 @@ export default function PendingVerificationView({ driver }) {
       await queryClient.invalidateQueries({
         queryKey: ['admin-drivers'],
       });
+      await queryClient.invalidateQueries({
+        queryKey: ['drivers'],
+      });
+
+      // Redirect to driver list page so the new list/table is re-fetched
+      navigate('/drivers');
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to reject.';
       toast.error(msg);
@@ -363,6 +397,8 @@ export default function PendingVerificationView({ driver }) {
                       className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border shrink-0 ${
                         step.status === 'Approved'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : step.status === 'Rejected'
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
                           : step.status === 'In Review'
                           ? 'bg-amber-100 text-amber-900 border-amber-200'
                           : step.status === 'Not Submitted'
@@ -706,10 +742,12 @@ export default function PendingVerificationView({ driver }) {
                             className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border ${
                               isProfileApproved
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : isProfileRejected
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
                                 : 'bg-amber-100 text-amber-900 border-amber-200'
                             }`}
                           >
-                            {isProfileApproved ? 'Approved' : 'Pending'}
+                            {isProfileApproved ? 'Approved' : isProfileRejected ? 'Rejected' : 'Pending'}
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 font-medium">
@@ -739,10 +777,12 @@ export default function PendingVerificationView({ driver }) {
                             className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border ${
                               isKycApproved
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : isKycRejected
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
                                 : 'bg-amber-100 text-amber-900 border-amber-200'
                             }`}
                           >
-                            {isKycApproved ? 'Approved' : 'Pending'}
+                            {isKycApproved ? 'Approved' : isKycRejected ? 'Rejected' : 'Pending'}
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 font-medium">
@@ -772,6 +812,8 @@ export default function PendingVerificationView({ driver }) {
                             className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border ${
                               isVehicleApproved
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : isVehicleRejected
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
                                 : isVehicleNotSubmitted
                                 ? 'bg-slate-100 text-slate-600 border-slate-200'
                                 : 'bg-amber-100 text-amber-900 border-amber-200'
@@ -779,6 +821,8 @@ export default function PendingVerificationView({ driver }) {
                           >
                             {isVehicleApproved
                               ? 'Approved'
+                              : isVehicleRejected
+                              ? 'Rejected'
                               : isVehicleNotSubmitted
                               ? 'Not Submitted'
                               : 'Pending'}
@@ -836,9 +880,14 @@ export default function PendingVerificationView({ driver }) {
                   <span>
                     Pending Steps:{' '}
                     {[
-                      !isProfileApproved && 'Personal Details',
-                      !isKycApproved && 'KYC & Documents',
-                      !isVehicleApproved && (isVehicleNotSubmitted ? 'Vehicle (Not Submitted)' : 'Vehicle Details'),
+                      !isProfileApproved && (isProfileRejected ? 'Personal Details (Rejected)' : 'Personal Details'),
+                      !isKycApproved && (isKycRejected ? 'KYC & Documents (Rejected)' : 'KYC & Documents'),
+                      !isVehicleApproved &&
+                        (isVehicleNotSubmitted
+                          ? 'Vehicle (Not Submitted)'
+                          : isVehicleRejected
+                          ? 'Vehicle Details (Rejected)'
+                          : 'Vehicle Details'),
                     ]
                       .filter(Boolean)
                       .join(', ')}

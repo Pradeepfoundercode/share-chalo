@@ -1,13 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import vehicleDocumentIcon from '../../assets/drivers/vehicle-document.svg';
 import driverKycIcon from '../../assets/drivers/Group-9-f29c03.svg';
 import {
   Check,
   Eye,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 
 export default function KycDocumentsTab({ driver }) {
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+
+  const handleDownload = async (url, title) => {
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const extension = url.split('.').pop()?.split(/[?#]/)[0] || 'jpg';
+      const cleanTitle = (title || 'document').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      link.download = `${cleanTitle}_${driver.id || 'doc'}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback for CORS or direct navigation
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.download = `${(title || 'document').toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   const isBus =
     driver.vehicleCategory?.toLowerCase() === 'bus' ||
     (driver.vehicleType || '').toLowerCase().includes('bus');
@@ -191,8 +221,14 @@ export default function KycDocumentsTab({ driver }) {
                 <div className="flex items-center gap-1">
                   {doc.hasView && (
                     <button
-                      className="p-1.5 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
-                      title="View Document"
+                      onClick={() => doc.previewImg && setPreviewPhoto({ img: doc.previewImg, title: doc.title })}
+                      disabled={!doc.previewImg}
+                      className={`p-1.5 rounded-full transition-colors ${
+                        doc.previewImg
+                          ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                          : 'text-slate-300 cursor-not-allowed'
+                      }`}
+                      title={doc.previewImg ? 'View Document' : 'No document image available'}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -200,8 +236,14 @@ export default function KycDocumentsTab({ driver }) {
 
                   {doc.hasDownload && (
                     <button
-                      className="p-1.5 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
-                      title="Download Document"
+                      onClick={() => doc.previewImg && handleDownload(doc.previewImg, doc.title)}
+                      disabled={!doc.previewImg}
+                      className={`p-1.5 rounded-full transition-colors ${
+                        doc.previewImg
+                          ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                          : 'text-slate-300 cursor-not-allowed'
+                      }`}
+                      title={doc.previewImg ? 'Download Document' : 'No document available to download'}
                     >
                       <Download className="w-4 h-4" />
                     </button>
@@ -280,15 +322,27 @@ export default function KycDocumentsTab({ driver }) {
 
                 <div className="flex items-center gap-1">
                   <button
-                    className="p-1.5 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
-                    title="View Document"
+                    onClick={() => doc.previewImg && setPreviewPhoto({ img: doc.previewImg, title: doc.title })}
+                    disabled={!doc.previewImg}
+                    className={`p-1.5 rounded-full transition-colors ${
+                      doc.previewImg
+                        ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                        : 'text-slate-300 cursor-not-allowed'
+                    }`}
+                    title={doc.previewImg ? 'View Document' : 'No document image available'}
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </button>
 
                   <button
-                    className="p-1.5 hover:bg-slate-200/60 rounded-full transition-colors text-slate-600 hover:text-black cursor-pointer"
-                    title="Download Document"
+                    onClick={() => doc.previewImg && handleDownload(doc.previewImg, doc.title)}
+                    disabled={!doc.previewImg}
+                    className={`p-1.5 rounded-full transition-colors ${
+                      doc.previewImg
+                        ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                        : 'text-slate-300 cursor-not-allowed'
+                    }`}
+                    title={doc.previewImg ? 'Download Document' : 'No document available to download'}
                   >
                     <Download className="w-3.5 h-3.5" />
                   </button>
@@ -298,6 +352,48 @@ export default function KycDocumentsTab({ driver }) {
           ))}
         </div>
       </div>
+
+      {/* Full Preview Modal (Exact match to Pending Verification View) */}
+      {previewPhoto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-xs"
+          onClick={() => setPreviewPhoto(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl p-4 flex flex-col items-center animate-in fade-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-full flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <h4 className="text-base font-black text-black">
+                {previewPhoto.title || 'Document Preview'}
+              </h4>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownload(previewPhoto.img, previewPhoto.title)}
+                  className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors text-slate-700 cursor-pointer"
+                  title="Download Document"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setPreviewPhoto(null)}
+                  className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors text-slate-700 cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="w-full max-h-[70vh] flex items-center justify-center overflow-hidden rounded-xl bg-slate-50 border border-slate-200 p-2">
+              <img
+                src={previewPhoto.img}
+                alt={previewPhoto.title || 'Preview'}
+                className="max-h-[66vh] w-auto object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

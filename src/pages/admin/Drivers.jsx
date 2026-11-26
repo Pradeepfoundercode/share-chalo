@@ -673,7 +673,7 @@ export default function Drivers() {
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Driver ID</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Mobile</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle Type</th>
-                <th className="py-2.5 px-3.5 whitespace-nowrap">Status</th>
+                <th className="py-2.5 px-3.5 whitespace-nowrap">KYC Status</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Account Status</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Registered On</th>
                 <th className="py-2.5 px-3.5 text-center whitespace-nowrap">View</th>

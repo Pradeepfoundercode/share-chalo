@@ -16,6 +16,7 @@ import {
   Users,
   Loader2,
   AlertCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { initialModelsList, initialBrandsList } from '../../data/vehicleMasterData';
 import Pagination from '../common/Pagination';
@@ -42,6 +43,8 @@ export default function ModelTab() {
   const [formError, setFormError] = useState('');
   const [statusModal, setStatusModal] = useState(null);
   const [fetchingId, setFetchingId] = useState(null);
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -181,6 +184,8 @@ export default function ModelTab() {
     setCapacity('5');
     setEditingId(null);
     setFormError('');
+    setBrandDropdownOpen(false);
+    setTypeDropdownOpen(false);
   };
 
   const handleEdit = async (model) => {
@@ -496,54 +501,142 @@ export default function ModelTab() {
         </div>
 
         {/* Brand Dropdown */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 relative">
           <label className="block text-sm font-bold text-slate-800">
             Brand <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <Tag className="w-4 h-4 sm:w-4.5 sm:h-4.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <select
-              value={selectedBrandId || (brandOptions[0]?.id ?? '')}
-              onChange={(e) => {
-                setSelectedBrandId(Number(e.target.value));
-                setFormError('');
+            <button
+              type="button"
+              onClick={() => {
+                setBrandDropdownOpen(!brandDropdownOpen);
+                setTypeDropdownOpen(false);
               }}
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all cursor-pointer"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 flex items-center justify-between cursor-pointer focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all text-left shadow-2xs"
             >
-              {brandOptions.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+              <span className="truncate">
+                {brandOptions.find((b) => b.id === (selectedBrandId || brandOptions[0]?.id))?.name || 'Select Brand'}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform ${
+                  brandDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Backdrop for outside click */}
+            {brandDropdownOpen && (
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setBrandDropdownOpen(false)}
+              />
+            )}
+
+            {/* Custom Dropdown Menu */}
+            {brandDropdownOpen && (
+              <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 max-h-56 overflow-y-auto space-y-0.5 animate-in fade-in zoom-in-95 scrollbar-thin">
+                {brandOptions.length === 0 ? (
+                  <div className="p-3 text-center text-xs font-semibold text-slate-400">
+                    No brands available
+                  </div>
+                ) : (
+                  brandOptions.map((b) => {
+                    const isSelected = (selectedBrandId || brandOptions[0]?.id) === b.id;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedBrandId(b.id);
+                          setBrandDropdownOpen(false);
+                          setFormError('');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#fed011] text-black font-bold shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                        }`}
+                      >
+                        <span className="truncate">{b.name}</span>
+                        {isSelected && <span className="text-xs font-bold">✓</span>}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Vehicle Type */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 relative">
           <label className="block text-sm font-bold text-slate-800">
             Vehicle Type <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <Layers className="w-4 h-4 sm:w-4.5 sm:h-4.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <select
-              value={selectedTypeId || (vehicleTypes[0]?.id ?? '')}
-              onChange={(e) => {
-                setSelectedTypeId(Number(e.target.value));
-                setFormError('');
+            <button
+              type="button"
+              onClick={() => {
+                setTypeDropdownOpen(!typeDropdownOpen);
+                setBrandDropdownOpen(false);
               }}
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all cursor-pointer"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 flex items-center justify-between cursor-pointer focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all text-left shadow-2xs"
             >
-              {isTypesLoading && vehicleTypes.length === 0 ? (
-                <option value="">Loading types...</option>
-              ) : (
-                vehicleTypes.map((vt) => (
-                  <option key={vt.id} value={vt.id}>
-                    {vt.name}
-                  </option>
-                ))
-              )}
-            </select>
+              <span className="truncate">
+                {isTypesLoading && vehicleTypes.length === 0
+                  ? 'Loading types...'
+                  : vehicleTypes.find((vt) => vt.id === (selectedTypeId || vehicleTypes[0]?.id))?.name || 'Select Type'}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform ${
+                  typeDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Backdrop for outside click */}
+            {typeDropdownOpen && (
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setTypeDropdownOpen(false)}
+              />
+            )}
+
+            {/* Custom Dropdown Menu */}
+            {typeDropdownOpen && (
+              <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 max-h-56 overflow-y-auto space-y-0.5 animate-in fade-in zoom-in-95 scrollbar-thin">
+                {vehicleTypes.length === 0 ? (
+                  <div className="p-3 text-center text-xs font-semibold text-slate-400">
+                    No types available
+                  </div>
+                ) : (
+                  vehicleTypes.map((vt) => {
+                    const isSelected = (selectedTypeId || vehicleTypes[0]?.id) === vt.id;
+                    return (
+                      <button
+                        key={vt.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTypeId(vt.id);
+                          setTypeDropdownOpen(false);
+                          setFormError('');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#fed011] text-black font-bold shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                        }`}
+                      >
+                        <span className="truncate">{vt.name}</span>
+                        {isSelected && <span className="text-xs font-bold">✓</span>}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   Bell,
   CheckCircle2,
@@ -9,12 +10,7 @@ import {
   Search,
   Users,
   Eye,
-  Megaphone,
-  Gift,
   Car,
-  Info,
-  Percent,
-  ShieldCheck,
   AlertTriangle,
   X,
   Clock,
@@ -23,9 +19,10 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
-import { notificationsSummary, notificationsList } from '../../data/notificationsData';
+import { getNotificationsApi } from '../../services/notification.services';
 import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
 
@@ -52,7 +49,114 @@ export default function Notifications() {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [calendarViewDate, setCalendarViewDate] = useState(new Date(2026, 10, 1));
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+
+  // Applied filters state (only applies when "Apply" button is clicked or Enter in search)
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: '',
+    recipient: 'All Recipients',
+    status: 'All Statuses',
+    startDate: '',
+    endDate: '',
+  });
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      search: searchTerm,
+      recipient: selectedRecipient,
+      status: selectedStatus,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    setCurrentPage(1);
+  };
+
+  // Fetch Notifications from API
+  const { data: notificationsResponse, isLoading } = useQuery({
+    queryKey: ['admin-notifications', currentPage, entriesPerPage],
+    queryFn: () =>
+      getNotificationsApi({
+        page: currentPage,
+        limit: entriesPerPage,
+      }),
+  });
+
+  // Extract raw notifications array safely from API
+  const rawNotifications = useMemo(() => {
+    if (!notificationsResponse) return [];
+    if (Array.isArray(notificationsResponse.data)) return notificationsResponse.data;
+    if (Array.isArray(notificationsResponse.data?.notifications)) return notificationsResponse.data.notifications;
+    if (Array.isArray(notificationsResponse.notifications)) return notificationsResponse.notifications;
+    return [];
+  }, [notificationsResponse]);
+
+  // Formatting helpers
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const mapRecipient = (target, targetLabel) => {
+    if (targetLabel) return targetLabel;
+    if (!target) return 'All Users';
+    const t = target.toLowerCase();
+    if (t === 'passenger' || t === 'passengers') return 'Passengers';
+    if (t === 'driver' || t === 'drivers') return 'Drivers';
+    return 'All Users';
+  };
+
+  const formatStatus = (s) => {
+    if (!s) return 'Sent';
+    const lower = s.toLowerCase();
+    if (lower === 'sent') return 'Sent';
+    if (lower === 'scheduled') return 'Scheduled';
+    if (lower === 'failed') return 'Failed';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+
+  // Map API notifications to UI model
+  const mappedNotifications = useMemo(() => {
+    return rawNotifications.map((item, idx) => {
+      const formattedId = item.id
+        ? String(item.id).startsWith('NTF')
+          ? item.id
+          : `NTF${String(item.id).padStart(5, '0')}`
+        : `NTF${String(idx + 1).padStart(5, '0')}`;
+
+      const title = item.title || 'Notification';
+      const message = item.message || '';
+      const recipient = mapRecipient(item.target, item.targetLabel);
+      const status = formatStatus(item.status);
+      const sentOn = item.scheduledAt
+        ? formatDateTime(item.scheduledAt)
+        : formatDateTime(item.createdAt || item.sentOn || item.date);
+
+      return {
+        ...item,
+        rawId: item.id,
+        id: formattedId,
+        numericId: item.id || idx + 1,
+        title,
+        message,
+        recipient,
+        status,
+        sentOn,
+      };
+    });
+  }, [rawNotifications]);
 
   // Helper to parse dates like "02 Nov 2026", "02 Nov 2026, 10:00 AM"
   const parseNotificationDate = (dateStr) => {
@@ -86,15 +190,37 @@ export default function Notifications() {
     setDatePickerOpen(false);
     setStatusDropdownOpen(false);
     setRecipientDropdownOpen(false);
+    setAppliedFilters({
+      search: '',
+      recipient: 'All Recipients',
+      status: 'All Statuses',
+      startDate: '',
+      endDate: '',
+    });
     setCurrentPage(1);
   };
+
+  // Summary counts for Stats cards (calculated directly from API data)
+  const summary = useMemo(() => {
+    const total = notificationsResponse?.meta?.total ?? rawNotifications.length;
+    const sent = mappedNotifications.filter((n) => (n.status || '').toLowerCase() === 'sent').length;
+    const scheduled = mappedNotifications.filter((n) => (n.status || '').toLowerCase() === 'scheduled').length;
+    const failed = mappedNotifications.filter((n) => (n.status || '').toLowerCase() === 'failed').length;
+
+    return {
+      totalNotifications: Number(total || 0).toLocaleString('en-IN'),
+      sent: String(sent || 0),
+      scheduled: String(scheduled || 0),
+      failed: String(failed || 0),
+    };
+  }, [notificationsResponse, rawNotifications.length, mappedNotifications]);
 
   // Stats cards configuration for reusable StatsCards
   const notificationStatsItems = [
     {
       id: 'total-notifications',
       label: 'Total Notifications',
-      value: notificationsSummary.totalNotifications,
+      value: summary.totalNotifications,
       image: totalNotificationsIcon,
       cardColor: 'bg-[#fffdf0] border-amber-300',
       iconBg: 'bg-[#fef3c7]',
@@ -107,7 +233,7 @@ export default function Notifications() {
     {
       id: 'sent-notifications',
       label: 'Sent',
-      value: notificationsSummary.sent,
+      value: summary.sent,
       image: sentNotificationsIcon,
       cardColor: 'bg-[#f0fdf4] border-emerald-200',
       iconBg: 'bg-[#dcfce7]',
@@ -120,7 +246,7 @@ export default function Notifications() {
     {
       id: 'scheduled-notifications',
       label: 'Scheduled',
-      value: notificationsSummary.scheduled,
+      value: summary.scheduled,
       image: scheduledNotificationsIcon,
       cardColor: 'bg-[#f0f9ff] border-sky-200',
       iconBg: 'bg-[#e0f2fe]',
@@ -133,7 +259,7 @@ export default function Notifications() {
     {
       id: 'failed-notifications',
       label: 'Failed',
-      value: notificationsSummary.failed,
+      value: summary.failed,
       image: failedNotificationsIcon,
       cardColor: 'bg-[#fff1f2] border-rose-200',
       iconBg: 'bg-[#ffe4e6]',
@@ -144,44 +270,6 @@ export default function Notifications() {
       height: 'p-3.5 sm:p-4',
     },
   ];
-
-  // Modal Detail State
-  const [selectedNotification, setSelectedNotification] = useState(null);
-
-  // Create Notification Modal
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newMessage, setNewMessage] = useState('');
-  const [newRecipient, setNewRecipient] = useState('All Users');
-  const [scheduleType, setScheduleType] = useState('now');
-  const [successToast, setSuccessToast] = useState('');
-
-  const triggerToast = (msg) => {
-    setSuccessToast(msg);
-    setTimeout(() => setSuccessToast(''), 3000);
-  };
-
-  // Helper for notification icons
-  const renderNotificationIcon = (iconType) => {
-    switch (iconType) {
-      case 'megaphone':
-        return <Megaphone className="w-5 h-5 text-emerald-600" />;
-      case 'gift':
-        return <Gift className="w-5 h-5 text-rose-500" />;
-      case 'car':
-        return <Car className="w-5 h-5 text-amber-600" />;
-      case 'info':
-        return <Info className="w-5 h-5 text-sky-500" />;
-      case 'percent':
-        return <Percent className="w-5 h-5 text-rose-500" />;
-      case 'shield':
-        return <ShieldCheck className="w-5 h-5 text-emerald-600" />;
-      case 'alert':
-        return <AlertTriangle className="w-5 h-5 text-rose-500" />;
-      default:
-        return <Bell className="w-5 h-5 text-slate-600" />;
-    }
-  };
 
   // Helper for status badge (matching vehicle list style)
   const renderStatusBadge = (status) => {
@@ -215,7 +303,8 @@ export default function Notifications() {
 
   // Helper for recipient pill (matching vehicle list style)
   const renderRecipientBadge = (recipient) => {
-    if (recipient === 'Passengers') {
+    const r = (recipient || '').toLowerCase();
+    if (r.includes('passenger') && !r.includes('all') && !r.includes('&')) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100">
           <Users className="w-3.5 h-3.5 text-sky-600 stroke-[2.2]" />
@@ -223,7 +312,7 @@ export default function Notifications() {
         </span>
       );
     }
-    if (recipient === 'Drivers') {
+    if (r.includes('driver') && !r.includes('all') && !r.includes('&')) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
           <span className="w-3.5 h-3.5 rounded-full border border-emerald-600 flex items-center justify-center text-[9px] font-black">
@@ -236,15 +325,15 @@ export default function Notifications() {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200/80">
         <Users className="w-3.5 h-3.5 text-amber-700 stroke-[2.2]" />
-        All Users
+        {recipient || 'All Users'}
       </span>
     );
   };
 
   // Filtered notifications
   const filteredNotifications = useMemo(() => {
-    return notificationsList.filter((item) => {
-      const query = searchTerm.toLowerCase().trim();
+    return mappedNotifications.filter((item) => {
+      const query = appliedFilters.search.toLowerCase().trim();
       const matchesSearch =
         query === '' ||
         item.title.toLowerCase().includes(query) ||
@@ -253,27 +342,28 @@ export default function Notifications() {
         (item.id && item.id.toLowerCase().includes(query));
 
       const matchesRecipient =
-        selectedRecipient === 'All Recipients' ||
-        selectedRecipient === 'All' ||
-        item.recipient.toLowerCase() === selectedRecipient.toLowerCase();
+        appliedFilters.recipient === 'All Recipients' ||
+        appliedFilters.recipient === 'All Users' ||
+        appliedFilters.recipient === 'All' ||
+        item.recipient.toLowerCase().includes(appliedFilters.recipient.toLowerCase());
 
       const matchesStatus =
-        selectedStatus === 'All Statuses' ||
-        selectedStatus === 'All Status' ||
-        selectedStatus === 'All' ||
-        item.status.toLowerCase() === selectedStatus.toLowerCase();
+        appliedFilters.status === 'All Statuses' ||
+        appliedFilters.status === 'All Status' ||
+        appliedFilters.status === 'All' ||
+        item.status.toLowerCase() === appliedFilters.status.toLowerCase();
 
       let matchesDate = true;
-      if (startDate || endDate) {
-        const itemDate = parseNotificationDate(item.date || item.sentOn);
+      if (appliedFilters.startDate || appliedFilters.endDate) {
+        const itemDate = parseNotificationDate(item.createdAt || item.sentOn || item.date);
         if (itemDate) {
-          if (startDate) {
-            const start = new Date(startDate);
+          if (appliedFilters.startDate) {
+            const start = new Date(appliedFilters.startDate);
             start.setHours(0, 0, 0, 0);
             if (itemDate < start) matchesDate = false;
           }
-          if (endDate) {
-            const end = new Date(endDate);
+          if (appliedFilters.endDate) {
+            const end = new Date(appliedFilters.endDate);
             end.setHours(23, 59, 59, 999);
             if (itemDate > end) matchesDate = false;
           }
@@ -282,30 +372,23 @@ export default function Notifications() {
 
       return matchesSearch && matchesRecipient && matchesStatus && matchesDate;
     });
-  }, [searchTerm, selectedRecipient, selectedStatus, startDate, endDate]);
+  }, [mappedNotifications, appliedFilters]);
 
-  const paginatedNotifications = useMemo(() => {
+  const isServerPaginated = Boolean(
+    notificationsResponse?.meta &&
+    typeof notificationsResponse.meta.total === 'number'
+  );
+
+  const displayNotifications = useMemo(() => {
+    if (isServerPaginated) {
+      return filteredNotifications;
+    }
     const startIndex = (currentPage - 1) * entriesPerPage;
     return filteredNotifications.slice(startIndex, startIndex + entriesPerPage);
-  }, [filteredNotifications, currentPage, entriesPerPage]);
-
-  const handleSendNotification = (e) => {
-    e.preventDefault();
-    setCreateModalOpen(false);
-    triggerToast('Notification created and queued successfully!');
-    setNewTitle('');
-    setNewMessage('');
-  };
+  }, [filteredNotifications, isServerPaginated, currentPage, entriesPerPage]);
 
   return (
     <div className="space-y-4 pb-10">
-      {/* Toast Notification */}
-      {successToast && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 text-xs font-bold animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4" />
-          {successToast}
-        </div>
-      )}
 
       {/* =========================================================
           1. TOP ROW: TAB BUTTONS (LEFT) + CREATE NOTIFICATION BUTTON (RIGHT)
@@ -370,10 +453,8 @@ export default function Notifications() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
             placeholder="Search by Title, Message or ID..."
             className="w-full pl-10.5 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all placeholder:text-slate-400 font-medium"
           />
@@ -420,7 +501,6 @@ export default function Notifications() {
                       onClick={() => {
                         setSelectedRecipient(recipient);
                         setRecipientDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -475,7 +555,6 @@ export default function Notifications() {
                       onClick={() => {
                         setSelectedStatus(status);
                         setStatusDropdownOpen(false);
-                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                         isSelected
@@ -706,9 +785,7 @@ export default function Notifications() {
           {/* Apply Button */}
           <button
             type="button"
-            onClick={() => {
-              setCurrentPage(1);
-            }}
+            onClick={handleApplyFilters}
             className="flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-bold text-black bg-[#fed011] hover:bg-amber-400 rounded-xl shadow-xs transition-all cursor-pointer max-sm:w-full"
           >
             <Filter className="w-4 h-4 fill-black" />
@@ -736,17 +813,26 @@ export default function Notifications() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-              {filteredNotifications.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-500 font-semibold text-sm">
+                      <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+                      Loading notifications...
+                    </div>
+                  </td>
+                </tr>
+              ) : displayNotifications.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
                     No notifications found matching your criteria.
                   </td>
                 </tr>
               ) : (
-                paginatedNotifications.map((item, index) => (
+                displayNotifications.map((item, index) => (
                   <tr
                     key={item.id}
-                    onClick={() => navigate(`/notifications/${item.id || item.numericId}`)}
+                    onClick={() => navigate(`/notifications/${item.rawId || item.id || item.numericId}`, { state: { notification: item } })}
                     className="hover:bg-amber-50/20 transition-colors cursor-pointer"
                   >
                     {/* # */}
@@ -755,15 +841,10 @@ export default function Notifications() {
                     </td>
 
                     {/* Title */}
-                    <td className="py-2 px-3.5">
-                      <div className="flex items-center gap-2.5 whitespace-nowrap">
-                        <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center shrink-0">
-                          {renderNotificationIcon(item.iconType)}
-                        </div>
-                        <span className="font-bold text-slate-900 text-sm sm:text-base">
-                          {item.title}
-                        </span>
-                      </div>
+                    <td className="py-2 px-3.5 whitespace-nowrap">
+                      <span className="font-bold text-slate-900 text-sm sm:text-base">
+                        {item.title}
+                      </span>
                     </td>
 
                     {/* Message (Preview) */}
@@ -794,7 +875,7 @@ export default function Notifications() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/notifications/${item.id || item.numericId}`);
+                          navigate(`/notifications/${item.rawId || item.id || item.numericId}`, { state: { notification: item } });
                         }}
                         className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer inline-flex items-center justify-center"
                         title="View Notification Details"
@@ -812,198 +893,17 @@ export default function Notifications() {
         {/* Reusable Standardized Pagination */}
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredNotifications.length}
+          totalItems={notificationsResponse?.meta?.total ?? filteredNotifications.length}
           itemsPerPage={entriesPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={(newSize) => {
             setEntriesPerPage(newSize);
             setCurrentPage(1);
           }}
-          pageSizeOptions={[5, 10, 25, 50]}
+          pageSizeOptions={[5, 10, 20, 50]}
           itemLabel="notifications"
         />
       </div>
-
-      {/* =========================================================
-          4. VIEW NOTIFICATION DETAIL MODAL
-          ========================================================= */}
-      {selectedNotification && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95">
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-amber-50/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#fed011] text-slate-950 flex items-center justify-center font-bold">
-                  {renderNotificationIcon(selectedNotification.iconType)}
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900">
-                    {selectedNotification.title}
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    Sent on {selectedNotification.sentOn}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedNotification(null)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                <div>
-                  <span className="text-slate-500 font-semibold block mb-0.5">Recipient</span>
-                  {renderRecipientBadge(selectedNotification.recipient)}
-                </div>
-                <div>
-                  <span className="text-slate-500 font-semibold block mb-0.5">Delivery Status</span>
-                  {renderStatusBadge(selectedNotification.status)}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5 uppercase tracking-wider">
-                  Full Message Content
-                </label>
-                <div className="p-4 rounded-xl bg-slate-50/60 border border-slate-200 text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
-                  {selectedNotification.fullMessage}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50/50">
-              <button
-                type="button"
-                onClick={() => setSelectedNotification(null)}
-                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-black cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================
-          5. CREATE NOTIFICATION POPUP MODAL
-          ========================================================= */}
-      {createModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-xl w-full overflow-hidden animate-in fade-in zoom-in-95">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#fffdf0]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#fed011] text-slate-950 flex items-center justify-center font-bold">
-                  <img src={sendPlaneIcon} alt="Send" className="w-5 h-5 object-contain shrink-0" />
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900">
-                    Create New Notification
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    Broadcast announcement or send targeted push alert.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setCreateModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSendNotification} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  Notification Title <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. Special Holiday Cashback"
-                  className="w-full h-11 px-3.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-400 shadow-2xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  Target Recipient <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={newRecipient}
-                  onChange={(e) => setNewRecipient(e.target.value)}
-                  className="w-full h-11 px-3.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-400 shadow-2xs"
-                >
-                  <option value="All Users">All Users (Passengers & Drivers)</option>
-                  <option value="Passengers">Passengers Only</option>
-                  <option value="Drivers">Drivers Only</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  Message Body <span className="text-rose-500">*</span>
-                </label>
-                <textarea
-                  rows="4"
-                  required
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Write full announcement or alert message here..."
-                  className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:border-amber-400 shadow-2xs resize-none"
-                ></textarea>
-              </div>
-
-              <div className="flex items-center gap-4 text-xs font-bold text-slate-700 pt-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="schedule"
-                    checked={scheduleType === 'now'}
-                    onChange={() => setScheduleType('now')}
-                    className="accent-amber-500"
-                  />
-                  <span>Send Immediately</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="schedule"
-                    checked={scheduleType === 'schedule'}
-                    onChange={() => setScheduleType('schedule')}
-                    className="accent-amber-500"
-                  />
-                  <span>Schedule for later</span>
-                </label>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCreateModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-[#fed011] hover:bg-amber-400 text-black text-xs sm:text-sm font-black flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
-                >
-                  <img src={sendPlaneIcon} alt="Send Notification" className="w-4 h-4 object-contain shrink-0" />
-                  <span>Send Notification</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   Search,
   Eye,
@@ -11,8 +12,11 @@ import {
   RotateCcw,
   Download,
   Filter,
+  Loader2,
 } from 'lucide-react';
-import { vehiclesStats, vehiclesList } from '../../data/vehiclesData';
+import { getVehiclesApi } from '../../services/vehicle.services';
+import carThumb from '../../assets/White Compact Hatchback Car Cutout.png';
+import busThumb from '../../assets/commercial_bus.png';
 import { Pagination, StatsCards } from '../../components/common';
 
 // Assets for Stats Cards
@@ -24,21 +28,135 @@ import inactiveVehiclesIcon from '../../assets/drivers/inactive-vehicles.svg';
 export default function Vehicles() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('Vehicle Type');
   const [usageTypeFilter, setUsageTypeFilter] = useState('Usage Type');
   const [statusFilter, setStatusFilter] = useState('Status');
 
-  const [vehicleTypeOpen, setVehicleTypeOpen] = useState(false);
   const [usageTypeOpen, setUsageTypeOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+
+  // Fetch Vehicles API
+  const { data: vehiclesResponse, isLoading } = useQuery({
+    queryKey: ['admin-vehicles', currentPage, entriesPerPage],
+    queryFn: () =>
+      getVehiclesApi({
+        page: currentPage,
+        limit: entriesPerPage,
+      }),
+  });
+
+  // Extract raw vehicles array safely
+  const rawVehicles = useMemo(() => {
+    if (!vehiclesResponse) return [];
+    if (Array.isArray(vehiclesResponse.data)) return vehiclesResponse.data;
+    if (Array.isArray(vehiclesResponse.data?.vehicles)) return vehiclesResponse.data.vehicles;
+    if (Array.isArray(vehiclesResponse.data?.rows)) return vehiclesResponse.data.rows;
+    if (Array.isArray(vehiclesResponse.vehicles)) return vehiclesResponse.vehicles;
+    return [];
+  }, [vehiclesResponse]);
+
+  // Map API vehicle items to consistent UI model
+  const mappedVehicles = useMemo(() => {
+    return rawVehicles.map((item, index) => {
+      const id = item.vehicleId ?? item.id ?? item._id ?? index + 1;
+      const vehicleId = item.vehicleId ?? item.id ?? (index + 1);
+      const vehicleNumber =
+        item.registrationNumber ||
+        item.vehicleNumber ||
+        item.number ||
+        item.plateNumber ||
+        `VH-${id}`;
+
+      let vehicleType =
+        item.vehicleType?.name ||
+        item.vehicleTypeName ||
+        item.vehicleType ||
+        item.type ||
+        'Car';
+      if (typeof vehicleType === 'string') {
+        const lower = vehicleType.toLowerCase();
+        if (lower.includes('bus')) vehicleType = 'Bus';
+        else if (lower.includes('car')) vehicleType = 'Car';
+        else vehicleType = vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1);
+      }
+
+      let usageType =
+        item.usageType ||
+        item.usage ||
+        item.category ||
+        (item.isCommercial ? 'Commercial' : 'Private');
+      if (typeof usageType === 'string') {
+        const lower = usageType.toLowerCase();
+        if (lower.includes('com')) usageType = 'Commercial';
+        else if (lower.includes('priv')) usageType = 'Private';
+        else usageType = usageType.charAt(0).toUpperCase() + usageType.slice(1);
+      } else {
+        usageType = 'Commercial';
+      }
+
+      const driver = item.driver || item.driverDetails || item.assignedDriver;
+      const driverName =
+        (typeof driver === 'object' ? driver?.name || driver?.fullName : driver) ||
+        item.driverName ||
+        'Unassigned';
+      const driverAvatar =
+        (typeof driver === 'object'
+          ? driver?.profileImage || driver?.avatar || driver?.profilePhoto || driver?.image
+          : null) ||
+        item.driverAvatar ||
+        item.profileImage ||
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
+      const isTopDriver = Boolean(
+        item.isTopDriver || (typeof driver === 'object' && driver?.isTopDriver)
+      );
+
+      const seats =
+        item.seats ??
+        item.seatingCapacity ??
+        item.totalSeats ??
+        item.capacity ??
+        (vehicleType === 'Bus' ? 30 : 4);
+
+      let status = item.status || 'Active';
+      if (typeof status === 'string') {
+        const lower = status.toLowerCase();
+        if (lower === 'active' || lower === 'approved') status = 'Active';
+        else if (lower === 'blocked' || lower === 'rejected') status = 'Blocked';
+        else if (lower === 'inactive' || lower === 'pending') status = 'Inactive';
+        else status = status.charAt(0).toUpperCase() + status.slice(1);
+      }
+
+      const defaultImg = vehicleType === 'Bus' ? busThumb : carThumb;
+      const image =
+        item.image ||
+        item.photo ||
+        item.vehiclePhoto ||
+        (Array.isArray(item.photos) && item.photos[0]?.img) ||
+        (Array.isArray(item.photos) && typeof item.photos[0] === 'string' && item.photos[0]) ||
+        defaultImg;
+
+      return {
+        ...item,
+        id,
+        vehicleId,
+        vehicleNumber,
+        vehicleType,
+        usageType,
+        driverName,
+        driverAvatar,
+        isTopDriver,
+        seats,
+        status,
+        image,
+      };
+    });
+  }, [rawVehicles]);
 
   // Applied filter state (only triggers when "Apply" is clicked)
   const [appliedFilters, setAppliedFilters] = useState({
     search: '',
-    vehicleType: 'Vehicle Type',
     usageType: 'Usage Type',
     status: 'Status',
   });
@@ -46,7 +164,6 @@ export default function Vehicles() {
   const handleApplyFilters = () => {
     setAppliedFilters({
       search: searchTerm,
-      vehicleType: vehicleTypeFilter,
       usageType: usageTypeFilter,
       status: statusFilter,
     });
@@ -56,43 +173,52 @@ export default function Vehicles() {
   // Reset Filters
   const handleReset = () => {
     setSearchTerm('');
-    setVehicleTypeFilter('Vehicle Type');
     setUsageTypeFilter('Usage Type');
     setStatusFilter('Status');
     setAppliedFilters({
       search: '',
-      vehicleType: 'Vehicle Type',
       usageType: 'Usage Type',
       status: 'Status',
     });
     setCurrentPage(1);
   };
 
-  // Filter logic (using appliedFilters)
-  const filteredVehicles = vehiclesList.filter((v) => {
-    const matchesSearch =
-      !appliedFilters.search ||
-      v.vehicleNumber.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
-      v.driverName.toLowerCase().includes(appliedFilters.search.toLowerCase());
+  // Filter logic (using appliedFilters, sorted ascending by vehicleId)
+  const filteredVehicles = useMemo(() => {
+    return mappedVehicles
+      .filter((v) => {
+        const matchesSearch =
+          !appliedFilters.search ||
+          (v.vehicleNumber && v.vehicleNumber.toLowerCase().includes(appliedFilters.search.toLowerCase())) ||
+          (v.driverName && v.driverName.toLowerCase().includes(appliedFilters.search.toLowerCase()));
 
-    const matchesVehicleType =
-      appliedFilters.vehicleType === 'Vehicle Type' || v.vehicleType === appliedFilters.vehicleType;
+        const matchesUsageType =
+          appliedFilters.usageType === 'Usage Type' ||
+          v.usageType?.toLowerCase() === appliedFilters.usageType.toLowerCase();
 
-    const matchesUsageType =
-      appliedFilters.usageType === 'Usage Type' || v.usageType === appliedFilters.usageType;
+        const matchesStatus =
+          appliedFilters.status === 'Status' ||
+          v.status?.toLowerCase() === appliedFilters.status.toLowerCase();
 
-    const matchesStatus =
-      appliedFilters.status === 'Status' || v.status === appliedFilters.status;
+        return matchesSearch && matchesUsageType && matchesStatus;
+      })
+      .sort((a, b) => {
+        const idA = Number(a.vehicleId ?? a.id ?? 0);
+        const idB = Number(b.vehicleId ?? b.id ?? 0);
+        return idA - idB;
+      });
+  }, [mappedVehicles, appliedFilters]);
 
-    return matchesSearch && matchesVehicleType && matchesUsageType && matchesStatus;
-  });
+  // Stats
+  const stats = vehiclesResponse?.data?.stats || vehiclesResponse?.stats || vehiclesResponse?.data?.summary;
+  const meta = vehiclesResponse?.meta || vehiclesResponse?.data?.meta;
 
-  // Reusable StatsCards configuration matching user request icons
+  // Reusable StatsCards configuration
   const vehicleStatsItems = [
     {
       id: 1,
       label: 'Total Vehicles',
-      value: vehiclesStats.totalVehicles,
+      value: stats?.totalVehicles ?? meta?.total ?? rawVehicles.length,
       image: totalVehiclesIcon,
       cardColor: 'bg-[#fffbeb] border-amber-200/80',
       iconBg: 'bg-amber-200/80',
@@ -103,7 +229,10 @@ export default function Vehicles() {
     {
       id: 2,
       label: 'Active Vehicles',
-      value: vehiclesStats.activeVehicles,
+      value:
+        stats?.activeVehicles ??
+        stats?.active ??
+        rawVehicles.filter((v) => (v.status || '').toLowerCase() === 'active').length,
       image: activeVehiclesIcon,
       cardColor: 'bg-[#f0fdf4] border-emerald-200/80',
       iconBg: 'bg-emerald-100',
@@ -114,7 +243,10 @@ export default function Vehicles() {
     {
       id: 3,
       label: 'Blocked Vehicles',
-      value: vehiclesStats.blockedVehicles,
+      value:
+        stats?.blockedVehicles ??
+        stats?.blocked ??
+        rawVehicles.filter((v) => (v.status || '').toLowerCase() === 'blocked').length,
       image: blockedVehiclesIcon,
       cardColor: 'bg-[#fef2f2] border-rose-200/80',
       iconBg: 'bg-rose-100',
@@ -125,7 +257,14 @@ export default function Vehicles() {
     {
       id: 4,
       label: 'Inactive Vehicles',
-      value: vehiclesStats.inactiveVehicles,
+      value:
+        stats?.inactiveVehicles ??
+        stats?.inactive ??
+        rawVehicles.filter(
+          (v) =>
+            (v.status || '').toLowerCase() === 'inactive' ||
+            (v.status || '').toLowerCase() === 'pending'
+        ).length,
       image: inactiveVehiclesIcon,
       cardColor: 'bg-[#faf5ff] border-purple-200/80',
       iconBg: 'bg-purple-100',
@@ -164,53 +303,6 @@ export default function Vehicles() {
 
         {/* Right: Dropdowns Group & Reset */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2.5 sm:gap-2 w-full lg:w-auto">
-          {/* Vehicle Type Filter */}
-          <div className="relative w-full sm:w-40">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Vehicle Type
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                setVehicleTypeOpen(!vehicleTypeOpen);
-                setUsageTypeOpen(false);
-                setStatusOpen(false);
-              }}
-              className="w-full flex items-center justify-between px-3.5 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white text-slate-800 hover:bg-slate-50 cursor-pointer shadow-2xs transition-colors"
-            >
-              <span className="truncate">{vehicleTypeFilter}</span>
-              <ChevronDown
-                className={`w-4 h-4 text-slate-400 transition-transform ${
-                  vehicleTypeOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-            {vehicleTypeOpen && (
-              <div className="absolute left-0 right-0 sm:right-auto mt-1.5 sm:w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-40 space-y-0.5 animate-in fade-in zoom-in-95">
-                {['Vehicle Type', 'Car', 'Bus'].map((type) => {
-                  const isSelected = vehicleTypeFilter === type;
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => {
-                        setVehicleTypeFilter(type);
-                        setVehicleTypeOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#fed011] text-black shadow-2xs'
-                          : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
           {/* Usage Type Filter */}
           <div className="relative w-full sm:w-40">
             <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -220,7 +312,6 @@ export default function Vehicles() {
               type="button"
               onClick={() => {
                 setUsageTypeOpen(!usageTypeOpen);
-                setVehicleTypeOpen(false);
                 setStatusOpen(false);
               }}
               className="w-full flex items-center justify-between px-3.5 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white text-slate-800 hover:bg-slate-50 cursor-pointer shadow-2xs transition-colors"
@@ -267,7 +358,6 @@ export default function Vehicles() {
               type="button"
               onClick={() => {
                 setStatusOpen(!statusOpen);
-                setVehicleTypeOpen(false);
                 setUsageTypeOpen(false);
               }}
               className="w-full flex items-center justify-between px-3.5 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white text-slate-800 hover:bg-slate-50 cursor-pointer shadow-2xs transition-colors"
@@ -306,7 +396,7 @@ export default function Vehicles() {
           </div>
 
           {/* Reset Action Button */}
-          {(searchTerm || vehicleTypeFilter !== 'Vehicle Type' || usageTypeFilter !== 'Usage Type' || statusFilter !== 'Status') && (
+          {(searchTerm || usageTypeFilter !== 'Usage Type' || statusFilter !== 'Status') && (
             <button
               type="button"
               onClick={handleReset}
@@ -340,8 +430,6 @@ export default function Vehicles() {
               <tr className="bg-[#feea98]/60 text-slate-900 font-black border-b border-amber-200/60 text-sm sm:text-base">
                 <th className="py-2.5 px-3.5 text-center w-12 whitespace-nowrap">#</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle Number</th>
-                <th className="py-2.5 px-1.5 whitespace-nowrap"></th>
-                <th className="py-2.5 px-3.5 whitespace-nowrap">Vehicle Type</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Usage Type</th>
                 <th className="py-2.5 px-3.5 whitespace-nowrap">Driver Name</th>
                 <th className="py-2.5 px-3.5 text-center whitespace-nowrap">Seats</th>
@@ -350,9 +438,18 @@ export default function Vehicles() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-              {filteredVehicles.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
+                  <td colSpan={7} className="py-12 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-500 font-semibold text-sm">
+                      <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+                      Loading vehicles...
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredVehicles.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
                     No vehicles found matching your criteria.
                   </td>
                 </tr>
@@ -361,12 +458,12 @@ export default function Vehicles() {
                   return (
                     <tr
                       key={vehicle.id}
-                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`, { state: { vehicle } })}
                       className="hover:bg-amber-50/20 transition-colors cursor-pointer"
                     >
-                      {/* 1. Row Index */}
+                      {/* 1. Vehicle ID (Number only, no '#' symbol) */}
                       <td className="py-2 px-3.5 text-center font-bold text-slate-500 text-sm sm:text-base">
-                        {index + 1}
+                        {vehicle.vehicleId ?? vehicle.id}
                       </td>
 
                       {/* 2. Vehicle Number Pill */}
@@ -376,23 +473,7 @@ export default function Vehicles() {
                         </span>
                       </td>
 
-                      {/* 3. Vehicle Thumbnail */}
-                      <td className="py-2 px-1.5">
-                        <div className="w-14 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-slate-50/60">
-                          <img
-                            src={vehicle.image}
-                            alt={vehicle.vehicleNumber}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                      </td>
-
-                      {/* 4. Vehicle Type */}
-                      <td className="py-2 px-3.5 font-bold text-slate-900 text-sm sm:text-base">
-                        {vehicle.vehicleType}
-                      </td>
-
-                      {/* 5. Usage Type Badge */}
+                      {/* 3. Usage Type Badge */}
                       <td className="py-2 px-3.5">
                         {vehicle.usageType === 'Commercial' ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
@@ -449,7 +530,10 @@ export default function Vehicles() {
                       {/* 9. Action Button */}
                       <td className="py-2 px-3.5 text-center">
                         <button
-                          onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/vehicles/${vehicle.id}`, { state: { vehicle } });
+                          }}
                           className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer inline-flex items-center justify-center"
                           title="View Vehicle"
                         >
@@ -469,11 +553,14 @@ export default function Vehicles() {
             ========================================================= */}
         <Pagination
           currentPage={currentPage}
-          totalItems={124}
+          totalItems={meta?.total ?? filteredVehicles.length}
           itemsPerPage={entriesPerPage}
           onPageChange={setCurrentPage}
-          onItemsPerPageChange={setEntriesPerPage}
-          pageSizeOptions={[5, 10, 25, 50]}
+          onItemsPerPageChange={(size) => {
+            setEntriesPerPage(size);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
           itemLabel="vehicles"
         />
       </div>
