@@ -110,27 +110,33 @@ export default function Passengers() {
     }
   };
 
-  // Map API users to passenger rows (fallback to mock if offline/not fetched)
+  // Map API users to passenger rows (sorted ascending by userId: 1, 2, 3...)
   const passengers = useMemo(() => {
     if (rawUsers) {
-      return rawUsers.map((u, idx) => ({
-        id: u.userId ?? idx + 1,
-        userId: u.userId,
-        passengerId: u.userId != null ? u.userId : idx + 1,
-        name: u.name || 'User',
-        mobile: u.mobile || '-',
-        email: u.email || '-',
-        avatar: u.imageUrl || defaultAvatar,
-        totalBookings: u.totalBookings ?? 0,
-        completedRides: u.completedRides ?? 0,
-        cancelledRides: u.cancelledRides ?? 0,
-        accountStatus: u.status
-          ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase()
-          : 'Active',
-        registeredOn: u.registeredOn,
-        registeredOnFormatted: formatRegisteredDate(u.registeredOn),
-        memberSince: formatRegisteredDate(u.registeredOn),
-      }));
+      return [...rawUsers]
+        .sort((a, b) => {
+          const idA = Number(a.userId ?? a.id ?? 0);
+          const idB = Number(b.userId ?? b.id ?? 0);
+          return idA - idB;
+        })
+        .map((u, idx) => ({
+          id: u.userId ?? idx + 1,
+          userId: u.userId,
+          passengerId: u.userId != null ? u.userId : idx + 1,
+          name: u.name || 'User',
+          mobile: u.mobile || '-',
+          email: u.email || '-',
+          avatar: u.imageUrl || '',
+          totalBookings: u.totalBookings ?? 0,
+          completedRides: u.completedRides ?? 0,
+          cancelledRides: u.cancelledRides ?? 0,
+          accountStatus: u.status
+            ? u.status.charAt(0).toUpperCase() + u.status.slice(1).toLowerCase()
+            : 'Active',
+          registeredOn: u.registeredOn,
+          registeredOnFormatted: formatRegisteredDate(u.registeredOn),
+          memberSince: formatRegisteredDate(u.registeredOn),
+        }));
     }
     return passengersList.map((p) => ({
       ...p,
@@ -627,15 +633,11 @@ export default function Passengers() {
 
                     {/* Passenger: Avatar + Name */}
                     <td className="py-2 px-3.5 whitespace-nowrap">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3">
                         <img
                           src={p.avatar}
                           alt={p.name}
-                          className="w-8.5 h-8.5 rounded-full object-cover shrink-0 border border-amber-300 ring-1 ring-amber-100"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = defaultAvatar;
-                          }}
+                          className="w-11 h-11 rounded-full object-cover shrink-0 border-2 border-amber-400 ring-1 ring-amber-100 bg-white"
                         />
                         <span className="font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
                           {p.name}

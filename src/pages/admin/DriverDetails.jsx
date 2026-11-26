@@ -248,7 +248,7 @@ export default function DriverDetails() {
       leftPhoto: vehiclePhotos.left,
       rightPhoto: vehiclePhotos.right,
       interiorPhoto: vehiclePhotos.interior,
-      vehicleImg: isBusVehicle ? coachBusCutout : carCutout,
+      vehicleImg: vehiclePhotos.front || vehiclePhotos.rear || (isBusVehicle ? coachBusCutout : carCutout),
     };
   }, [apiData, id]);
 
@@ -627,11 +627,22 @@ export default function DriverDetails() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-1.5">
                       {/* Bus Image Cutout */}
-                      <div className="sm:col-span-5 flex justify-center p-0">
+                      <div
+                        className="sm:col-span-5 flex justify-center p-0 cursor-pointer"
+                        onClick={() =>
+                          setPreviewPhoto({
+                            img: driver.frontPhoto || driver.photos?.front || driver.vehicleImg || coachBusCutout,
+                            label: `${driver.brand} ${driver.model} Front View`,
+                          })
+                        }
+                      >
                         <img
-                          src={coachBusCutout}
+                          src={driver.frontPhoto || driver.photos?.front || driver.vehicleImg || coachBusCutout}
                           alt={driver.model}
-                          className="w-full max-h-[125px] object-contain drop-shadow-sm select-none"
+                          className="w-full max-h-[125px] rounded-xl object-contain drop-shadow-sm select-none hover:scale-105 transition-transform"
+                          onError={(e) => {
+                            e.currentTarget.src = coachBusCutout;
+                          }}
                         />
                       </div>
 
@@ -1004,12 +1015,23 @@ export default function DriverDetails() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                {/* Car Graphic */}
-                <div className="sm:col-span-5 flex justify-center p-1 cursor-pointer" onClick={() => setPreviewPhoto({ img: driver.vehicleImg || carCutout, label: `${driver.brand} ${driver.model}` })}>
+                {/* Car Graphic / Real Front Photo */}
+                <div
+                  className="sm:col-span-5 flex justify-center p-1 cursor-pointer"
+                  onClick={() =>
+                    setPreviewPhoto({
+                      img: driver.frontPhoto || driver.photos?.front || driver.vehicleImg || carCutout,
+                      label: `${driver.brand} ${driver.model} Front View`,
+                    })
+                  }
+                >
                   <img
-                    src={driver.vehicleImg || carCutout}
+                    src={driver.frontPhoto || driver.photos?.front || driver.vehicleImg || carCutout}
                     alt={driver.model}
-                    className="w-full max-w-[250px] h-auto object-contain drop-shadow-sm select-none hover:scale-105 transition-transform cursor-pointer"
+                    className="w-full max-w-[250px] max-h-[140px] rounded-xl object-contain drop-shadow-sm select-none hover:scale-105 transition-transform cursor-pointer"
+                    onError={(e) => {
+                      e.currentTarget.src = isBus ? coachBusCutout : carCutout;
+                    }}
                   />
                 </div>
 

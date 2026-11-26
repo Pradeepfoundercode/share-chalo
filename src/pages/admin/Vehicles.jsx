@@ -476,13 +476,11 @@ export default function Vehicles() {
                       {/* 3. Usage Type Badge */}
                       <td className="py-2 px-3.5">
                         {vehicle.usageType === 'Commercial' ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
-                            <Briefcase className="w-3.5 h-3.5 text-emerald-600 stroke-[2.2]" />
+                          <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100">
                             Commercial
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-slate-700 bg-slate-100/80 border border-slate-200/80">
-                            <Home className="w-3.5 h-3.5 text-slate-600 stroke-[2.2]" />
+                          <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold text-slate-700 bg-slate-100/80 border border-slate-200/80">
                             Private
                           </span>
                         )}

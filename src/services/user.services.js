@@ -15,6 +15,14 @@ export const getUserByIdApi = async (userId) => {
 };
 
 export const updateUserStatusApi = async ({ userId, status }) => {
-  const { data } = await API.patch(`/admins/users/${userId}/status`, { status });
-  return data;
+  try {
+    const { data } = await API.patch(`/admins/users/${userId}/status`, { status });
+    return data;
+  } catch (error) {
+    if (error.response?.status === 405) {
+      const { data } = await API.put(`/admins/users/${userId}/status`, { status });
+      return data;
+    }
+    throw error;
+  }
 };

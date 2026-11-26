@@ -289,11 +289,10 @@ export default function RideHistoryTab({ driver }) {
               ) : (
                 rides.map((ride, idx) => {
                   const displayIndex = (currentPage - 1) * entriesPerPage + idx + 1;
-                  const rideDisplayId = ride.rideId
-                    ? String(ride.rideId).startsWith('RD')
-                      ? ride.rideId
-                      : `RD${ride.rideId}`
-                    : '-';
+                  const rideDisplayId =
+                    ride.id != null || ride.rideId != null
+                      ? String(ride.id ?? ride.rideId).replace(/^RD/i, '')
+                      : '-';
                   const fromLoc = ride.from || ride.route?.from || '-';
                   const toLoc = ride.to || ride.route?.to || '-';
 

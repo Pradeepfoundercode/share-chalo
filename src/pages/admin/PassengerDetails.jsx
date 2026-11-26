@@ -11,7 +11,6 @@ import {
   Calendar,
   User,
   Phone,
-  Ban,
   UserCheck,
   Clock,
   XCircle,
@@ -67,7 +66,11 @@ export default function PassengerDetails() {
   const apiUser = userResponse?.data || userResponse;
 
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus) => updateUserStatusApi({ userId: id, status: newStatus }),
+    mutationFn: (newStatus) =>
+      updateUserStatusApi({
+        userId: passenger.userId || passenger.id || id,
+        status: newStatus,
+      }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({
         queryKey: ['admin-user-details', id],
@@ -104,7 +107,7 @@ export default function PassengerDetails() {
         mobile: apiUser.mobile || '-',
         email: apiUser.email || '-',
         gender: apiUser.gender || '',
-        avatar: apiUser.imageUrl || amitAvatar,
+        avatar: apiUser.imageUrl || '',
         status: apiUser.status || 'active',
         profileStatus: apiUser.profileStatus || 'verified',
         isPhoneVerified: apiUser.isPhoneVerified ?? true,
@@ -299,26 +302,6 @@ export default function PassengerDetails() {
                   </div>
                   {passenger.status?.toLowerCase() === 'inactive' && (
                     <Check className="w-3.5 h-3.5 text-amber-700 stroke-[3]" />
-                  )}
-                </button>
-
-                {/* Block Passenger */}
-                <button
-                  type="button"
-                  disabled={updateStatusMutation.isPending || passenger.status?.toLowerCase() === 'blocked'}
-                  onClick={() => handleUpdateStatus('blocked')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    passenger.status?.toLowerCase() === 'blocked'
-                      ? 'bg-rose-50 text-rose-600'
-                      : 'text-rose-600 hover:bg-rose-50 disabled:opacity-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Ban className="w-4 h-4" />
-                    <span>Block Passenger</span>
-                  </div>
-                  {passenger.status?.toLowerCase() === 'blocked' && (
-                    <Check className="w-3.5 h-3.5 text-rose-600 stroke-[3]" />
                   )}
                 </button>
 

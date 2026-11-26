@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   User,
   Phone,
@@ -24,10 +25,12 @@ import {
   Tag,
   MessageSquare,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  RefreshCw
 } from 'lucide-react';
 import { complaintsList } from '../../data/supportData';
 import { DetailsHeader } from '../../components/common';
+import { getSupportTicketByIdApi } from '../../services/support.services';
 
 export default function ComplaintDetails() {
   const { id } = useParams();
@@ -35,18 +38,119 @@ export default function ComplaintDetails() {
 
   // Find complaint by raw ID or without prefix
   const cleanId = id?.replace(/^#/, '');
-  const complaint =
-    complaintsList.find(
+
+  // Fetch ticket details from API: GET /admins/support-tickets/{{ticketId}}
+  const { data: ticketResponse, isLoading } = useQuery({
+    queryKey: ['admin-support-ticket', cleanId],
+    queryFn: () => getSupportTicketByIdApi(cleanId),
+    enabled: Boolean(cleanId),
+    retry: 1,
+  });
+
+  const apiData = ticketResponse?.data || ticketResponse?.ticket || ticketResponse;
+
+  const complaint = useMemo(() => {
+    if (apiData && (apiData.id || apiData._id || apiData.ticketId || apiData.subject || apiData.user)) {
+      const u = apiData.user || apiData.passenger || apiData.driver || {};
+      const rawDate = apiData.createdAt || apiData.createdOn;
+      let createdOn = '-';
+      if (rawDate) {
+        try {
+          const d = new Date(rawDate);
+          if (!isNaN(d.getTime())) {
+            createdOn = `${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, ${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+          } else {
+            createdOn = String(rawDate);
+          }
+        } catch {
+          createdOn = String(rawDate);
+        }
+      }
+
+      const rawStatus = apiData.status || apiData.ticketStatus || 'Open';
+      let normalizedStatus = 'Open';
+      const lower = String(rawStatus).toLowerCase();
+      if (lower.includes('progress')) normalizedStatus = 'In Progress';
+      else if (lower === 'resolved') normalizedStatus = 'Resolved';
+      else if (lower === 'closed') normalizedStatus = 'Closed';
+      else normalizedStatus = 'Open';
+
+      return {
+        ...apiData,
+        id: apiData.id || apiData._id || cleanId,
+        numericId: apiData.numericId || cleanId,
+        ticketId: apiData.ticketId || (cleanId ? `#TKT-${cleanId}` : '#1'),
+        user: {
+          name: u.name || apiData.userName || 'User',
+          avatar: u.avatar || u.imageUrl || apiData.imageUrl || '',
+          email: u.email || apiData.email || '-',
+          phone: u.mobile || u.phone || apiData.mobile || apiData.phone || '-',
+        },
+        userType: apiData.userType || (apiData.role === 'driver' ? 'Driver' : 'Passenger'),
+        category: apiData.category || apiData.type || 'Ride Issue',
+        subject: apiData.subject || apiData.title || '-',
+        description: apiData.description || apiData.message || 'No description provided.',
+        relatedRide: apiData.relatedRide || (apiData.rideId ? { rideId: apiData.rideId, date: '-', time: '', route: '-', fare: '-' } : null),
+        attachments: apiData.attachments || [],
+        ticketStatus: normalizedStatus,
+        createdOn,
+        lastUpdated: apiData.updatedAt ? new Date(apiData.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : createdOn,
+        priority: apiData.priority || 'Medium',
+        timeline: apiData.timeline || [
+          {
+            id: 1,
+            title: 'Complaint Created',
+            description: `Ticket created for ${u.name || 'User'}.`,
+            date: createdOn.split(',')[0] || '-',
+            time: createdOn.split(',')[1]?.trim() || '',
+            color: 'yellow',
+          },
+        ],
+      };
+    }
+
+    const localMatch = complaintsList.find(
       (c) =>
         c.id.toLowerCase() === cleanId?.toLowerCase() ||
         c.ticketId.toLowerCase() === `#${cleanId}`.toLowerCase() ||
         String(c.numericId) === cleanId
-    ) || complaintsList[0];
+    );
+    if (localMatch) return localMatch;
+
+    return {
+      id: cleanId || '-',
+      numericId: cleanId || '-',
+      ticketId: cleanId ? `#${cleanId}` : '#1',
+      user: {
+        name: 'User',
+        avatar: '',
+        email: '-',
+        phone: '-',
+      },
+      userType: 'Passenger',
+      category: 'Ride Issue',
+      subject: '-',
+      description: 'No description provided.',
+      relatedRide: null,
+      attachments: [],
+      ticketStatus: 'Open',
+      createdOn: '-',
+      lastUpdated: '-',
+      priority: 'Medium',
+      timeline: [],
+    };
+  }, [apiData, cleanId]);
 
   // Action status and remarks state
-  const [ticketStatus, setTicketStatus] = useState(complaint.ticketStatus || 'Open');
+  const [ticketStatus, setTicketStatus] = useState('Open');
   const [adminRemarks, setAdminRemarks] = useState('');
   const [successToast, setSuccessToast] = useState(false);
+
+  useEffect(() => {
+    if (complaint?.ticketStatus) {
+      setTicketStatus(complaint.ticketStatus);
+    }
+  }, [complaint?.ticketStatus]);
 
   // Status badge styling
   const renderStatusBadge = (status) => {
@@ -123,26 +227,29 @@ export default function ComplaintDetails() {
         <div className="lg:col-span-8 space-y-4">
           {/* 1. User Header Card */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center gap-4 shadow-2xs">
-            <div className="w-14 h-14 sm:w-15 sm:h-15 rounded-full border-2 border-amber-300 p-0.5 shrink-0 overflow-hidden bg-amber-50">
-              <img
-                src={complaint.user.avatar}
-                alt={complaint.user.name}
-                className="w-full h-full object-cover rounded-full"
-                onError={(e) => {
-                  e.target.src =
-                    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80';
-                }}
-              />
+            <div className="w-14 h-14 sm:w-15 sm:h-15 rounded-full border-2 border-amber-300 p-0.5 shrink-0 overflow-hidden bg-amber-50 flex items-center justify-center">
+              {complaint.user?.avatar ? (
+                <img
+                  src={complaint.user.avatar}
+                  alt={complaint.user?.name || 'User'}
+                  className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <User className="w-6 h-6 text-slate-400" />
+              )}
             </div>
 
             <div className="flex-1 min-w-[200px]">
               <div className="flex flex-wrap items-center gap-2.5 mb-1">
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                  {complaint.user.name}
+                  {complaint.user?.name || 'User'}
                 </h2>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs sm:text-[13px] font-bold text-sky-800 bg-sky-50 border border-sky-200">
                   <User className="w-3.5 h-3.5 text-sky-600" />
-                  {complaint.userType}
+                  {complaint.userType || 'Passenger'}
                 </span>
               </div>
 
@@ -150,14 +257,14 @@ export default function ComplaintDetails() {
                 <span className="flex items-center gap-1.5">
                   <Phone className="w-4 h-4 text-slate-500" />
                   <span className="font-bold text-slate-800">
-                    {complaint.user.phone}
+                    {complaint.user?.phone || '-'}
                   </span>
                 </span>
                 <span className="text-slate-300">|</span>
                 <span className="flex items-center gap-1.5">
                   <Mail className="w-4 h-4 text-slate-500" />
                   <span className="font-bold text-slate-800">
-                    {complaint.user.email}
+                    {complaint.user?.email || '-'}
                   </span>
                 </span>
               </div>

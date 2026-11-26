@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   Headphones,
   AlertCircle,
@@ -26,7 +27,7 @@ import {
   ChevronRight,
   Download
 } from 'lucide-react';
-import { supportSummary, complaintsList } from '../../data/supportData';
+import { getSupportTicketsApi } from '../../services/support.services';
 import Pagination from '../../components/common/Pagination';
 import financeSettlementsIcon from '../../assets/dashboard/finance-settlements.svg';
 import totalTicketsMicIcon from '../../assets/icons/mic.svg';
@@ -139,15 +140,127 @@ export default function SupportComplaints() {
     }
   };
 
-  // Filter complaints
-  const filteredComplaints = useMemo(() => {
-    return complaintsList.filter((item) => {
+  // Fetch support tickets from API
+  const { data: ticketsResponse, isLoading, isError } = useQuery({
+    queryKey: ['admin-support-tickets', currentPage, entriesPerPage],
+    queryFn: () =>
+      getSupportTicketsApi({
+        page: currentPage,
+        limit: entriesPerPage,
+      }),
+  });
+
+  const apiData = ticketsResponse?.data;
+  const rawTickets = useMemo(() => {
+    if (!ticketsResponse) return null;
+    if (Array.isArray(apiData)) return apiData;
+    if (Array.isArray(apiData?.tickets)) return apiData.tickets;
+    if (Array.isArray(ticketsResponse?.tickets)) return ticketsResponse.tickets;
+    return [];
+  }, [ticketsResponse, apiData]);
+
+  // Map API tickets to table items
+  const mappedTickets = useMemo(() => {
+    if (!rawTickets) return [];
+    return rawTickets.map((item, index) => {
+      const u = item.user || item.passenger || item.driver || {};
+      const userName = u.name || item.userName || (item.userType === 'Driver' ? 'Driver' : 'User') || 'User';
+      const userAvatar = u.avatar || u.imageUrl || item.imageUrl || null;
+      const ticketId = item.ticketId || (item.id ? `#TKT-${item.id}` : `#${index + 1}`);
+      const userType = item.userType || (item.role === 'driver' ? 'Driver' : 'Passenger');
+      const category = item.category || item.type || 'Ride Issue';
+      const subject = item.subject || item.title || item.issue || '-';
+      const rideId = item.rideId || item.relatedRide?.rideId || (item.tripId ? `${item.tripId}` : null);
+
+      let createdOn = '-';
+      let createdTime = '';
+      const rawDate = item.createdAt || item.createdOn || item.createdDate;
+      if (rawDate) {
+        try {
+          const d = new Date(rawDate);
+          if (!isNaN(d.getTime())) {
+            createdOn = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            createdTime = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          } else {
+            createdOn = String(rawDate);
+          }
+        } catch {
+          createdOn = String(rawDate);
+        }
+      }
+
+      const rawStatus = item.status || item.ticketStatus || 'Open';
+      let normalizedStatus = 'Open';
+      const lowerStatus = String(rawStatus).toLowerCase();
+      if (lowerStatus.includes('progress')) {
+        normalizedStatus = 'In Progress';
+      } else if (lowerStatus === 'resolved') {
+        normalizedStatus = 'Resolved';
+      } else if (lowerStatus === 'closed') {
+        normalizedStatus = 'Closed';
+      } else {
+        normalizedStatus = 'Open';
+      }
+
+      return {
+        ...item,
+        id: item.id || item._id || item.ticketId || String(index + 1),
+        ticketId,
+        user: {
+          name: userName,
+          avatar: userAvatar,
+          phone: u.mobile || u.phone || item.mobile || item.phone || '',
+          email: u.email || item.email || '',
+        },
+        userType,
+        category,
+        subject,
+        rideId,
+        createdOn,
+        createdTime,
+        ticketStatus: normalizedStatus,
+        status: normalizedStatus,
+      };
+    });
+  }, [rawTickets]);
+
+  const apiStats = apiData?.stats || ticketsResponse?.stats;
+  const summaryStats = useMemo(() => {
+    if (apiStats) {
+      return {
+        totalTickets: apiStats.totalTickets ?? apiStats.total ?? ticketsResponse?.meta?.total ?? 0,
+        open: apiStats.open ?? 0,
+        inProgress: apiStats.inProgress ?? 0,
+        resolved: apiStats.resolved ?? 0,
+        closed: apiStats.closed ?? 0,
+      };
+    }
+    if (rawTickets) {
+      return {
+        totalTickets: ticketsResponse?.meta?.total ?? rawTickets.length,
+        open: rawTickets.filter((t) => (t.status || t.ticketStatus || '').toLowerCase() === 'open').length,
+        inProgress: rawTickets.filter((t) => (t.status || t.ticketStatus || '').toLowerCase().includes('progress')).length,
+        resolved: rawTickets.filter((t) => (t.status || t.ticketStatus || '').toLowerCase() === 'resolved').length,
+        closed: rawTickets.filter((t) => (t.status || t.ticketStatus || '').toLowerCase() === 'closed').length,
+      };
+    }
+    return {
+      totalTickets: 0,
+      open: 0,
+      inProgress: 0,
+      resolved: 0,
+      closed: 0,
+    };
+  }, [apiStats, ticketsResponse, rawTickets]);
+
+  const displayedItems = useMemo(() => {
+    return mappedTickets.filter((item) => {
       const matchesSearch =
         searchQuery.trim() === '' ||
         item.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.ticketId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.relatedRide?.rideId && item.relatedRide.rideId.toLowerCase().includes(searchQuery.toLowerCase()));
+        (item.rideId && String(item.rideId).toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesUserType =
         selectedUserType === 'All' ||
@@ -158,9 +271,8 @@ export default function SupportComplaints() {
         selectedStatus === 'All' ||
         itemStatus.toLowerCase() === selectedStatus.toLowerCase();
 
-      // Date Range Filter
       if (startDate || endDate) {
-        const cDate = parseComplaintDate(item.createdOn || item.createdDate);
+        const cDate = parseComplaintDate(item.createdOn);
         if (cDate) {
           if (startDate) {
             const start = new Date(startDate);
@@ -177,12 +289,9 @@ export default function SupportComplaints() {
 
       return matchesSearch && matchesUserType && matchesStatus;
     });
-  }, [searchQuery, selectedUserType, selectedStatus, startDate, endDate]);
+  }, [mappedTickets, searchQuery, selectedUserType, selectedStatus, startDate, endDate]);
 
-  const totalItems = searchQuery || selectedUserType !== 'All' || selectedStatus !== 'All' || startDate || endDate
-    ? filteredComplaints.length
-    : 1248;
-  const displayedItems = filteredComplaints;
+  const totalItems = ticketsResponse?.meta?.total ?? displayedItems.length;
 
   return (
     <div className="space-y-5 pb-8">
@@ -195,10 +304,10 @@ export default function SupportComplaints() {
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              {supportSummary.totalTickets}
+              {summaryStats.totalTickets}
             </div>
             <div className="text-xs font-semibold text-slate-700">
-              {supportSummary.totalLabel}
+              Total Tickets
             </div>
           </div>
         </div>
@@ -210,10 +319,10 @@ export default function SupportComplaints() {
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              {supportSummary.open}
+              {summaryStats.open}
             </div>
             <div className="text-xs font-semibold text-slate-700">
-              {supportSummary.openLabel}
+              Open
             </div>
           </div>
         </div>
@@ -225,10 +334,10 @@ export default function SupportComplaints() {
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              {supportSummary.inProgress}
+              {summaryStats.inProgress}
             </div>
             <div className="text-xs font-semibold text-slate-700">
-              {supportSummary.inProgressLabel}
+              In Progress
             </div>
           </div>
         </div>
@@ -240,10 +349,10 @@ export default function SupportComplaints() {
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              {supportSummary.resolved}
+              {summaryStats.resolved}
             </div>
             <div className="text-xs font-semibold text-slate-700">
-              {supportSummary.resolvedLabel}
+              Resolved
             </div>
           </div>
         </div>
@@ -255,10 +364,10 @@ export default function SupportComplaints() {
           </div>
           <div>
             <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
-              {supportSummary.closed}
+              {summaryStats.closed}
             </div>
             <div className="text-xs font-semibold text-slate-700">
-              {supportSummary.closedLabel}
+              Closed
             </div>
           </div>
         </div>
@@ -620,7 +729,18 @@ export default function SupportComplaints() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-              {displayedItems.map((item, index) => (
+              {isLoading && (
+                <tr>
+                  <td colSpan="10" className="py-12 text-center">
+                    <div className="flex items-center justify-center gap-2 text-amber-500 font-semibold text-sm">
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      <span>Loading support tickets...</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && displayedItems.map((item, index) => (
                 <tr
                   key={item.id}
                   onClick={() => navigate(`/support/${item.id || item.ticketId.replace('#', '')}`)}
@@ -634,15 +754,19 @@ export default function SupportComplaints() {
                   {/* User */}
                   <td className="py-2 px-3.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8.5 h-8.5 rounded-full border border-amber-300 ring-1 ring-amber-100 shrink-0 overflow-hidden bg-amber-50">
-                        <img
-                          src={item.user.avatar}
-                          alt={item.user.name}
-                          className="w-full h-full object-cover rounded-full"
-                          onError={(e) => {
-                            e.target.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80';
-                          }}
-                        />
+                      <div className="w-8.5 h-8.5 rounded-full border border-amber-300 ring-1 ring-amber-100 shrink-0 overflow-hidden bg-amber-50 flex items-center justify-center">
+                        {item.user.avatar ? (
+                          <img
+                            src={item.user.avatar}
+                            alt={item.user.name}
+                            className="w-full h-full object-cover rounded-full"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <User className="w-4 h-4 text-slate-400" />
+                        )}
                       </div>
                       <span className="font-bold text-slate-900 text-sm sm:text-base whitespace-nowrap">
                         {item.user.name}
@@ -733,10 +857,10 @@ export default function SupportComplaints() {
                 </tr>
               ))}
 
-              {displayedItems.length === 0 && (
+              {!isLoading && displayedItems.length === 0 && (
                 <tr>
-                  <td colSpan="10" className="py-8 text-center text-slate-400 font-bold text-sm sm:text-base">
-                    No support tickets or complaints match the selected filters.
+                  <td colSpan="10" className="py-12 text-center text-slate-400 font-bold text-sm sm:text-base">
+                    No support tickets found
                   </td>
                 </tr>
               )}

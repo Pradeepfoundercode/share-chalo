@@ -123,11 +123,7 @@ export default function RideDetails() {
     );
 
     return {
-      rideId: apiData.ride?.rideId
-        ? String(apiData.ride.rideId).startsWith('RD')
-          ? apiData.ride.rideId
-          : `RD${apiData.ride.rideId}`
-        : id || 'RD1',
+      rideId: String(apiData.ride?.id ?? apiData.ride?.rideId ?? apiData.id ?? tripId ?? id ?? '1').replace(/^RD/i, ''),
       status: formatStatus(apiData.ride?.status),
       date: dt.date,
       time: dt.time,

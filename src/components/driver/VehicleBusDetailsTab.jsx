@@ -63,12 +63,23 @@ export default function VehicleBusDetailsTab({ driver }) {
 
             {/* Content: Bus/Car Image + Specs Table */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-3">
-              {/* Image Cutout */}
-              <div className="sm:col-span-5 flex justify-center p-0">
+              {/* Image Cutout / Real Vehicle Front Photo */}
+              <div
+                className="sm:col-span-5 flex justify-center p-0 cursor-pointer"
+                onClick={() => {
+                  const frontImg = driver.frontPhoto || driver.photos?.front || driver.vehicleImg || (isBus ? coachBusCutout : carCutout);
+                  if (frontImg) {
+                    setPreviewPhoto({ img: frontImg, label: `${driver.brand || ''} ${driver.model || ''} Front View`.trim() });
+                  }
+                }}
+              >
                 <img
-                  src={isBus ? coachBusCutout : (driver.vehicleImg || carCutout)}
+                  src={driver.frontPhoto || driver.photos?.front || driver.vehicleImg || (isBus ? coachBusCutout : carCutout)}
                   alt={driver.model}
-                  className="w-full max-h-[140px] object-contain drop-shadow-sm select-none"
+                  className="w-full max-h-[140px] rounded-xl object-contain drop-shadow-sm select-none hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    e.currentTarget.src = isBus ? coachBusCutout : carCutout;
+                  }}
                 />
               </div>
 

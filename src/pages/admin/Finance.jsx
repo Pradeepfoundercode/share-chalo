@@ -293,13 +293,9 @@ export default function Finance() {
     return { points, ridePath, rideAreaPath, commPath, yLevels };
   }, [chartItems]);
 
-  // Recent Transactions Data
+  // Recent Transactions Data (strictly from API, empty if none)
   const recentTransactionsDisplay = useMemo(() => {
-    if (
-      apiData?.recentTransactions &&
-      Array.isArray(apiData.recentTransactions) &&
-      apiData.recentTransactions.length > 0
-    ) {
+    if (apiData?.recentTransactions && Array.isArray(apiData.recentTransactions)) {
       return apiData.recentTransactions.map((txn, idx) => {
         const formattedType = txn.type
           ? txn.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -319,7 +315,7 @@ export default function Finance() {
           : '-';
         return {
           id: idx + 1,
-          txnId: txn.transactionId || `TXN${txn.bookingId || idx + 1}`,
+          txnId: txn.transactionId || (txn.bookingId ? `TXN${txn.bookingId}` : idx + 1),
           bookingId: txn.bookingId,
           type: formattedType,
           amount: `₹ ${Number(txn.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
@@ -331,7 +327,7 @@ export default function Finance() {
         };
       });
     }
-    return recentTransactionsList;
+    return [];
   }, [apiData]);
 
   // Wallet & Settlement Data
@@ -363,7 +359,7 @@ export default function Finance() {
     { id: 'Overview', label: 'Overview', icon: WalletIcon },
     { id: 'Online Payments', label: 'Online Payments', icon: CreditCardIcon },
     { id: 'Cash Collections', label: 'Cash Collections', icon: CoinsIcon },
-    { id: 'Commission', label: '% Commission', icon: PercentIcon },
+    { id: 'Commission', label: 'Commission', icon: PercentIcon },
     { id: 'Cash Commission Due', label: 'Cash Commission Due', icon: ClockIcon },
     { id: 'Withdrawals', label: 'Withdrawals', icon: WithdrawalsIcon },
     { id: 'Settlements', label: 'Settlements', icon: SettlementsIcon },
@@ -1131,32 +1127,57 @@ export default function Finance() {
                     }
                     if (
                       appliedFilters.search &&
-                      !item.txnId.toLowerCase().includes(appliedFilters.search.toLowerCase()) &&
-                      !item.type.toLowerCase().includes(appliedFilters.search.toLowerCase())
+                      !String(item.txnId).toLowerCase().includes(appliedFilters.search.toLowerCase()) &&
+                      !String(item.type).toLowerCase().includes(appliedFilters.search.toLowerCase())
                     ) {
                       return false;
                     }
                     return true;
-                  })
-                  .map((txn, idx) => (
-                    <tr key={txn.id} className="hover:bg-amber-50/20 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-500">{idx + 1}</td>
-                      <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
-                        {txn.txnId}
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">{renderTypePill(txn.type)}</td>
-                      <td className="py-3 px-4 font-black text-slate-900 whitespace-nowrap">
-                        {txn.amount}
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap text-slate-700">{txn.mode}</td>
-                      <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-xs">
-                        {txn.dateTime}
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        {renderStatusBadge(txn.status)}
-                      </td>
-                    </tr>
-                  ))}
+                  }).length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400 font-semibold">
+                      No transactions found
+                    </td>
+                  </tr>
+                ) : (
+                  recentTransactionsDisplay
+                    .filter((item) => {
+                      if (
+                        appliedFilters.status !== 'All' &&
+                        appliedFilters.status !== 'All Statuses' &&
+                        item.status !== appliedFilters.status
+                      ) {
+                        return false;
+                      }
+                      if (
+                        appliedFilters.search &&
+                        !String(item.txnId).toLowerCase().includes(appliedFilters.search.toLowerCase()) &&
+                        !String(item.type).toLowerCase().includes(appliedFilters.search.toLowerCase())
+                      ) {
+                        return false;
+                      }
+                      return true;
+                    })
+                    .map((txn, idx) => (
+                      <tr key={txn.id} className="hover:bg-amber-50/20 transition-colors">
+                        <td className="py-3 px-4 font-bold text-slate-500">{idx + 1}</td>
+                        <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
+                          {txn.txnId}
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">{renderTypePill(txn.type)}</td>
+                        <td className="py-3 px-4 font-black text-slate-900 whitespace-nowrap">
+                          {txn.amount}
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-700">{txn.mode}</td>
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-xs">
+                          {txn.dateTime}
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          {renderStatusBadge(txn.status)}
+                        </td>
+                      </tr>
+                    ))
+                )}
               </tbody>
             </table>
           </div>

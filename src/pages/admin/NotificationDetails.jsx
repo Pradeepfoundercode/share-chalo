@@ -1,7 +1,10 @@
-﻿import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { notificationsList } from '../../data/notificationsData';
 import { DetailsHeader } from '../../components/common';
+import { getNotificationByIdApi } from '../../services/notification.services';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 // Asset Icons from src/assets/
 import megaphoneIcon from '../../assets/icons/megaphone-icon-transparent.svg';
@@ -27,17 +30,133 @@ export default function NotificationDetails() {
 
   // Match notification by ID (raw or numeric)
   const cleanId = id?.replace(/^#/, '');
-  const notification =
-    notificationsList.find(
+
+  // Fetch notification details from API: GET /admins/notifications/{{notifId}}
+  const { data: notifResponse, isLoading } = useQuery({
+    queryKey: ['admin-notification-detail', cleanId],
+    queryFn: () => getNotificationByIdApi(cleanId),
+    enabled: Boolean(cleanId),
+    retry: 1,
+  });
+
+  const apiData = notifResponse?.data || notifResponse?.notification || notifResponse;
+
+  // Helper to format ISO date
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return String(dateStr);
+      return (
+        d.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }) +
+        ', ' +
+        d.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      );
+    } catch {
+      return String(dateStr);
+    }
+  };
+
+  const notification = useMemo(() => {
+    if (apiData && (apiData.id !== undefined || apiData.title)) {
+      const rawStatus = apiData.status || 'sent';
+      const normalizedStatus =
+        rawStatus.toLowerCase() === 'sent'
+          ? 'Sent'
+          : rawStatus.toLowerCase() === 'scheduled'
+          ? 'Scheduled'
+          : rawStatus.toLowerCase() === 'failed'
+          ? 'Failed'
+          : rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+
+      const createdOnFormatted = formatDateTime(apiData.createdAt);
+      const sentOnFormatted = apiData.scheduledAt
+        ? formatDateTime(apiData.scheduledAt)
+        : createdOnFormatted;
+
+      const recipientCount = apiData.recipientCount ?? 0;
+      const deliverySummary = apiData.deliverySummary || {};
+      const breakdown = apiData.breakdown || {};
+      const failedRecipients = Array.isArray(apiData.failedRecipients)
+        ? apiData.failedRecipients
+        : [];
+
+      return {
+        id: String(apiData.id),
+        title: apiData.title || 'Untitled Notification',
+        fullMessage: apiData.message || '-',
+        recipientType: apiData.targetLabel || apiData.target || 'All Users & Drivers',
+        totalRecipients: recipientCount,
+        status: normalizedStatus,
+        createdOn: createdOnFormatted,
+        sentOn: sentOnFormatted,
+        createdBy: apiData.createdBy || 'Admin',
+        iconType: apiData.iconType || 'megaphone',
+        breakdown: {
+          passengers: breakdown.passengers ?? 0,
+          drivers: breakdown.drivers ?? 0,
+        },
+        deliverySummary: {
+          sent: deliverySummary.sent ?? (rawStatus.toLowerCase() === 'sent' ? recipientCount : 0),
+          delivered: deliverySummary.delivered ?? 0,
+          pending: deliverySummary.pending ?? 0,
+          failed: deliverySummary.failed ?? 0,
+          deliveredPercent: deliverySummary.deliveredPercent ?? '0%',
+          pendingPercent: deliverySummary.pendingPercent ?? '0%',
+          failedPercent: deliverySummary.failedPercent ?? '0%',
+        },
+        failedRecipients,
+      };
+    }
+
+    const localMatch = notificationsList.find(
       (n) =>
         n.id.toLowerCase() === cleanId?.toLowerCase() ||
         String(n.numericId) === cleanId
-    ) || notificationsList[0];
+    );
+    if (localMatch) return localMatch;
+
+    return {
+      id: cleanId || '-',
+      title: '-',
+      fullMessage: '-',
+      recipientType: 'All Users & Drivers',
+      totalRecipients: 0,
+      status: 'Sent',
+      createdOn: '-',
+      sentOn: '-',
+      createdBy: 'Admin',
+      iconType: 'megaphone',
+      breakdown: {
+        passengers: 0,
+        drivers: 0,
+      },
+      deliverySummary: {
+        sent: 0,
+        delivered: 0,
+        pending: 0,
+        failed: 0,
+        deliveredPercent: '0%',
+        pendingPercent: '0%',
+        failedPercent: '0%',
+      },
+      failedRecipients: [],
+    };
+  }, [apiData, cleanId]);
 
   const handleCopyId = () => {
-    navigator.clipboard?.writeText(notification.id);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (notification?.id) {
+      navigator.clipboard?.writeText(notification.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const renderNotificationIcon = (iconType) => {
@@ -385,45 +504,33 @@ export default function NotificationDetails() {
               {/* Donut Chart (SVG) */}
               <div className="relative w-28 h-28 sm:w-30 sm:h-30 shrink-0 flex items-center justify-center">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  {/* Total circumference: 2 * PI * 38 ≈ 238.76 */}
-                  {/* Delivered: 99.3% -> 237 */}
+                  {/* Background track circle */}
                   <circle
                     cx="50"
                     cy="50"
                     r="38"
                     fill="transparent"
-                    stroke="#16a34a"
+                    stroke="#e2e8f0"
                     strokeWidth="13"
-                    strokeDasharray="237 239"
-                    strokeDashoffset="0"
                   />
-                  {/* Pending: 0.5% -> 1.2 */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    fill="transparent"
-                    stroke="#f59e0b"
-                    strokeWidth="13"
-                    strokeDasharray="1.2 239"
-                    strokeDashoffset="-237"
-                  />
-                  {/* Failed: 0.2% -> 0.8 */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    fill="transparent"
-                    stroke="#dc2626"
-                    strokeWidth="13"
-                    strokeDasharray="0.8 239"
-                    strokeDashoffset="-238.2"
-                  />
+                  {/* Delivered segment if any */}
+                  {notification.deliverySummary.delivered > 0 && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="transparent"
+                      stroke="#16a34a"
+                      strokeWidth="13"
+                      strokeDasharray={`${(notification.deliverySummary.delivered / (notification.totalRecipients || 1)) * 238.76} 239`}
+                      strokeDashoffset="0"
+                    />
+                  )}
                 </svg>
                 {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                   <span className="text-base sm:text-lg font-black text-slate-900 leading-none">
-                    2,214
+                    {notification.totalRecipients}
                   </span>
                   <span className="text-[11px] font-semibold text-slate-500 mt-0.5">
                     Recipients
@@ -475,7 +582,7 @@ export default function NotificationDetails() {
             </div>
           </div>
 
-          {/* 3. Failed Recipients (6) */}
+          {/* 3. Failed Recipients */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-4.5 shadow-2xs space-y-2">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
               <div className="flex items-center gap-2.5 text-rose-600">
@@ -486,13 +593,15 @@ export default function NotificationDetails() {
                   Failed Recipients ({notification.deliverySummary.failed})
                 </h3>
               </div>
-              <button
-                type="button"
-                onClick={() => alert('Viewing all failed recipients...')}
-                className="text-xs sm:text-sm font-bold text-slate-600 hover:text-black hover:underline cursor-pointer"
-              >
-                View List
-              </button>
+              {notification.failedRecipients.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => alert('Viewing all failed recipients...')}
+                  className="text-xs sm:text-sm font-bold text-slate-600 hover:text-black hover:underline cursor-pointer"
+                >
+                  View List
+                </button>
+              )}
             </div>
 
             <div className="overflow-x-auto">
@@ -506,26 +615,34 @@ export default function NotificationDetails() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
-                  {notification.failedRecipients.map((item) => (
-                    <tr key={item.id} className="text-slate-800">
-                      <td className="py-1.5 text-slate-500 font-bold">{item.id}</td>
-                      <td className="py-1.5 font-black text-slate-900 text-sm sm:text-[14px]">{item.user}</td>
-                      <td className="py-1.5">
-                        {item.userType === 'Passenger' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200">
-                            <img src={assignedDriverIcon} alt="Passenger" className="w-4 h-4 object-contain" /> Passenger
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
-                            <img src={driverRoleIcon} alt="Driver" className="w-4.5 h-4.5 object-contain" /> Driver
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-1.5 text-right text-rose-600 font-semibold text-xs sm:text-[13px]">
-                        {item.reason}
+                  {notification.failedRecipients.length > 0 ? (
+                    notification.failedRecipients.map((item) => (
+                      <tr key={item.id} className="text-slate-800">
+                        <td className="py-1.5 text-slate-500 font-bold">{item.id}</td>
+                        <td className="py-1.5 font-black text-slate-900 text-sm sm:text-[14px]">{item.user}</td>
+                        <td className="py-1.5">
+                          {item.userType === 'Passenger' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200">
+                              <img src={assignedDriverIcon} alt="Passenger" className="w-4 h-4 object-contain" /> Passenger
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                              <img src={driverRoleIcon} alt="Driver" className="w-4.5 h-4.5 object-contain" /> Driver
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-1.5 text-right text-rose-600 font-semibold text-xs sm:text-[13px]">
+                          {item.reason}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="py-4 text-center text-slate-400 font-bold text-xs sm:text-sm">
+                        No failed recipients
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
