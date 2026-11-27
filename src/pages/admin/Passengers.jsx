@@ -18,11 +18,11 @@ import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
 
 // Assets
-import totalPassengersIcon from '../../assets/drivers/passengers-orange.svg';
-import activePassengersIcon from '../../assets/drivers/Group-9-1e8a06.svg';
-import blockedPassengersIcon from '../../assets/drivers/blocked-cancelled.svg';
-import newThisMonthIcon from '../../assets/dashboard/calender-yellow.svg';
-import defaultAvatar from '../../assets/amit_kumar_photo.png';
+import totalPassengersIcon from '../../assets/common/passengers-orange.svg';
+import activePassengersIcon from '../../assets/passengers/Group-9-1e8a06.svg';
+import blockedPassengersIcon from '../../assets/common/blocked-cancelled.svg';
+import newThisMonthIcon from '../../assets/common/calender-yellow.svg';
+import defaultAvatar from '../../assets/common/amit_kumar_photo.png';
 
 export default function Passengers() {
   const navigate = useNavigate();

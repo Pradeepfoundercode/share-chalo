@@ -24,7 +24,7 @@ import {
   Loader2,
   Download,
 } from 'lucide-react';
-import driversIcon from '../../assets/Group (1).svg';
+import driversIcon from '../../assets/common/Group (1).svg';
 import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
 import { getDriversApi } from '../../services/driver.services';

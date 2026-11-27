@@ -14,10 +14,10 @@ import {
   RotateCcw
 } from 'lucide-react';
 
-import totalRidesIcon from '../../assets/dashboard/car-yellow.svg';
-import totalPassengersIcon from '../../assets/drivers/passengers-orange.svg';
+import totalRidesIcon from '../../assets/common/car-yellow.svg';
+import totalPassengersIcon from '../../assets/common/passengers-orange.svg';
 import totalEarningsIcon from '../../assets/drivers/rupee-symbol-transparent.svg';
-import lastRideIcon from '../../assets/dashboard/calender-yellow.svg';
+import lastRideIcon from '../../assets/common/calender-yellow.svg';
 
 import { getDriverRideHistoryApi } from '../../services/driver.services';
 import Pagination from '../common/Pagination';

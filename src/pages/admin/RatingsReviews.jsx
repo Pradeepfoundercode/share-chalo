@@ -17,12 +17,12 @@ import {
 } from 'lucide-react';
 import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
-import group10Icon from '../../assets/dashboard/Group (10).svg';
-import driverIcon from '../../assets/dashboard/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 1.svg';
-import reviewsStarIcon from '../../assets/dashboard/reviews-star.svg';
-import reviewsDriverIcon from '../../assets/dashboard/reviews-driver-rating.svg';
-import reviewsPassengerIcon from '../../assets/dashboard/reviews-passenger-rating.svg';
-import reviewsChatIcon from '../../assets/dashboard/reviews-chat-bubble.svg';
+import group10Icon from '../../assets/common/Group (10).svg';
+import driverIcon from '../../assets/common/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 1.svg';
+import reviewsStarIcon from '../../assets/ratings/reviews-star.svg';
+import reviewsDriverIcon from '../../assets/ratings/reviews-driver-rating.svg';
+import reviewsPassengerIcon from '../../assets/ratings/reviews-passenger-rating.svg';
+import reviewsChatIcon from '../../assets/ratings/reviews-chat-bubble.svg';
 import { getReviewsApi } from '../../services/review.services';
 
 // Format Date & Time helper

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import vehicleDocumentIcon from '../../assets/drivers/vehicle-document.svg';
+import vehicleDocumentIcon from '../../assets/common/vehicle-document.svg';
 import driverKycIcon from '../../assets/drivers/Group-9-f29c03.svg';
 import {
   Check,

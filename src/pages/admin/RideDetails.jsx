@@ -11,31 +11,31 @@ import {
   XCircle,
 } from 'lucide-react';
 import { getTripByIdApi } from '../../services/trip.services';
-import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
-import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
-import paleYellowWavesBg from '../../assets/drivers/Pale Yellow Layered Waves.png';
-import vehicleCarIcon from '../../assets/drivers/bus-vehicle.svg';
-import briefcaseIcon from '../../assets/drivers/briefcase-icon.svg';
-import amitAvatar from '../../assets/amit_kumar_photo.png';
+import carCutout from '../../assets/common/White Compact Hatchback Car Cutout.png';
+import coachBusCutout from '../../assets/common/Share_Chalo_Modern_Coach_Bus.png';
+import paleYellowWavesBg from '../../assets/common/Pale Yellow Layered Waves.png';
+import vehicleCarIcon from '../../assets/common/bus-vehicle.svg';
+import briefcaseIcon from '../../assets/common/briefcase-icon.svg';
+import amitAvatar from '../../assets/common/amit_kumar_photo.png';
 
 // Assets & Icons
-import routeDetailsIcon from '../../assets/dashboard/akar-icons_location.svg';
-import destinationIcon from '../../assets/dashboard/b526c866-7ce7-4c15-848e-ed8378b03085 36.svg';
-import pickupIcon from '../../assets/dashboard/b526c866-7ce7-4c15-848e-ed8378b03085 38.svg';
-import driverDetailsIcon from '../../assets/drivers/assigned-driver.svg';
-import vehicleDetailsIcon from '../../assets/drivers/bus-vehicle.svg';
-import selectedRouteIcon from '../../assets/dashboard/road-icon.svg';
-import totalDistanceIcon from '../../assets/dashboard/opposite-arrows-icon.svg';
-import rideInfoIcon from '../../assets/dashboard/info-icon-transparent.svg';
-import totalSeatsIcon from '../../assets/drivers/seat-arrangement.svg';
-import bookedSeatsIcon from '../../assets/dashboard/group-users-icon.svg';
-import availableSeatsIcon from '../../assets/drivers/seat-icon.svg';
-import farePerSeatIcon from '../../assets/drivers/b526c866-7ce7-4c15-848e-ed8378b03085 23.svg';
-import totalRideFareIcon from '../../assets/dashboard/database-icon-transparent.svg';
-import passengerListIcon from '../../assets/dashboard/Group (9).svg';
-import cancelledByDriverIcon from '../../assets/dashboard/Group (10).svg';
-import cancellationReasonIcon from '../../assets/dashboard/chat-message-icon-transparent.svg';
-import cancellationDateTimeIcon from '../../assets/dashboard/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
+import routeDetailsIcon from '../../assets/rides/akar-icons_location.svg';
+import destinationIcon from '../../assets/rides/b526c866-7ce7-4c15-848e-ed8378b03085 36.svg';
+import pickupIcon from '../../assets/common/b526c866-7ce7-4c15-848e-ed8378b03085 38.svg';
+import driverDetailsIcon from '../../assets/common/assigned-driver.svg';
+import vehicleDetailsIcon from '../../assets/common/bus-vehicle.svg';
+import selectedRouteIcon from '../../assets/rides/road-icon.svg';
+import totalDistanceIcon from '../../assets/rides/opposite-arrows-icon.svg';
+import rideInfoIcon from '../../assets/common/info-icon-transparent.svg';
+import totalSeatsIcon from '../../assets/common/seat-arrangement.svg';
+import bookedSeatsIcon from '../../assets/rides/group-users-icon.svg';
+import availableSeatsIcon from '../../assets/rides/seat-icon.svg';
+import farePerSeatIcon from '../../assets/rides/b526c866-7ce7-4c15-848e-ed8378b03085 23.svg';
+import totalRideFareIcon from '../../assets/rides/database-icon-transparent.svg';
+import passengerListIcon from '../../assets/rides/Group (9).svg';
+import cancelledByDriverIcon from '../../assets/common/Group (10).svg';
+import cancellationReasonIcon from '../../assets/common/chat-message-icon-transparent.svg';
+import cancellationDateTimeIcon from '../../assets/common/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
 
 import Pagination from '../../components/common/Pagination';
 import DetailsHeader from '../../components/common/DetailsHeader';

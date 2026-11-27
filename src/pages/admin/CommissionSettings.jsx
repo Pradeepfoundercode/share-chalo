@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
-import carCutout from '../../assets/White Compact Sedan on a Tree-Lined Road.png';
-import hatchbackCutout from '../../assets/White Compact Hatchback Car Cutout.png';
-import busCutout from '../../assets/commercial_bus.png';
-import paleYellowWavesBg from '../../assets/drivers/Pale Yellow Layered Waves.png';
+import carCutout from '../../assets/common/White Compact Sedan on a Tree-Lined Road.png';
+import hatchbackCutout from '../../assets/common/White Compact Hatchback Car Cutout.png';
+import busCutout from '../../assets/common/commercial_bus.png';
+import paleYellowWavesBg from '../../assets/common/Pale Yellow Layered Waves.png';
 import {
   getCommissionSettingsApi,
   updateCommissionSettingsApi,

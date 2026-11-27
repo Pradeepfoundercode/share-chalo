@@ -24,14 +24,14 @@ import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
 
 // Assets for Stats Cards & Vehicles
-import totalRidesIcon from '../../assets/dashboard/calender-yellow.svg';
-import upcomingRidesIcon from '../../assets/drivers/upcoming-rides.svg';
-import ongoingRidesIcon from '../../assets/drivers/ongoing-rides.svg';
-import completedRidesIcon from '../../assets/drivers/active-status-check.svg';
-import cancelledRidesIcon from '../../assets/drivers/blocked-cancelled.svg';
-import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
-import busCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
-import amitAvatar from '../../assets/amit_kumar_photo.png';
+import totalRidesIcon from '../../assets/common/calender-yellow.svg';
+import upcomingRidesIcon from '../../assets/rides/upcoming-rides.svg';
+import ongoingRidesIcon from '../../assets/rides/ongoing-rides.svg';
+import completedRidesIcon from '../../assets/common/active-status-check.svg';
+import cancelledRidesIcon from '../../assets/common/blocked-cancelled.svg';
+import carCutout from '../../assets/common/White Compact Hatchback Car Cutout.png';
+import busCutout from '../../assets/common/Share_Chalo_Modern_Coach_Bus.png';
+import amitAvatar from '../../assets/common/amit_kumar_photo.png';
 
 // Helper to format ISO date time string
 const formatDateTime = (dateStr) => {
@@ -117,13 +117,20 @@ export default function Rides() {
       }),
   });
 
-  // Extract raw trips array safely
+  // Extract raw trips array safely and sort ascending by rideId (1, 2, 3...)
   const rawTrips = useMemo(() => {
     if (!tripsResponse) return [];
-    if (Array.isArray(tripsResponse.data)) return tripsResponse.data;
-    if (Array.isArray(tripsResponse.data?.trips)) return tripsResponse.data.trips;
-    if (Array.isArray(tripsResponse.trips)) return tripsResponse.trips;
-    return [];
+    let list = [];
+    if (Array.isArray(tripsResponse.data)) list = [...tripsResponse.data];
+    else if (Array.isArray(tripsResponse.data?.trips)) list = [...tripsResponse.data.trips];
+    else if (Array.isArray(tripsResponse.trips)) list = [...tripsResponse.trips];
+    else return [];
+
+    return list.sort((a, b) => {
+      const idA = Number(String(a.rideId ?? a.id ?? 0).replace(/[^0-9]/g, '')) || 0;
+      const idB = Number(String(b.rideId ?? b.id ?? 0).replace(/[^0-9]/g, '')) || 0;
+      return idA - idB;
+    });
   }, [tripsResponse]);
 
   // Map API trips to UI model

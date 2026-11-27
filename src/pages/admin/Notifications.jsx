@@ -27,12 +27,12 @@ import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
 
 // SVG Icons requested by user
-import totalNotificationsIcon from '../../assets/icons/notification-transparent.svg';
-import sentNotificationsIcon from '../../assets/icons/b526c866-7ce7-4c15-848e-ed8378b03085 32 (1).svg';
-import scheduledNotificationsIcon from '../../assets/icons/calendar-blue.svg';
-import failedNotificationsIcon from '../../assets/drivers/blocked-cancelled.svg';
-import notificationListIcon from '../../assets/dashboard/finance-list.svg';
-import sendPlaneIcon from '../../assets/drivers/send-plane-icon.svg';
+import totalNotificationsIcon from '../../assets/notifications/notification-transparent.svg';
+import sentNotificationsIcon from '../../assets/common/b526c866-7ce7-4c15-848e-ed8378b03085 32 (1).svg';
+import scheduledNotificationsIcon from '../../assets/notifications/calendar-blue.svg';
+import failedNotificationsIcon from '../../assets/common/blocked-cancelled.svg';
+import notificationListIcon from '../../assets/notifications/finance-list.svg';
+import sendPlaneIcon from '../../assets/notifications/send-plane-icon.svg';
 
 export default function Notifications() {
   const navigate = useNavigate();

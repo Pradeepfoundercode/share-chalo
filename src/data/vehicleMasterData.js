@@ -1,8 +1,8 @@
-import marutiLogo from '../assets/Maruti Suzuki Logo.png';
-import hyundaiLogo from '../assets/Hyundai Blue Emblem Logo.png';
-import tataLogo from '../assets/TATA Blue Logo on Transparent Background.png';
-import mahindraLogo from '../assets/Mahindra Red Emblem Logo.png';
-import toyotaLogo from '../assets/Toyota Red Emblem and Wordmark.png';
+import marutiLogo from '../assets/common/Maruti Suzuki Logo.png';
+import hyundaiLogo from '../assets/common/Hyundai Blue Emblem Logo.png';
+import tataLogo from '../assets/common/TATA Blue Logo on Transparent Background.png';
+import mahindraLogo from '../assets/common/Mahindra Red Emblem Logo.png';
+import toyotaLogo from '../assets/common/Toyota Red Emblem and Wordmark.png';
 
 export const initialBrandsList = [
   {

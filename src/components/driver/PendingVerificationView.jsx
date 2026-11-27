@@ -30,8 +30,8 @@ import {
   reviewDriverVehicleApi
 } from '../../services/driver.services';
 import personalInfoIcon from '../../assets/drivers/Group-9-f29c03.svg';
-import vehicleDocumentIcon from '../../assets/drivers/vehicle-document.svg';
-import vehicleYellowIcon from '../../assets/dashboard/car-yellow.svg';
+import vehicleDocumentIcon from '../../assets/common/vehicle-document.svg';
+import vehicleYellowIcon from '../../assets/common/car-yellow.svg';
 import kycTabIcon from '../../assets/drivers/kyc-tab.svg';
 
 export default function PendingVerificationView({ driver }) {

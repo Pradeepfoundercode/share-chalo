@@ -15,16 +15,16 @@ import {
   Loader2,
 } from 'lucide-react';
 import { getVehiclesApi } from '../../services/vehicle.services';
-import carThumb from '../../assets/White Compact Hatchback Car Cutout.png';
-import busThumb from '../../assets/commercial_bus.png';
+import carThumb from '../../assets/common/White Compact Hatchback Car Cutout.png';
+import busThumb from '../../assets/common/commercial_bus.png';
 import Pagination from '../../components/common/Pagination';
 import StatsCards from '../../components/common/StatsCards';
 
 // Assets for Stats Cards
-import totalVehiclesIcon from '../../assets/drivers/vehicle-document.svg';
-import activeVehiclesIcon from '../../assets/drivers/active-status-check.svg';
-import blockedVehiclesIcon from '../../assets/drivers/blocked-cancelled.svg';
-import inactiveVehiclesIcon from '../../assets/drivers/inactive-vehicles.svg';
+import totalVehiclesIcon from '../../assets/common/vehicle-document.svg';
+import activeVehiclesIcon from '../../assets/common/active-status-check.svg';
+import blockedVehiclesIcon from '../../assets/common/blocked-cancelled.svg';
+import inactiveVehiclesIcon from '../../assets/vehicles/inactive-vehicles.svg';
 
 export default function Vehicles() {
   const navigate = useNavigate();

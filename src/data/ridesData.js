@@ -1,7 +1,7 @@
-import carCutout from '../assets/White Compact Hatchback Car Cutout.png';
-import busCutout from '../assets/Share_Chalo_Modern_Coach_Bus.png';
-import arjunAvatar from '../assets/arjun_singh_avatar.png';
-import amitAvatar from '../assets/amit_kumar_photo.png';
+import carCutout from '../assets/common/White Compact Hatchback Car Cutout.png';
+import busCutout from '../assets/common/Share_Chalo_Modern_Coach_Bus.png';
+import arjunAvatar from '../assets/common/arjun_singh_avatar.png';
+import amitAvatar from '../assets/common/amit_kumar_photo.png';
 
 export const ridesStats = {
   totalRides: '1,286',

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { Tag, Car, Palette, Armchair } from 'lucide-react';
-import brandTagIcon from '../../assets/drivers/price-tag-icon.svg';
-import colorIcon from '../../assets/drivers/color-palette.svg';
-import seatTypeIcon from '../../assets/drivers/seat-type.svg';
-import {
-  BrandTab,
-  ModelTab,
-  ColorTab,
-  SeatTypeTab,
-} from '../../components/vehicleMaster';
+import brandTagIcon from '../../assets/vehicles/price-tag-icon.svg';
+import colorIcon from '../../assets/vehicles/color-palette.svg';
+import seatTypeIcon from '../../assets/vehicles/seat-type.svg';
+import BrandTab from '../../components/vehicleMaster/BrandTab';
+import ModelTab from '../../components/vehicleMaster/ModelTab';
+import ColorTab from '../../components/vehicleMaster/ColorTab';
+import SeatTypeTab from '../../components/vehicleMaster/SeatTypeTab';
 
 export default function VehicleMaster() {
   const [activeTab, setActiveTab] = useState('Brand');

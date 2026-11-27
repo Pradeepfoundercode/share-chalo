@@ -29,12 +29,12 @@ import {
 } from 'lucide-react';
 import { getSupportTicketsApi } from '../../services/support.services';
 import Pagination from '../../components/common/Pagination';
-import financeSettlementsIcon from '../../assets/dashboard/finance-settlements.svg';
-import totalTicketsMicIcon from '../../assets/icons/mic.svg';
-import openAlertCircleIcon from '../../assets/icons/alert-circle-icon.svg';
-import inProgressRefreshIcon from '../../assets/icons/refresh-icon.svg';
-import resolvedCheckIcon from '../../assets/icons/b526c866-7ce7-4c15-848e-ed8378b03085 32 (1).svg';
-import closedCircleIcon from '../../assets/icons/close-circle-icon.svg';
+import financeSettlementsIcon from '../../assets/common/finance-settlements.svg';
+import totalTicketsMicIcon from '../../assets/support/mic.svg';
+import openAlertCircleIcon from '../../assets/common/alert-circle-icon.svg';
+import inProgressRefreshIcon from '../../assets/support/refresh-icon.svg';
+import resolvedCheckIcon from '../../assets/common/b526c866-7ce7-4c15-848e-ed8378b03085 32 (1).svg';
+import closedCircleIcon from '../../assets/common/close-circle-icon.svg';
 
 export default function SupportComplaints() {
   const navigate = useNavigate();

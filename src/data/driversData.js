@@ -1,7 +1,7 @@
-import driverAvatar from '../assets/8aba03a5-5e3e-49dd-aae6-a33e040959f9 1.png';
-import carCutout from '../assets/White Compact Hatchback Car Cutout.png';
-import busCutout from '../assets/commercial_bus.png';
-import coachBusCutout from '../assets/Share Chalo Coach Bus.png';
+import driverAvatar from '../assets/drivers/8aba03a5-5e3e-49dd-aae6-a33e040959f9 1.png';
+import carCutout from '../assets/common/White Compact Hatchback Car Cutout.png';
+import busCutout from '../assets/common/commercial_bus.png';
+import coachBusCutout from '../assets/drivers/Share Chalo Coach Bus.png';
 
 export const driversList = [
   {

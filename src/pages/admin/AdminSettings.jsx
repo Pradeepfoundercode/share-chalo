@@ -18,7 +18,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-import defaultAdminAvatar from '../../assets/harsh_singh_avatar_square.png';
+import defaultAdminAvatar from '../../assets/settings/harsh_singh_avatar_square.png';
 import { profileSchema, passwordSchema } from '../../validations/authValidation';
 import FaqTab from '../../components/settings/FaqTab';
 import PrivacyPolicyTab from '../../components/settings/PrivacyPolicyTab';

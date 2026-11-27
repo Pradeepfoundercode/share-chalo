@@ -22,28 +22,28 @@ import {
 } from 'lucide-react';
 
 // Images
-import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
+import carCutout from '../../assets/common/White Compact Hatchback Car Cutout.png';
 
 // Bus Specific Images
-import steeringWheelIcon from '../../assets/Bold Black Steering Wheel Icon.png';
-import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
+import steeringWheelIcon from '../../assets/drivers/Bold Black Steering Wheel Icon.png';
+import coachBusCutout from '../../assets/common/Share_Chalo_Modern_Coach_Bus.png';
 
-import privateCarIcon from '../../assets/drivers/private-car.svg';
+import privateCarIcon from '../../assets/common/private-car.svg';
 import commercialBusIcon from '../../assets/drivers/commercial-bus.svg';
 import memberSinceIcon from '../../assets/drivers/member-since.svg';
 import vehiclePhotoIcon from '../../assets/drivers/vehicle-photo-tag.svg';
-import vehicleDocumentIcon from '../../assets/drivers/vehicle-document.svg';
+import vehicleDocumentIcon from '../../assets/common/vehicle-document.svg';
 import busConfigIcon from '../../assets/drivers/bus-config.svg';
 import seatLayoutSectionIcon from '../../assets/drivers/seat-layout-section.svg';
-import passengersIcon from '../../assets/Group (6).svg';
+import passengersIcon from '../../assets/common/Group (6).svg';
 import personalInfoIcon from '../../assets/drivers/Group-9-f29c03.svg';
-import vehicleYellowIcon from '../../assets/dashboard/car-yellow.svg';
+import vehicleYellowIcon from '../../assets/common/car-yellow.svg';
 
 // Custom Tab SVG Icons requested by user
 import kycTabIcon from '../../assets/drivers/kyc-tab.svg';
-import vehicleBusTabIcon from '../../assets/drivers/bus-vehicle.svg';
-import seatLayoutTabIcon from '../../assets/drivers/seat-arrangement.svg';
-import rideHistoryTabIcon from '../../assets/dashboard/ride-analytics.svg';
+import vehicleBusTabIcon from '../../assets/common/bus-vehicle.svg';
+import seatLayoutTabIcon from '../../assets/common/seat-arrangement.svg';
+import rideHistoryTabIcon from '../../assets/common/ride-analytics.svg';
 
 import { useAuthStore } from '../../store/authStore';
 import KycDocumentsTab from '../../components/driver/KycDocumentsTab';

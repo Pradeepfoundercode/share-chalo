@@ -2,25 +2,25 @@ import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import sidebarLogo from '../../assets/sidebar_logo.png';
-import shieldLogo from '../../assets/shield_transparent.png';
+import sidebarLogo from '../../assets/common/sidebar_logo.png';
+import shieldLogo from '../../assets/common/shield_transparent.png';
 
 // Custom SVG Icons matching exact specifications
-import dashboardIcon from '../../assets/Vector (4).svg';
-import driversIcon from '../../assets/Group (1).svg';
-import passengersIcon from '../../assets/Group (6).svg';
-import vehiclesIcon from '../../assets/Vector (9).svg';
-import ridesIcon from '../../assets/Vector (12).svg';
-import bookingsIcon from '../../assets/Group (5).svg';
-import financeIcon from '../../assets/Vector (11).svg';
-import commissionIcon from '../../assets/Vector (8).svg';
-import kycIcon from '../../assets/Vector (10).svg';
-import routesIcon from '../../assets/Group (4).svg';
-import reviewsIcon from '../../assets/Vector (6).svg';
-import supportIcon from '../../assets/Group (2).svg';
-import notificationsIcon from '../../assets/Vector (7).svg';
-import analyticsIcon from '../../assets/Group (3).svg';
-import settingsIcon from '../../assets/Vector (5).svg';
+import dashboardIcon from '../../assets/common/Vector (4).svg';
+import driversIcon from '../../assets/common/Group (1).svg';
+import passengersIcon from '../../assets/common/Group (6).svg';
+import vehiclesIcon from '../../assets/common/Vector (9).svg';
+import ridesIcon from '../../assets/common/Vector (12).svg';
+import bookingsIcon from '../../assets/common/Group (5).svg';
+import financeIcon from '../../assets/common/Vector (11).svg';
+import commissionIcon from '../../assets/common/Vector (8).svg';
+import kycIcon from '../../assets/common/Vector (10).svg';
+import routesIcon from '../../assets/common/Group (4).svg';
+import reviewsIcon from '../../assets/common/Vector (6).svg';
+import supportIcon from '../../assets/common/Group (2).svg';
+import notificationsIcon from '../../assets/common/Vector (7).svg';
+import analyticsIcon from '../../assets/common/Group (3).svg';
+import settingsIcon from '../../assets/common/Vector (5).svg';
 
 const menuItems = [
   { name: 'Dashboard', path: '/', icon: dashboardIcon },

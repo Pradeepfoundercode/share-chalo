@@ -25,20 +25,20 @@ import {
   defaultVehicleDocuments,
 } from '../../data/vehiclesData';
 import { getVehicleByIdApi } from '../../services/vehicle.services';
-import carThumb from '../../assets/White Compact Hatchback Car Cutout.png';
-import busThumb from '../../assets/commercial_bus.png';
+import carThumb from '../../assets/common/White Compact Hatchback Car Cutout.png';
+import busThumb from '../../assets/common/commercial_bus.png';
 import { useAuthStore } from '../../store/authStore';
 import DetailsHeader from '../../components/common/DetailsHeader';
-import paleYellowWavesBg from '../../assets/drivers/Pale Yellow Layered Waves.png';
+import paleYellowWavesBg from '../../assets/common/Pale Yellow Layered Waves.png';
 
 // Assets for specs & badges
-import vehicleCarIcon from '../../assets/drivers/bus-vehicle.svg';
-import brandPriceTagIcon from '../../assets/drivers/price-tag-icon.svg';
-import seatIcon from '../../assets/drivers/seat-arrangement.svg';
-import briefcaseIcon from '../../assets/drivers/briefcase-icon.svg';
-import vehiclePhotosIcon from '../../assets/drivers/vehicle-photos.svg';
-import vehicleDocsIcon from '../../assets/drivers/vehicle-docs.svg';
-import assignedDriverIcon from '../../assets/drivers/assigned-driver.svg';
+import vehicleCarIcon from '../../assets/common/bus-vehicle.svg';
+import brandPriceTagIcon from '../../assets/vehicles/price-tag-icon.svg';
+import seatIcon from '../../assets/common/seat-arrangement.svg';
+import briefcaseIcon from '../../assets/common/briefcase-icon.svg';
+import vehiclePhotosIcon from '../../assets/vehicles/vehicle-photos.svg';
+import vehicleDocsIcon from '../../assets/vehicles/vehicle-docs.svg';
+import assignedDriverIcon from '../../assets/common/assigned-driver.svg';
 
 export default function VehicleDetails() {
   const { id } = useParams();

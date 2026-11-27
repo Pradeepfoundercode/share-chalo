@@ -7,21 +7,21 @@ import { getNotificationByIdApi } from '../../services/notification.services';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
 // Asset Icons from src/assets/
-import megaphoneIcon from '../../assets/icons/megaphone-icon-transparent.svg';
-import calendarBlueIcon from '../../assets/icons/calendar-blue.svg';
-import chatMessageIcon from '../../assets/dashboard/chat-message-icon-transparent.svg';
-import group1Icon from '../../assets/Group (1).svg';
-import driverCarIcon from '../../assets/icons/car-green.svg';
-import deliverySummaryIcon from '../../assets/dashboard/ride-analytics.svg';
-import sendPlaneIcon from '../../assets/drivers/send-plane-icon.svg';
-import deliveredCheckIcon from '../../assets/drivers/active-status-check.svg';
-import pendingClockIcon from '../../assets/dashboard/clock-icon.svg';
-import failedCloseIcon from '../../assets/icons/close-circle-icon.svg';
-import infoIcon from '../../assets/dashboard/info-icon-transparent.svg';
-import alertCircleIcon from '../../assets/icons/alert-circle-icon.svg';
-import failedRecipientsIcon from '../../assets/dashboard/b526c866-7ce7-4c15-848e-ed8378b03085 4.svg';
-import driverRoleIcon from '../../assets/dashboard/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 1.svg';
-import assignedDriverIcon from '../../assets/drivers/assigned-driver.svg';
+import megaphoneIcon from '../../assets/notifications/megaphone-icon-transparent.svg';
+import calendarBlueIcon from '../../assets/notifications/calendar-blue.svg';
+import chatMessageIcon from '../../assets/common/chat-message-icon-transparent.svg';
+import group1Icon from '../../assets/common/Group (1).svg';
+import driverCarIcon from '../../assets/common/car-green.svg';
+import deliverySummaryIcon from '../../assets/common/ride-analytics.svg';
+import sendPlaneIcon from '../../assets/notifications/send-plane-icon.svg';
+import deliveredCheckIcon from '../../assets/common/active-status-check.svg';
+import pendingClockIcon from '../../assets/notifications/clock-icon.svg';
+import failedCloseIcon from '../../assets/common/close-circle-icon.svg';
+import infoIcon from '../../assets/common/info-icon-transparent.svg';
+import alertCircleIcon from '../../assets/common/alert-circle-icon.svg';
+import failedRecipientsIcon from '../../assets/notifications/b526c866-7ce7-4c15-848e-ed8378b03085 4.svg';
+import driverRoleIcon from '../../assets/common/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 1.svg';
+import assignedDriverIcon from '../../assets/common/assigned-driver.svg';
 
 export default function NotificationDetails() {
   const { id } = useParams();

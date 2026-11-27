@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Eye, X } from 'lucide-react';
 
-import coachBusCutout from '../../assets/Share_Chalo_Modern_Coach_Bus.png';
-import carCutout from '../../assets/White Compact Hatchback Car Cutout.png';
+import coachBusCutout from '../../assets/common/Share_Chalo_Modern_Coach_Bus.png';
+import carCutout from '../../assets/common/White Compact Hatchback Car Cutout.png';
 import vehiclePhotoIcon from '../../assets/drivers/vehicle-photo-tag.svg';
-import vehicleYellowIcon from '../../assets/dashboard/car-yellow.svg';
+import vehicleYellowIcon from '../../assets/common/car-yellow.svg';
 import busConfigIcon from '../../assets/drivers/bus-config.svg';
 
 export default function VehicleBusDetailsTab({ driver }) {

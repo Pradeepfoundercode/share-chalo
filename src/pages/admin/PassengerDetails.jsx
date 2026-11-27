@@ -29,11 +29,11 @@ import Pagination from '../../components/common/Pagination';
 import DetailsHeader from '../../components/common/DetailsHeader';
 
 // Assets
-import totalBookingIcon from '../../assets/dashboard/calender-yellow.svg';
-import completedRidesIcon from '../../assets/dashboard/completed-rides.svg';
-import cancelledRidesIcon from '../../assets/drivers/blocked-cancelled.svg';
-import totalAmountIcon from '../../assets/drivers/total-amount.svg';
-import amitAvatar from '../../assets/amit_kumar_photo.png';
+import totalBookingIcon from '../../assets/common/calender-yellow.svg';
+import completedRidesIcon from '../../assets/common/completed-rides.svg';
+import cancelledRidesIcon from '../../assets/common/blocked-cancelled.svg';
+import totalAmountIcon from '../../assets/passengers/total-amount.svg';
+import amitAvatar from '../../assets/common/amit_kumar_photo.png';
 import { queryClient } from '../../utils/queryClient';
 
 // Helper to format ISO date strings

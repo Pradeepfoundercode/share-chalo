@@ -1,20 +1,20 @@
 // Vehicles mock data and detailed specifications
-import carThumb from '../assets/White Compact Hatchback Car Cutout.png';
-import busThumb from '../assets/commercial_bus.png';
-import busHero from '../assets/bus_hero_banner.png';
+import carThumb from '../assets/common/White Compact Hatchback Car Cutout.png';
+import busThumb from '../assets/common/commercial_bus.png';
+import busHero from '../assets/vehicles/bus_hero_banner.png';
 
 // Exact bus cropped images
-import busFront from '../assets/bus_front_exact.png';
-import busRear from '../assets/bus_rear_exact.png';
-import busSide from '../assets/bus_side_exact.png';
-import busInterior from '../assets/bus_interior_exact.png';
-import arjunAvatar from '../assets/arjun_singh_avatar.png';
+import busFront from '../assets/vehicles/bus_front_exact.png';
+import busRear from '../assets/vehicles/bus_rear_exact.png';
+import busSide from '../assets/vehicles/bus_side_exact.png';
+import busInterior from '../assets/vehicles/bus_interior_exact.png';
+import arjunAvatar from '../assets/common/arjun_singh_avatar.png';
 
 // Car detailed photos for car vehicles
-import carFront from '../assets/White Baleno Hatchback on a Tree-Lined Road.png';
-import carRear from '../assets/White Maruti Suzuki Baleno Rear View.png';
-import carSide from '../assets/White Compact Sedan on a Tree-Lined Road.png';
-import carInterior from '../assets/Beige Leather Car Interior.png';
+import carFront from '../assets/vehicles/White Baleno Hatchback on a Tree-Lined Road.png';
+import carRear from '../assets/vehicles/White Maruti Suzuki Baleno Rear View.png';
+import carSide from '../assets/common/White Compact Sedan on a Tree-Lined Road.png';
+import carInterior from '../assets/vehicles/Beige Leather Car Interior.png';
 
 export const defaultBusPhotos = [
   { img: busFront, label: 'Front View' },

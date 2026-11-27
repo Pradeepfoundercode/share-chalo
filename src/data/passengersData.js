@@ -1,5 +1,5 @@
 // Passenger mock data matching the reference screenshot exactly
-import priyaAvatar from '../assets/Smiling Man in Yellow Circular Frame.png';
+import priyaAvatar from '../assets/common/Smiling Man in Yellow Circular Frame.png';
 
 export const passengersStats = {
   totalPassengers: '12,486',

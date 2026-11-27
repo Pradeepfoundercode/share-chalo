@@ -29,24 +29,24 @@ import {
   recentRidesAnalytics
 } from '../../data/analyticsData';
 
-import overviewBarIcon from '../../assets/Group (3).svg';
-import rideReportsCarIcon from '../../assets/drivers/private-car.svg';
-import financialReportsCoinsIcon from '../../assets/fa-solid_coins.svg';
-import userReportsDriverIcon from '../../assets/drivers/assigned-driver.svg';
-import carGreenIcon from '../../assets/icons/car-green.svg';
-import teamBlueIcon from '../../assets/icons/team-blue.svg';
-import assignedDriverIcon from '../../assets/drivers/assigned-driver.svg';
-import moneyBagIcon from '../../assets/icons/money-bag-icon.svg';
-import rupeeCircleIcon from '../../assets/icons/rupee-circle-icon.svg';
-import passengersGreenIcon from '../../assets/icons/passengers-green.svg';
-import stackedCoinsIcon from '../../assets/icons/stacked-coins-icon.svg';
-import stackedLayersBlueIcon from '../../assets/icons/stacked-layers-blue-icon.svg';
-import paymentCardIcon from '../../assets/icons/payment-card-icon.svg';
-import cashBanknoteIcon from '../../assets/icons/cash-banknote-icon.svg';
-import steeringWheelIcon from '../../assets/icons/steering-wheel-icon.svg';
-import teamMembersPurpleIcon from '../../assets/icons/team-members-purple-icon.svg';
-import blockedCancelledIcon from '../../assets/drivers/blocked-cancelled.svg';
-import topRoutesIcon from '../../assets/dashboard/b526c866-7ce7-4c15-848e-ed8378b03085 38.svg';
+import overviewBarIcon from '../../assets/common/Group (3).svg';
+import rideReportsCarIcon from '../../assets/common/private-car.svg';
+import financialReportsCoinsIcon from '../../assets/reports/fa-solid_coins.svg';
+import userReportsDriverIcon from '../../assets/common/assigned-driver.svg';
+import carGreenIcon from '../../assets/common/car-green.svg';
+import teamBlueIcon from '../../assets/reports/team-blue.svg';
+import assignedDriverIcon from '../../assets/common/assigned-driver.svg';
+import moneyBagIcon from '../../assets/reports/money-bag-icon.svg';
+import rupeeCircleIcon from '../../assets/reports/rupee-circle-icon.svg';
+import passengersGreenIcon from '../../assets/reports/passengers-green.svg';
+import stackedCoinsIcon from '../../assets/reports/stacked-coins-icon.svg';
+import stackedLayersBlueIcon from '../../assets/reports/stacked-layers-blue-icon.svg';
+import paymentCardIcon from '../../assets/reports/payment-card-icon.svg';
+import cashBanknoteIcon from '../../assets/reports/cash-banknote-icon.svg';
+import steeringWheelIcon from '../../assets/reports/steering-wheel-icon.svg';
+import teamMembersPurpleIcon from '../../assets/reports/team-members-purple-icon.svg';
+import blockedCancelledIcon from '../../assets/common/blocked-cancelled.svg';
+import topRoutesIcon from '../../assets/common/b526c866-7ce7-4c15-848e-ed8378b03085 38.svg';
 
 export default function ReportsAnalytics() {
   const navigate = useNavigate();

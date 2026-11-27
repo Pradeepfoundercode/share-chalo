@@ -24,12 +24,12 @@ import DetailsHeader from '../../components/common/DetailsHeader';
 import { createNotificationApi } from '../../services/notification.services';
 
 // Custom SVGs requested by user
-import financeSettlementsIcon from '../../assets/dashboard/finance-settlements.svg';
-import selectUsersIcon from '../../assets/dashboard/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
-import chatMessageIcon from '../../assets/dashboard/chat-message-icon-transparent.svg';
-import totalSeatsIcon from '../../assets/drivers/total-seats.svg';
-import privateCarIcon from '../../assets/drivers/private-car.svg';
-import group10Icon from '../../assets/dashboard/Group (10).svg';
+import financeSettlementsIcon from '../../assets/common/finance-settlements.svg';
+import selectUsersIcon from '../../assets/common/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
+import chatMessageIcon from '../../assets/common/chat-message-icon-transparent.svg';
+import totalSeatsIcon from '../../assets/common/total-seats.svg';
+import privateCarIcon from '../../assets/common/private-car.svg';
+import group10Icon from '../../assets/common/Group (10).svg';
 
 export default function CreateNotification() {
   const navigate = useNavigate();

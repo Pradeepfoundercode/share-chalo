@@ -1,14 +1,14 @@
 import React from 'react';
-import steeringWheelIcon from '../../assets/Bold Black Steering Wheel Icon.png';
+import steeringWheelIcon from '../../assets/drivers/Bold Black Steering Wheel Icon.png';
 import busConfigIcon from '../../assets/drivers/bus-config.svg';
 import seatLayoutSectionIcon from '../../assets/drivers/seat-layout-section.svg';
 
 // Custom Row Icons requested by user
-import busTypeIcon from '../../assets/drivers/bus-vehicle.svg';
+import busTypeIcon from '../../assets/common/bus-vehicle.svg';
 import acTypeIcon from '../../assets/drivers/ac-type.svg';
-import seatArrangementIcon from '../../assets/drivers/seat-arrangement.svg';
+import seatArrangementIcon from '../../assets/common/seat-arrangement.svg';
 import totalRowsIcon from '../../assets/drivers/total-rows.svg';
-import totalSeatsIcon from '../../assets/drivers/total-seats.svg';
+import totalSeatsIcon from '../../assets/common/total-seats.svg';
 
 export default function SeatLayoutTab({ driver }) {
   // 11 rows: 1 to 11

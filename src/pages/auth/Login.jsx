@@ -10,12 +10,12 @@ import { loginSchema } from "../../validations/authValidation";
 import { useLogin } from "../../hooks/useAuth";
 
 // Assets
-import bgPattern from "../../assets/Minimal City Skyline with Yellow Waves.png";
-import heroIllustration from "../../assets/470f0f85-1a7a-474a-b78c-25f1cd3b7f4c 1.svg";
-import sloganLogo from "../../assets/slogan.png";
-import adminUserBadge from "../../assets/8196793a-4338-44d7-b695-646b4c46e286 1.svg";
-import adminMonitorIcon from "../../assets/5fb1c8f4-0795-4d75-9a5f-3e5a3004fe38 1.svg";
-import roundedLoginArrowIcon from "../../assets/Rounded Login Arrow Icon.png";
+import bgPattern from "../../assets/login/Minimal City Skyline with Yellow Waves.png";
+import heroIllustration from "../../assets/login/470f0f85-1a7a-474a-b78c-25f1cd3b7f4c 1.svg";
+import sloganLogo from "../../assets/login/slogan.png";
+import adminUserBadge from "../../assets/login/8196793a-4338-44d7-b695-646b4c46e286 1.svg";
+import adminMonitorIcon from "../../assets/login/5fb1c8f4-0795-4d75-9a5f-3e5a3004fe38 1.svg";
+import roundedLoginArrowIcon from "../../assets/login/Rounded Login Arrow Icon.png";
 
 export default function Login() {
   const navigate = useNavigate();
