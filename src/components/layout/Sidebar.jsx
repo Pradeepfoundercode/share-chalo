@@ -239,7 +239,6 @@ export default function Sidebar({
                         setVehiclesOpen(!vehiclesOpen);
                       }
                     }}
-                    title={item.name}
                     className={`transition-all duration-150 cursor-pointer ${
                       isCollapsed
                         ? 'w-[58px] h-11 mx-auto flex items-center justify-center rounded-xl'
@@ -319,7 +318,6 @@ export default function Sidebar({
               <NavLink
                 key={item.name}
                 to={item.path}
-                title={item.name}
                 className={`transition-all duration-150 ${
                   isCollapsed
                     ? 'w-[58px] h-11 mx-auto flex items-center justify-center rounded-xl'

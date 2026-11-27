@@ -2,16 +2,24 @@
 
 :root {
   /* Brand Theme Colors */
-  --color-primary-yellow: #facc15; /* Main Brand Yellow */
-  --color-primary-yellow-hover: #eab308; /* Hover Yellow */
-  --color-primary-yellow-light: #fef08a; /* Light Yellow Badge */
+  --color-primary-yellow: #facc15;
+  /* Main Brand Yellow */
+  --color-primary-yellow-hover: #eab308;
+  /* Hover Yellow */
+  --color-primary-yellow-light: #fef08a;
+  /* Light Yellow Badge */
   --color-primary-yellow-subtle: #fefce8;
 
-  --color-dark: #0f172a; /* Slate 900 */
-  --color-dark-muted: #334155; /* Slate 700 */
-  --color-border: #e2e8f0; /* Slate 200 */
-  --color-border-input: #cbd5e1; /* Slate 300 */
-  --color-bg-page: #f8fafc; /* Slate 50 */
+  --color-dark: #0f172a;
+  /* Slate 900 */
+  --color-dark-muted: #334155;
+  /* Slate 700 */
+  --color-border: #e2e8f0;
+  /* Slate 200 */
+  --color-border-input: #cbd5e1;
+  /* Slate 300 */
+  --color-bg-page: #f8fafc;
+  /* Slate 50 */
 }
 
 /* Base Body */
@@ -119,7 +127,7 @@ input[type="number"] {
 /* Subtle Warm Page Background */
 .bg-auth-page {
   background-color: #f8fafc;
-  background-image: 
+  background-image:
     radial-gradient(circle at 100% 100%, rgba(254, 240, 138, 0.4) 0%, transparent 35%),
     radial-gradient(circle at 0% 0%, rgba(254, 240, 138, 0.25) 0%, transparent 30%);
 }
@@ -136,4 +144,54 @@ input[type="number"] {
 .no-scrollbar * {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+}
+
+/* Custom Rich Text Editor Content Styling */
+.rich-text-editor-content {
+  min-height: 140px;
+}
+.rich-text-editor-content h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.rich-text-editor-content h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.rich-text-editor-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0.35rem;
+  margin-bottom: 0.2rem;
+}
+.rich-text-editor-content p {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.rich-text-editor-content ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.rich-text-editor-content ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.rich-text-editor-content blockquote {
+  border-left: 3px solid #facc15;
+  padding-left: 0.75rem;
+  font-style: italic;
+  color: #475569;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
 }

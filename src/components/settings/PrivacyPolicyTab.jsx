@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Pagination from '../common/Pagination';
+import RichTextEditor from '../common/RichTextEditor';
 import {
   getPoliciesApi,
   createPolicyApi,
@@ -238,7 +239,9 @@ export default function PrivacyPolicyTab() {
       return;
     }
 
-    if (!content.trim()) {
+    // Strip HTML tags to ensure actual text was entered
+    const cleanContentText = content.replace(/<[^>]*>/g, '').trim();
+    if (!cleanContentText && !content.includes('<img')) {
       setFormError('Please enter policy content.');
       return;
     }
@@ -696,17 +699,17 @@ export default function PrivacyPolicyTab() {
           {/* Content Field */}
           <div className="space-y-1">
             <label className="block text-xs font-bold text-slate-800">
-              Content (HTML / Text) <span className="text-red-500">*</span>
+              Content <span className="text-red-500">*</span>
             </label>
-            <textarea
-              rows={4}
-              placeholder="<h2>Privacy Policy</h2><p>We collect only the data needed to run the service.</p>"
+            <RichTextEditor
               value={content}
-              onChange={(e) => {
-                setContent(e.target.value);
+              onChange={(html) => {
+                setContent(html);
                 setFormError('');
               }}
-              className="w-full p-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all resize-y min-h-[96px]"
+              placeholder=""
+              minHeight="140px"
+              maxHeight="260px"
             />
           </div>
 
