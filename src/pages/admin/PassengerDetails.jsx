@@ -25,7 +25,8 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { passengersList, passengerBookingHistory } from '../../data/passengersData';
 import { getUserByIdApi, updateUserStatusApi } from '../../services/user.services';
-import { Pagination, DetailsHeader } from '../../components/common';
+import Pagination from '../../components/common/Pagination';
+import DetailsHeader from '../../components/common/DetailsHeader';
 
 // Assets
 import totalBookingIcon from '../../assets/dashboard/calender-yellow.svg';

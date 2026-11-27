@@ -16,6 +16,7 @@ import {
   Filter,
 } from 'lucide-react';
 import Pagination from '../../components/common/Pagination';
+import StatsCards from '../../components/common/StatsCards';
 import group10Icon from '../../assets/dashboard/Group (10).svg';
 import driverIcon from '../../assets/dashboard/50faa1d6-f73a-4c77-b528-d5ff6b3e8fa5 1.svg';
 import reviewsStarIcon from '../../assets/dashboard/reviews-star.svg';
@@ -309,72 +310,67 @@ export default function RatingsReviews() {
     });
   }, [allReviews, appliedFilters.targetRole]);
 
+  const reviewStatsItems = [
+    {
+      id: 1,
+      label: 'Overall Rating',
+      value: summaryStats.overallRating,
+      image: reviewsStarIcon,
+      cardColor: 'bg-[#fffbeb] border-amber-200/80',
+      iconBg: 'bg-amber-200/80',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
+    },
+    {
+      id: 2,
+      label: 'Driver Rating',
+      value: summaryStats.driverRating,
+      image: reviewsDriverIcon,
+      cardColor: 'bg-[#f0fdf4] border-emerald-200/80',
+      iconBg: 'bg-emerald-100',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
+    },
+    {
+      id: 3,
+      label: 'Passenger Rating',
+      value: summaryStats.passengerRating,
+      image: reviewsPassengerIcon,
+      cardColor: 'bg-[#fef2f2] border-rose-200/80',
+      iconBg: 'bg-rose-100',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-5 h-5 sm:w-7 sm:h-7',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
+    },
+    {
+      id: 4,
+      label: 'Total Reviews',
+      value: summaryStats.totalReviews,
+      image: reviewsChatIcon,
+      cardColor: 'bg-[#fffbeb] border-amber-200/80',
+      iconBg: 'bg-amber-200/80',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
+      labelClassName: 'text-xs font-bold text-black',
+      valueClassName: 'text-xl sm:text-2xl font-black text-black',
+    },
+  ];
+
   return (
     <div className="space-y-4 sm:space-y-5 pb-6">
       {/* =========================================================
-          1. TOP ROW: 4 SUMMARY STATS CARDS (Responsive)
+          1. TOP ROW: 4 SUMMARY STATS CARDS (Reusable StatsCards)
           ========================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Card 1: Overall Rating */}
-        <div className="bg-[#fffdf5] border border-amber-200/70 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xs flex items-center gap-3.5 sm:gap-4.5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#feea98] flex items-center justify-center shrink-0 shadow-2xs">
-            <img src={reviewsStarIcon} alt="Overall Rating" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {summaryStats.overallRating}
-            </h3>
-            <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
-              Overall Rating
-            </p>
-          </div>
-        </div>
-
-        {/* Card 2: Driver Rating */}
-        <div className="bg-[#f0fdf4] border border-emerald-200/70 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xs flex items-center gap-3.5 sm:gap-4.5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#dcfce7] flex items-center justify-center shrink-0 shadow-2xs">
-            <img src={reviewsDriverIcon} alt="Driver Rating" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {summaryStats.driverRating}
-            </h3>
-            <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
-              Driver Rating
-            </p>
-          </div>
-        </div>
-
-        {/* Card 3: Passenger Rating */}
-        <div className="bg-[#fff1f2] border border-rose-200/70 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xs flex items-center gap-3.5 sm:gap-4.5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#fee2e2] flex items-center justify-center shrink-0 shadow-2xs">
-            <img src={reviewsPassengerIcon} alt="Passenger Rating" className="w-6 h-6 sm:w-7 sm:h-7 object-contain" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {summaryStats.passengerRating}
-            </h3>
-            <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
-              Passenger Rating
-            </p>
-          </div>
-        </div>
-
-        {/* Card 4: Total Reviews */}
-        <div className="bg-[#fffdf5] border border-amber-200/70 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xs flex items-center gap-3.5 sm:gap-4.5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#feea98] flex items-center justify-center shrink-0 shadow-2xs">
-            <img src={reviewsChatIcon} alt="Total Reviews" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-2xl sm:text-[32px] font-black text-slate-900 leading-tight">
-              {summaryStats.totalReviews}
-            </h3>
-            <p className="text-sm sm:text-base font-bold text-slate-900 leading-tight mt-0.5 truncate">
-              Total Reviews
-            </p>
-          </div>
-        </div>
-      </div>
+      <StatsCards
+        items={reviewStatsItems}
+        columns="grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+        cardHeight="p-3.5 sm:p-3.5"
+      />
 
       {/* =========================================================
           2. FILTER TABS: All Reviews, Passenger Reviews, Driver Reviews

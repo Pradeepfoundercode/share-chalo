@@ -358,7 +358,7 @@ export default function SupportComplaints() {
         </div>
 
         {/* Closed */}
-        <div className="bg-purple-50/40 border border-purple-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-xs transition-all hover:shadow-sm col-span-2 sm:col-span-1">
+        <div className="bg-purple-50/40 border border-purple-200/60 rounded-2xl p-4 flex items-center gap-3.5 shadow-xs transition-all hover:shadow-sm">
           <div className="w-12 h-12 rounded-full bg-purple-100/70 flex items-center justify-center shrink-0 text-purple-600 border border-purple-200/50">
             <img src={closedCircleIcon} alt="Closed" className="w-6 h-6 object-contain" />
           </div>

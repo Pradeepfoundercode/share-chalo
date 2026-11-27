@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { notificationsList } from '../../data/notificationsData';
-import { DetailsHeader } from '../../components/common';
+import DetailsHeader from '../../components/common/DetailsHeader';
 import { getNotificationByIdApi } from '../../services/notification.services';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 

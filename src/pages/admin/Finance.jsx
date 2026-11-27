@@ -527,15 +527,15 @@ export default function Finance() {
       {activeTab === 'Overview' ? (
         <>
           {/* ----------------- ROW 1: 5 METRIC CARDS ----------------- */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
             {/* Card 1: Total Bookings */}
-            <div className="bg-[#f0fdf4] border border-emerald-100 rounded-2xl px-4 py-3.5 shadow-2xs flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-emerald-100/90 text-emerald-600 flex items-center justify-center shrink-0 shadow-2xs">
-                <WalletIcon className="w-5.5 h-5.5 text-emerald-600" />
+            <div className="bg-[#f0fdf4] border border-emerald-100 rounded-2xl p-3 sm:px-4 sm:py-3.5 shadow-2xs flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-100/90 text-emerald-600 flex items-center justify-center shrink-0 shadow-2xs">
+                <WalletIcon className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-emerald-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Total Bookings</p>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
+                <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
                   {summaryData.totalBookings}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
@@ -545,13 +545,13 @@ export default function Finance() {
             </div>
 
             {/* Card 2: Total Ride Amount */}
-            <div className="bg-[#f0f9ff] border border-sky-100 rounded-2xl px-4 py-3.5 shadow-2xs flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-sky-100/90 text-sky-600 flex items-center justify-center shrink-0 shadow-2xs font-bold">
-                <RupeeIcon className="w-5.5 h-5.5 text-sky-600" />
+            <div className="bg-[#f0f9ff] border border-sky-100 rounded-2xl p-3 sm:px-4 sm:py-3.5 shadow-2xs flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-sky-100/90 text-sky-600 flex items-center justify-center shrink-0 shadow-2xs font-bold">
+                <RupeeIcon className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-sky-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Total Ride Amount</p>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
+                <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
                   {summaryData.totalRideAmount}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
@@ -561,13 +561,13 @@ export default function Finance() {
             </div>
 
             {/* Card 3: Commission Earned */}
-            <div className="bg-[#fefce8] border border-amber-100 rounded-2xl px-4 py-3.5 shadow-2xs flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-amber-100/90 text-amber-600 flex items-center justify-center shrink-0 shadow-2xs">
-                <PercentIcon className="w-5 h-5 text-amber-600" />
+            <div className="bg-[#fefce8] border border-amber-100 rounded-2xl p-3 sm:px-4 sm:py-3.5 shadow-2xs flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-100/90 text-amber-600 flex items-center justify-center shrink-0 shadow-2xs">
+                <PercentIcon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-amber-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Commission Earned</p>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
+                <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
                   {summaryData.commissionEarned}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
@@ -577,13 +577,13 @@ export default function Finance() {
             </div>
 
             {/* Card 4: Online Collections */}
-            <div className="bg-[#faf5ff] border border-purple-100 rounded-2xl px-4 py-3.5 shadow-2xs flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-purple-100/90 text-purple-600 flex items-center justify-center shrink-0 shadow-2xs">
-                <CreditCardIcon className="w-5.5 h-5.5 text-purple-600" />
+            <div className="bg-[#faf5ff] border border-purple-100 rounded-2xl p-3 sm:px-4 sm:py-3.5 shadow-2xs flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-purple-100/90 text-purple-600 flex items-center justify-center shrink-0 shadow-2xs">
+                <CreditCardIcon className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-purple-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Online Collections</p>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
+                <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
                   {summaryData.onlineCollections}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">
@@ -593,13 +593,13 @@ export default function Finance() {
             </div>
 
             {/* Card 5: Cash Collections */}
-            <div className="bg-[#fff1f2] border border-rose-100 rounded-2xl px-4 py-3.5 shadow-2xs flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-rose-100/90 text-rose-600 flex items-center justify-center shrink-0 shadow-2xs">
-                <BanknoteIcon className="w-5.5 h-5.5 text-rose-600" />
+            <div className="bg-[#fff1f2] border border-rose-100 rounded-2xl p-3 sm:px-4 sm:py-3.5 shadow-2xs flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-rose-100/90 text-rose-600 flex items-center justify-center shrink-0 shadow-2xs">
+                <BanknoteIcon className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-rose-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-[13px] font-bold text-slate-700 truncate">Cash Collections</p>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
+                <h3 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight mt-0.5">
                   {summaryData.cashCollections}
                 </h3>
                 <p className="text-[11px] sm:text-xs font-bold text-emerald-600 mt-0.5">

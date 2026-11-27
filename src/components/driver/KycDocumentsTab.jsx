@@ -77,79 +77,79 @@ export default function KycDocumentsTab({ driver }) {
 
   const vehicleDocs = isBus
     ? [
-        {
-          id: 'rc',
-          title: 'RC (Registration Certificate)',
-          subtitle: `Reg. No.: ${driver.regNo || driver.plate || '-'}`,
-          status: driver.vehicleStatus ? (driver.vehicleStatus.charAt(0).toUpperCase() + driver.vehicleStatus.slice(1)) : 'Approved',
-          previewImg: driver.rcUrl || '',
-        },
-        {
-          id: 'insurance',
-          title: 'Insurance',
-          detail1: 'Policy No.: ICICI/4567890',
-          detail2: 'Valid Till: 20 Sep 2027',
-          status: 'Approved',
-          previewImg: driver.insuranceUrl || '',
-        },
-        {
-          id: 'puc',
-          title: 'PUC (Pollution Under Control)',
-          detail1: 'Certificate No.: PUC/BR/2026/12345',
-          detail2: 'Valid Till: 18 Mar 2027',
-          status: 'Approved',
-          previewImg: driver.pucCertificateUrl || '',
-        },
-        {
-          id: 'commercial_permit',
-          title: 'Commercial Permit',
-          detail1: 'Permit No.: CP/BR/2026/6789',
-          detail2: `Valid Till: ${driver.permitValidity || '-'}`,
-          status: 'Approved',
-          previewImg: driver.permitUrl || '',
-        },
-        {
-          id: 'fitness',
-          title: 'Fitness Certificate',
-          detail1: 'Certificate No.: FC/BR/2026/4456',
-          detail2: 'Valid Till: 31 Dec 2027',
-          status: 'Approved',
-          previewImg: driver.fitnessCertificateUrl || '',
-        },
-        {
-          id: 'route_permit',
-          title: 'Route Permit',
-          detail1: 'Permit No.: RP/BR/2026/7788',
-          detail2: 'Route: Intercity Express',
-          status: 'Approved',
-          previewImg: driver.routePermitUrl || '',
-        },
-      ]
+      {
+        id: 'rc',
+        title: 'RC (Registration Certificate)',
+        subtitle: `Reg. No.: ${driver.regNo || driver.plate || '-'}`,
+        status: driver.vehicleStatus ? (driver.vehicleStatus.charAt(0).toUpperCase() + driver.vehicleStatus.slice(1)) : 'Approved',
+        previewImg: driver.rcUrl || '',
+      },
+      {
+        id: 'insurance',
+        title: 'Insurance',
+        detail1: 'Policy No.: ICICI/4567890',
+        detail2: 'Valid Till: 20 Sep 2027',
+        status: 'Approved',
+        previewImg: driver.insuranceUrl || '',
+      },
+      {
+        id: 'puc',
+        title: 'PUC (Pollution Under Control)',
+        detail1: 'Certificate No.: PUC/BR/2026/12345',
+        detail2: 'Valid Till: 18 Mar 2027',
+        status: 'Approved',
+        previewImg: driver.pucCertificateUrl || '',
+      },
+      {
+        id: 'commercial_permit',
+        title: 'Commercial Permit',
+        detail1: 'Permit No.: CP/BR/2026/6789',
+        detail2: `Valid Till: ${driver.permitValidity || '-'}`,
+        status: 'Approved',
+        previewImg: driver.permitUrl || '',
+      },
+      {
+        id: 'fitness',
+        title: 'Fitness Certificate',
+        detail1: 'Certificate No.: FC/BR/2026/4456',
+        detail2: 'Valid Till: 31 Dec 2027',
+        status: 'Approved',
+        previewImg: driver.fitnessCertificateUrl || '',
+      },
+      {
+        id: 'route_permit',
+        title: 'Route Permit',
+        detail1: 'Permit No.: RP/BR/2026/7788',
+        detail2: 'Route: Intercity Express',
+        status: 'Approved',
+        previewImg: driver.routePermitUrl || '',
+      },
+    ]
     : [
-        {
-          id: 'rc',
-          title: 'RC (Registration Certificate)',
-          subtitle: `Reg. No.: ${driver.regNo || driver.plate || '-'}`,
-          status: driver.vehicleStatus ? (driver.vehicleStatus.charAt(0).toUpperCase() + driver.vehicleStatus.slice(1)) : 'Approved',
-          previewImg: driver.rcUrl || '',
-        },
-        {
-          id: 'insurance',
-          title: 'Insurance',
-          detail1: 'Policy No.: HDFC/9876543',
-          detail2: 'Valid Till: 15 Oct 2027',
-          status: 'Approved',
-          previewImg: driver.insuranceUrl || '',
-        },
-        {
-          id: 'puc',
-          title: 'PUC (Pollution Under Control)',
-          detail1: 'Certificate No.: PUC/BR/2026/8899',
-          detail2: 'Valid Till: 05 Jun 2027',
-          status: 'Approved',
-          previewImg: driver.pucCertificateUrl || '',
-        },
-      ];
+      {
+        id: 'rc',
+        title: 'RC (Registration Certificate)',
+        subtitle: `Reg. No.: ${driver.regNo || driver.plate || '-'}`,
+        status: driver.vehicleStatus ? (driver.vehicleStatus.charAt(0).toUpperCase() + driver.vehicleStatus.slice(1)) : 'Approved',
+        previewImg: driver.rcUrl || '',
+      },
+      {
+        id: 'insurance',
+        title: 'Insurance',
+        detail1: 'Policy No.: HDFC/9876543',
+        detail2: 'Valid Till: 15 Oct 2027',
+        status: 'Approved',
+        previewImg: driver.insuranceUrl || '',
+      },
+      {
+        id: 'puc',
+        title: 'PUC (Pollution Under Control)',
+        detail1: 'Certificate No.: PUC/BR/2026/8899',
+        detail2: 'Valid Till: 05 Jun 2027',
+        status: 'Approved',
+        previewImg: driver.pucCertificateUrl || '',
+      },
+    ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
@@ -223,11 +223,10 @@ export default function KycDocumentsTab({ driver }) {
                     <button
                       onClick={() => doc.previewImg && setPreviewPhoto({ img: doc.previewImg, title: doc.title })}
                       disabled={!doc.previewImg}
-                      className={`p-1.5 rounded-full transition-colors ${
-                        doc.previewImg
-                          ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
-                          : 'text-slate-300 cursor-not-allowed'
-                      }`}
+                      className={`p-1.5 rounded-full transition-colors ${doc.previewImg
+                        ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                        : 'text-slate-300 cursor-not-allowed'
+                        }`}
                       title={doc.previewImg ? 'View Document' : 'No document image available'}
                     >
                       <Eye className="w-4 h-4" />
@@ -238,11 +237,10 @@ export default function KycDocumentsTab({ driver }) {
                     <button
                       onClick={() => doc.previewImg && handleDownload(doc.previewImg, doc.title)}
                       disabled={!doc.previewImg}
-                      className={`p-1.5 rounded-full transition-colors ${
-                        doc.previewImg
-                          ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
-                          : 'text-slate-300 cursor-not-allowed'
-                      }`}
+                      className={`p-1.5 rounded-full transition-colors ${doc.previewImg
+                        ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                        : 'text-slate-300 cursor-not-allowed'
+                        }`}
                       title={doc.previewImg ? 'Download Document' : 'No document available to download'}
                     >
                       <Download className="w-4 h-4" />
@@ -324,11 +322,10 @@ export default function KycDocumentsTab({ driver }) {
                   <button
                     onClick={() => doc.previewImg && setPreviewPhoto({ img: doc.previewImg, title: doc.title })}
                     disabled={!doc.previewImg}
-                    className={`p-1.5 rounded-full transition-colors ${
-                      doc.previewImg
-                        ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
-                        : 'text-slate-300 cursor-not-allowed'
-                    }`}
+                    className={`p-1.5 rounded-full transition-colors ${doc.previewImg
+                      ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                      : 'text-slate-300 cursor-not-allowed'
+                      }`}
                     title={doc.previewImg ? 'View Document' : 'No document image available'}
                   >
                     <Eye className="w-3.5 h-3.5" />
@@ -337,11 +334,10 @@ export default function KycDocumentsTab({ driver }) {
                   <button
                     onClick={() => doc.previewImg && handleDownload(doc.previewImg, doc.title)}
                     disabled={!doc.previewImg}
-                    className={`p-1.5 rounded-full transition-colors ${
-                      doc.previewImg
-                        ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
-                        : 'text-slate-300 cursor-not-allowed'
-                    }`}
+                    className={`p-1.5 rounded-full transition-colors ${doc.previewImg
+                      ? 'hover:bg-slate-200/60 text-slate-600 hover:text-black cursor-pointer'
+                      : 'text-slate-300 cursor-not-allowed'
+                      }`}
                     title={doc.previewImg ? 'Download Document' : 'No document available to download'}
                   >
                     <Download className="w-3.5 h-3.5" />

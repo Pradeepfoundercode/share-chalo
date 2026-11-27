@@ -37,7 +37,8 @@ import cancelledByDriverIcon from '../../assets/dashboard/Group (10).svg';
 import cancellationReasonIcon from '../../assets/dashboard/chat-message-icon-transparent.svg';
 import cancellationDateTimeIcon from '../../assets/dashboard/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
 
-import { Pagination, DetailsHeader } from '../../components/common';
+import Pagination from '../../components/common/Pagination';
+import DetailsHeader from '../../components/common/DetailsHeader';
 
 // Format status (e.g. in_progress -> In Progress)
 const formatStatus = (s) => {

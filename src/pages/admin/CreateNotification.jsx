@@ -20,7 +20,7 @@ import {
   CheckCircle2,
   Loader2
 } from 'lucide-react';
-import { DetailsHeader } from '../../components/common';
+import DetailsHeader from '../../components/common/DetailsHeader';
 import { createNotificationApi } from '../../services/notification.services';
 
 // Custom SVGs requested by user
@@ -28,10 +28,8 @@ import financeSettlementsIcon from '../../assets/dashboard/finance-settlements.s
 import selectUsersIcon from '../../assets/dashboard/72658f49-1c99-42c0-b972-a95bf219ed1e 9.svg';
 import chatMessageIcon from '../../assets/dashboard/chat-message-icon-transparent.svg';
 import totalSeatsIcon from '../../assets/drivers/total-seats.svg';
-import vehiclePhotosIcon from '../../assets/drivers/vehicle-photos.svg';
 import privateCarIcon from '../../assets/drivers/private-car.svg';
 import group10Icon from '../../assets/dashboard/Group (10).svg';
-import diwaliBannerImg from '../../assets/9ff746e1-a841-43b9-87d4-d176938e4a7a.png';
 
 export default function CreateNotification() {
   const navigate = useNavigate();
@@ -62,9 +60,6 @@ export default function CreateNotification() {
       year: 'numeric'
     });
   };
-
-  // Media preview state
-  const [mediaUploaded, setMediaUploaded] = useState(false);
 
   // User picker state
   const [userSearch, setUserSearch] = useState('');
@@ -281,61 +276,7 @@ export default function CreateNotification() {
               ></textarea>
             </div>
 
-            {/* 3. Add Media (Optional) */}
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2">
-              <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
-                <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">
-                  <img src={vehiclePhotosIcon} alt="Add Media" className="w-5 h-5 object-contain" />
-                </div>
-                <span>Add Media (Optional)</span>
-              </label>
-
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Uploaded Banner Graphic Preview */}
-                {mediaUploaded ? (
-                  <div className="relative rounded-xl border border-amber-300 bg-amber-50/60 p-1.5 w-fit flex items-center shadow-2xs">
-                    <div className="w-36 h-18 sm:w-44 sm:h-22 rounded-lg border border-amber-300/80 overflow-hidden shrink-0 shadow-2xs bg-white">
-                      <img
-                        src={diwaliBannerImg}
-                        alt="Diwali Special Offer Banner"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    {/* Delete Cross Badge */}
-                    <button
-                      type="button"
-                      onClick={() => setMediaUploaded(false)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-black flex items-center justify-center cursor-pointer shadow-xs"
-                      title="Remove media"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : null}
-
-                {/* Upload Image Box */}
-                <label className="w-36 sm:w-44 h-18 sm:h-22 rounded-xl border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50/50 hover:bg-amber-50/30 p-2 flex flex-col items-center justify-center text-center cursor-pointer transition-colors shrink-0">
-                  <div className="w-6.5 h-6.5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 mb-0.5">
-                    <Plus className="w-4 h-4 stroke-[2.5]" />
-                  </div>
-                  <span className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight">
-                    Upload Image
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-semibold leading-tight">
-                    (JPG, PNG - Max 2 MB)
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={() => setMediaUploaded(true)}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-
-            {/* 4. Schedule & Send Card */}
+            {/* 3. Schedule & Send Card */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-2">
               <label className="flex items-center gap-2.5 text-base sm:text-[17px] font-bold text-slate-900">
                 <div className="w-8.5 h-8.5 rounded-xl bg-[#fed011] flex items-center justify-center shrink-0 shadow-2xs">

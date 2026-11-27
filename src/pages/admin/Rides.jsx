@@ -21,7 +21,7 @@ import {
 import { ridesStats, ridesList } from '../../data/ridesData';
 import { getTripsApi } from '../../services/trip.services';
 import Pagination from '../../components/common/Pagination';
-import { StatsCards } from '../../components/common';
+import StatsCards from '../../components/common/StatsCards';
 
 // Assets for Stats Cards & Vehicles
 import totalRidesIcon from '../../assets/dashboard/calender-yellow.svg';

@@ -391,9 +391,9 @@ export default function Notifications() {
     <div className="space-y-4 pb-10">
 
       {/* =========================================================
-          1. TOP ROW: TAB BUTTONS (LEFT) + CREATE NOTIFICATION BUTTON (RIGHT)
+          1. TOP ROW: TAB BUTTONS (LEFT)
           ========================================================= */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         {/* Left 2 Tabs */}
         <div className="flex items-center gap-2.5">
           <button
@@ -422,16 +422,6 @@ export default function Notifications() {
             <span>Create Notification</span>
           </button>
         </div>
-
-        {/* Right Yellow Action Button: + Create Notification */}
-        <button
-          type="button"
-          onClick={() => navigate('/notifications/create')}
-          className="h-11 px-6 bg-[#fed011] hover:bg-amber-400 text-black rounded-xl text-sm sm:text-base font-black flex items-center justify-center gap-2.5 cursor-pointer shadow-xs transition-colors self-end sm:self-auto"
-        >
-          <img src={sendPlaneIcon} alt="Create Notification" className="w-5 h-5 object-contain shrink-0" />
-          <span>Create Notification</span>
-        </button>
       </div>
 
       {/* =========================================================

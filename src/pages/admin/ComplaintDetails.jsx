@@ -29,7 +29,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { complaintsList } from '../../data/supportData';
-import { DetailsHeader } from '../../components/common';
+import DetailsHeader from '../../components/common/DetailsHeader';
 import { getSupportTicketByIdApi } from '../../services/support.services';
 
 export default function ComplaintDetails() {

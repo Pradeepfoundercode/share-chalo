@@ -17,7 +17,8 @@ import {
 import { getVehiclesApi } from '../../services/vehicle.services';
 import carThumb from '../../assets/White Compact Hatchback Car Cutout.png';
 import busThumb from '../../assets/commercial_bus.png';
-import { Pagination, StatsCards } from '../../components/common';
+import Pagination from '../../components/common/Pagination';
+import StatsCards from '../../components/common/StatsCards';
 
 // Assets for Stats Cards
 import totalVehiclesIcon from '../../assets/drivers/vehicle-document.svg';
@@ -222,7 +223,8 @@ export default function Vehicles() {
       image: totalVehiclesIcon,
       cardColor: 'bg-[#fffbeb] border-amber-200/80',
       iconBg: 'bg-amber-200/80',
-      iconSize: 'w-7 h-7 sm:w-8 sm:h-8',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
       labelClassName: 'text-xs font-bold text-black',
       valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
@@ -236,7 +238,8 @@ export default function Vehicles() {
       image: activeVehiclesIcon,
       cardColor: 'bg-[#f0fdf4] border-emerald-200/80',
       iconBg: 'bg-emerald-100',
-      iconSize: 'w-7 h-7 sm:w-8 sm:h-8',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
       labelClassName: 'text-xs font-bold text-black',
       valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
@@ -250,7 +253,8 @@ export default function Vehicles() {
       image: blockedVehiclesIcon,
       cardColor: 'bg-[#fef2f2] border-rose-200/80',
       iconBg: 'bg-rose-100',
-      iconSize: 'w-7 h-7 sm:w-8 sm:h-8',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-5 h-5 sm:w-7 sm:h-7',
       labelClassName: 'text-xs font-bold text-black',
       valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
@@ -268,7 +272,8 @@ export default function Vehicles() {
       image: inactiveVehiclesIcon,
       cardColor: 'bg-[#faf5ff] border-purple-200/80',
       iconBg: 'bg-purple-100',
-      iconSize: 'w-7 h-7 sm:w-8 sm:h-8',
+      iconBoxSize: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl',
+      iconSize: 'w-6 h-6 sm:w-8 sm:h-8',
       labelClassName: 'text-xs font-bold text-black',
       valueClassName: 'text-xl sm:text-2xl font-black text-black',
     },
@@ -281,7 +286,8 @@ export default function Vehicles() {
           ========================================================= */}
       <StatsCards
         items={vehicleStatsItems}
-        columns="lg:grid-cols-4"
+        columns="grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+        cardHeight="p-3.5 sm:p-3.5"
       />
 
       {/* =========================================================

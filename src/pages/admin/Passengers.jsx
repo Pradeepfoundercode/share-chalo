@@ -14,7 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { passengersStats, passengersList } from '../../data/passengersData';
 import { getUsersApi } from '../../services/user.services';
-import { Pagination, StatsCards } from '../../components/common';
+import Pagination from '../../components/common/Pagination';
+import StatsCards from '../../components/common/StatsCards';
 
 // Assets
 import totalPassengersIcon from '../../assets/drivers/passengers-orange.svg';

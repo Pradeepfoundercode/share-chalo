@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../store/authStore';
-import { DetailsHeader } from '../common';
+import DetailsHeader from '../common/DetailsHeader';
 import {
   reviewDriverProfileApi,
   reviewDriverKycApi,
@@ -523,7 +523,7 @@ export default function PendingVerificationView({ driver }) {
                       Verify the driver's driving license, identity proof, and live photo.
                     </p>
                   </div>
-                </div>
+                </div>     
 
                 {/* List of KYC items */}
                 <div className="space-y-3 pt-1">

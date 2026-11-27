@@ -26,21 +26,33 @@ export default function VehicleBusDetailsTab({ driver }) {
     if (driver.seatArrangement) setSeatArrangement(driver.seatArrangement);
   }, [driver]);
 
-  const busPhotos = [
-    { img: driver.photos?.front || '', label: 'Front View' },
-    { img: driver.photos?.rear || '', label: 'Rear / Side View' },
-    { img: driver.photos?.left || '', label: 'Side Profile' },
-    { img: driver.photos?.interior || '', label: 'Passenger Interior' },
-    { img: driver.photos?.right || '', label: 'Driver Cockpit' },
-  ];
-
-  const carPhotos = [
-    { img: driver.photos?.front || '', label: 'Front View' },
-    { img: driver.photos?.rear || '', label: 'Rear View' },
-    { img: driver.photos?.left || '', label: 'Side View' },
-    { img: driver.photos?.interior || '', label: 'Dashboard' },
-    { img: driver.photos?.right || '', label: 'Interior Seats' },
-  ];
+  const vehiclePhotoList = React.useMemo(() => {
+    const raw = driver.photos;
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw
+        .filter((p) => p && (typeof p === 'string' ? p : p.url || p.img))
+        .map((p, idx) => ({
+          img: typeof p === 'string' ? p : p.url || p.img,
+          label: (typeof p === 'object' && (p.label || p.name)) || `Photo ${idx + 1}`,
+        }));
+    }
+    const labelMap = {
+      front: 'Front View',
+      rear: isBus ? 'Rear / Side View' : 'Rear View',
+      left: isBus ? 'Side Profile' : 'Side View',
+      side: 'Side View',
+      interior: isBus ? 'Passenger Interior' : 'Dashboard',
+      dashboard: 'Dashboard',
+      right: isBus ? 'Driver Cockpit' : 'Interior Seats',
+    };
+    return Object.entries(raw)
+      .filter(([_, url]) => url && typeof url === 'string' && url.trim().length > 0)
+      .map(([key, url]) => ({
+        img: url,
+        label: labelMap[key.toLowerCase()] || `${key.charAt(0).toUpperCase() + key.slice(1)} View`,
+      }));
+  }, [driver.photos, isBus]);
 
   return (
     <div className="space-y-4">
@@ -223,9 +235,9 @@ export default function VehicleBusDetailsTab({ driver }) {
           </h3>
         </div>
 
-        {/* 5 Photos Grid */}
+        {/* Vehicle Photos Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5 pt-1">
-          {(isBus ? busPhotos : carPhotos).map((item, idx) => (
+          {vehiclePhotoList.map((item, idx) => (
             <div
               key={idx}
               onClick={() => setPreviewPhoto(item)}
